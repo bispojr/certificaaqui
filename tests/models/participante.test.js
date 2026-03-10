@@ -80,4 +80,34 @@ describe('Participante Model', () => {
     expect(restaurado).toBeDefined();
     expect(restaurado.deleted_at).toBeNull();
   });
+
+  test('não deve criar participante sem nomeCompleto', async () => {
+    await expect(
+      Participante.create({
+        email: 'semnome@email.com',
+        instituicao: 'UF'
+      })
+    ).rejects.toThrow();
+  });
+
+  test('não deve criar participante sem email', async () => {
+    await expect(
+      Participante.create({
+        nomeCompleto: 'Sem Email',
+        instituicao: 'UF'
+      })
+    ).rejects.toThrow();
+  });
+
+  test('não deve criar participante com email inválido', async () => {
+    await expect(
+      Participante.create({
+        nomeCompleto: 'Email Inválido',
+        email: 'emailinvalido',
+        instituicao: 'UF'
+      })
+    ).rejects.toThrow();
+  });
+
+  // Teste de associação com atividades será implementado após criação dos models participacoes e atividades
 });
