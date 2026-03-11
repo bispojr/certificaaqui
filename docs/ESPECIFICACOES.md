@@ -38,6 +38,13 @@
 - [x] Soft delete deve funcionar
 - [x] Deve permitir restaurar evento deletado
 
+## Testes planejados para TiposAtividade
+- [ ] Deve criar tipos_atividade com campo_destaque
+- [ ] Não deve criar tipos_atividade sem codigo (duas letras, alfabético)
+- [ ] Não deve criar tipos_atividade com codigo duplicado
+- [ ] Soft delete deve funcionar
+- [ ] Deve permitir restaurar tipos_atividade deletado
+
 ---
 
 ## Estrutura das tabelas principais
@@ -54,8 +61,10 @@
 
 ### Tabela tipos_atividade
 - id: Identificador único
-- codigo: Código do grupo de atividades (ex: PALESTRA2026)
-- descricao: Descrição do tipo (ex: palestra, minicurso, oficina)
+- codigo: Código do grupo de atividades (exatamente duas letras, formato alfabético, ex: PA, MC, OF) — obrigatório, único
+- descricao: Descrição do tipo (ex: palestra, minicurso, oficina) — obrigatório
+- campo_destaque: Campo de destaque para cada tipo de atividade (obrigatório, não pode ser null)
+  - Usado para exibição da atividade quando o usuário visualizar todos os seus certificados
 - created_at: Data de criação
 - updated_at: Data de atualização
 - deleted_at: Soft delete
