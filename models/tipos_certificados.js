@@ -23,7 +23,18 @@ module.exports = (sequelize, DataTypes) => {
     },
     campo_destaque: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      validate: {
+        campoValido(value) {
+          // 'nome' é sempre válido
+          if (value === 'nome') return;
+          // Precisa acessar dados_dinamicos do this
+          const dados = this.dados_dinamicos || {};
+          if (!Object.keys(dados).includes(value)) {
+            throw new Error('campo_destaque deve ser "nome" ou uma chave de dados_dinamicos');
+          }
+        }
+      }
     },
     texto_base: {
       type: DataTypes.TEXT,

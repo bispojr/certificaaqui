@@ -59,6 +59,41 @@ describe('TiposCertificados Model', () => {
     ).rejects.toThrow();
   });
 
+  test('não deve criar tipos_certificados com campo_destaque inválido', async () => {
+    // campo_destaque não existe em dados_dinamicos nem é 'nome' do certificado
+    await expect(
+      TiposCertificados.create({
+        codigo: 'OF',
+        descricao: 'Oficina',
+        campo_destaque: 'campo_invalido',
+        texto_base: 'Texto exemplo',
+        dados_dinamicos: { instrutor: '', vagas: '' }
+      })
+    ).rejects.toThrow();
+
+    // campo_destaque válido: 'nome' do certificado
+    await expect(
+      TiposCertificados.create({
+        codigo: 'OA',
+        descricao: 'Oficina',
+        campo_destaque: 'nome',
+        texto_base: 'Texto exemplo',
+        dados_dinamicos: { instrutor: '', vagas: '' }
+      })
+    ).resolves.toBeDefined();
+
+    // campo_destaque válido: campo em dados_dinamicos
+    await expect(
+      TiposCertificados.create({
+        codigo: 'OB',
+        descricao: 'Oficina',
+        campo_destaque: 'instrutor',
+        texto_base: 'Texto exemplo',
+        dados_dinamicos: { instrutor: '', vagas: '' }
+      })
+    ).resolves.toBeDefined();
+  });
+
   test('não deve criar tipos_certificados com codigo duplicado', async () => {
     await TiposCertificados.create({ codigo: 'PA', descricao: 'Palestra', campo_destaque: 'tema', texto_base: 'Texto exemplo', dados_dinamicos: { tema: '', palestrante: '' } });
     await expect(

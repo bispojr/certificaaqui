@@ -109,5 +109,43 @@ describe('Participante Model', () => {
     ).rejects.toThrow();
   });
 
+  test('deve associar participante a certificados', async () => {
+    const { Certificado, Evento, TiposCertificados } = require('../../models');
+
+    // Cria dependências
+    const participante = await Participante.create({
+      nomeCompleto: 'Maria Teste',
+      email: 'maria@teste.com',
+      instituicao: 'IF Teste'
+    });
+    const evento = await Evento.create({
+      nome: 'Evento Teste',
+      codigo_base: 'EVT',
+      ano: 2026
+    });
+    const tipo = await TiposCertificados.create({
+      codigo: 'MC',
+      descricao: 'Minicurso',
+      campo_destaque: 'tema',
+      texto_base: 'Certificamos que ${nome_completo} participou.',
+      dados_dinamicos: { tema: '', instrutor: '' }
+    });
+
+    // Cria certificado associado
+    const certificado = await Certificado.create({
+      nome: 'Certificado Teste',
+      status: 'emitido',
+      valores_dinamicos: { tema: 'TDD' },
+      participante_id: participante.id,
+      evento_id: evento.id,
+      tipo_certificado_id: tipo.id
+    });
+
+    // Busca certificados pelo participante
+    const certificados = await participante.getCertificados();
+    expect(certificados.length).toBe(1);
+    expect(certificados[0].id).toBe(certificado.id);
+  });
+
   // Teste de associação com certificados será implementado após criação dos models participacoes e certificados
 });
