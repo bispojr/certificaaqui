@@ -1,30 +1,37 @@
 require('dotenv').config();
 
+function requiredEnv(varName) {
+  if (!process.env[varName]) {
+    throw new Error(`Variável de ambiente obrigatória não definida: ${varName}`);
+  }
+  return process.env[varName];
+}
+
 module.exports = {
   development: {
-    username: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'password',
-    database: process.env.DB_NAME || 'certificados_db',
-    host: process.env.DB_HOST || 'postgres',
-    port: process.env.DB_PORT || 5432,
+    username: requiredEnv('DB_USER'),
+    password: requiredEnv('DB_PASSWORD'),
+    database: requiredEnv('DB_NAME'),
+    host: requiredEnv('DB_HOST'),
+    port: parseInt(requiredEnv('DB_PORT'), 10),
     dialect: 'postgres',
     logging: console.log,
   },
   test: {
-    username: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'password',
-    database: process.env.DB_NAME_TEST || 'certificados_db_test',
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT_TEST || 5433,
+    username: requiredEnv('DB_USER'),
+    password: requiredEnv('DB_PASSWORD'),
+    database: requiredEnv('DB_NAME_TEST'),
+    host: requiredEnv('DB_HOST'),
+    port: parseInt(requiredEnv('DB_PORT_TEST'), 10),
     dialect: 'postgres',
     logging: false,
   },
   production: {
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
+    username: requiredEnv('DB_USER'),
+    password: requiredEnv('DB_PASSWORD'),
+    database: requiredEnv('DB_NAME'),
+    host: requiredEnv('DB_HOST'),
+    port: parseInt(requiredEnv('DB_PORT'), 10),
     dialect: 'postgres',
     logging: false,
     ssl: true,
