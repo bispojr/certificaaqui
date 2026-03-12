@@ -13,6 +13,38 @@ jest.mock('../../models', () => ({
 }));
 
 describe('certificadoService', () => {
+      describe('cancel', () => {
+        it('deve cancelar um certificado existente', async () => {
+          const certificadoMock = { update: jest.fn() };
+          Certificado.findByPk.mockResolvedValue(certificadoMock);
+          await certificadoService.cancel(1);
+          expect(Certificado.findByPk).toHaveBeenCalledWith(1);
+          expect(certificadoMock.update).toHaveBeenCalledWith({ status: 'cancelado' });
+        });
+
+        it('deve retornar null se certificado não existir', async () => {
+          Certificado.findByPk.mockResolvedValue(null);
+          const result = await certificadoService.cancel(999);
+          expect(result).toBeNull();
+          expect(Certificado.findByPk).toHaveBeenCalledWith(999);
+        });
+      });
+    describe('delete', () => {
+      it('deve deletar um certificado existente', async () => {
+        const certificadoMock = { destroy: jest.fn() };
+        Certificado.findByPk.mockResolvedValue(certificadoMock);
+        await certificadoService.delete(1);
+        expect(Certificado.findByPk).toHaveBeenCalledWith(1);
+        expect(certificadoMock.destroy).toHaveBeenCalled();
+      });
+
+      it('deve retornar null se certificado não existir', async () => {
+        Certificado.findByPk.mockResolvedValue(null);
+        const result = await certificadoService.delete(999);
+        expect(result).toBeNull();
+        expect(Certificado.findByPk).toHaveBeenCalledWith(999);
+      });
+    });
   beforeEach(() => {
     jest.clearAllMocks();
   });
