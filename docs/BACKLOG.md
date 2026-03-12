@@ -112,7 +112,7 @@
 - [x] Criar `src/routes/participantes.js` — CRUD completo
 - [x] Remover `routes/users.js` (stub sem domínio)
 - [x] Criar `src/routes/eventos.js` — CRUD completo
-- [ ] Criar `src/routes/certificados.js` — emissão, consulta, cancelamento, restauração
+- [x] Criar `src/routes/certificados.js` — emissão, consulta, cancelamento, restauração
 - [ ] Criar `src/routes/tiposCertificados.js`
 - [ ] Registrar todas as rotas no `app.js`
 
