@@ -60,17 +60,10 @@
 
 **Por que:** Sem controllers, toda lógica de negócio seria acumulada nos handlers de rota — violação de SRP e Separation of Concerns.
 
-- [x] Criar `src/controllers/participanteController.js` com `index`, `show`, `create`, `update`, `destroy`, `restore`
-- [x] Criar `src/controllers/eventoController.js` com as mesmas operações
-- [ ] Criar `src/controllers/certificadoController.js` com `index`, `show`, `create`, `cancel`, `restore`
-**Subtarefas:**
-  - [x] Criar `src/controllers/participanteController.js` com `index`, `show`, `create`, `update`, `destroy`, `restore`
-  - [x] Criar `src/controllers/eventoController.js` com as mesmas operações
-  - [x] Criar `src/controllers/certificadoController.js` com `index`, `show`, `create`, `cancel`, `restore`
-- [x] Criar `src/controllers/participanteController.js` com `index`, `show`, `create`, `update`, `destroy`, `restore`
-- [x] Criar `src/controllers/eventoController.js` com as mesmas operações
-- [ ] Criar `src/controllers/certificadoController.js` com `index`, `show`, `create`, `cancel`, `restore`
-- [ ] Criar `src/controllers/tiposCertificadosController.js` com `index`, `show`, `create`, `update`, `destroy`
+- [x] Criar `src/controllers/participanteController.js` com métodos REST
+- [x] Criar `src/controllers/eventoController.js` com métodos REST
+- [x] Criar `src/controllers/certificadoController.js` com métodos REST e cancelamento
+- [x] Criar `src/controllers/tiposCertificadosController.js` com métodos REST
 - [ ] Cada controller delega para services (não implementa lógica de negócio diretamente)
 - [ ] Testes de rota (`tests/routes/`) cobrindo ao menos os casos de erro 400/404/422
 
