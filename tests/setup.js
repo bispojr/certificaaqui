@@ -1,9 +1,11 @@
+
 const { sequelize } = require('../models');
+const { execSync } = require('child_process');
 
 // Configuração global para testes
 beforeAll(async () => {
-  // Sincroniza banco de dados de teste
-  await sequelize.sync({ force: true });
+  // Executa todas as migrations antes dos testes
+  execSync('npx sequelize-cli db:migrate --env test', { stdio: 'inherit' });
 });
 
 afterAll(async () => {
