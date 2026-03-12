@@ -26,6 +26,7 @@ jobs:
       DB_NAME: certificados_db_test
       DB_NAME_TEST: certificados_db_test
       DB_HOST: localhost
+      DB_PORT: 5432
       DB_PORT_TEST: 5432
     steps:
       - uses: actions/checkout@v3
