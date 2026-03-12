@@ -21,6 +21,9 @@ module.exports = {
     if (!tipo) return null;
     return tipo.destroy();
   },
+  async delete(id) {
+    return this.destroy(id);
+  },
   async restore(id) {
     const tipo = await TiposCertificados.findByPk(id, { paranoid: false });
     if (!tipo) return null;

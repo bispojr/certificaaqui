@@ -13,6 +13,22 @@ jest.mock('../../models', () => ({
 }));
 
 describe('tiposCertificadosService', () => {
+    describe('delete', () => {
+      it('deve deletar um tipo de certificado existente', async () => {
+        const tipoMock = { destroy: jest.fn() };
+        TiposCertificados.findByPk.mockResolvedValue(tipoMock);
+        await tiposCertificadosService.delete(1);
+        expect(TiposCertificados.findByPk).toHaveBeenCalledWith(1);
+        expect(tipoMock.destroy).toHaveBeenCalled();
+      });
+
+      it('deve retornar null se tipo de certificado não existir', async () => {
+        TiposCertificados.findByPk.mockResolvedValue(null);
+        const result = await tiposCertificadosService.delete(999);
+        expect(result).toBeNull();
+        expect(TiposCertificados.findByPk).toHaveBeenCalledWith(999);
+      });
+    });
   beforeEach(() => {
     jest.clearAllMocks();
   });
