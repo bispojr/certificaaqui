@@ -110,10 +110,10 @@
 
 **Subtarefas:**
 - [ ] Criar `src/routes/participantes.js` — CRUD completo
+- [x] Remover `routes/users.js` (stub sem domínio)
 - [ ] Criar `src/routes/eventos.js` — CRUD completo
 - [ ] Criar `src/routes/certificados.js` — emissão, consulta, cancelamento, restauração
 - [ ] Criar `src/routes/tiposCertificados.js`
-- [ ] Remover `routes/users.js` (stub sem domínio)
 - [ ] Registrar todas as rotas no `app.js`
 
 **Estimativa:** 5 pontos  
