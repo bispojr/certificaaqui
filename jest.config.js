@@ -2,6 +2,7 @@ process.env.NODE_ENV = 'test'; // Define ambiente de teste
 
 module.exports = {
   verbose: true,
+  forceExit: true,
   projects: [
     {
       displayName: 'models',

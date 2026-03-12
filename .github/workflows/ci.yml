@@ -9,17 +9,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    services:
-      postgres_test:
-        image: postgres:15
-        env:
-          POSTGRES_DB: certificados_test
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-        ports:
-          - 5433:5432
-        options: >
-          --health-cmd "pg_isready -U postgres" --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js
@@ -32,13 +21,21 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y docker-compose
       - name: Clean up Docker containers (before)
         run: docker-compose -f docker-compose.test.yml down --remove-orphans || true
-      - name: Clean up Docker containers
-        run: docker ps -aq | xargs -r docker rm -f
+      - name: Clean up all containers
+        run: docker ps -aq | xargs -r docker rm -f || true
       - name: Start test containers
         run: docker-compose -f docker-compose.test.yml up -d
       - name: Wait for DB
         run: sleep 10
       - name: Run tests
-        run: npm run test:docker -- --detectOpenHandles
+        env:
+          DB_USER: postgres
+          DB_PASSWORD: password
+          DB_HOST: localhost
+          DB_NAME: certificados_test
+          DB_PORT: 5432
+          DB_NAME_TEST: certificados_test
+          DB_PORT_TEST: 5433
+        run: npm run test:docker
       - name: Clean up Docker containers (after)
         run: docker-compose -f docker-compose.test.yml down --remove-orphans || true
