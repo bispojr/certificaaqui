@@ -62,7 +62,7 @@
 
 **Subtarefas:**
 - [x] Criar `src/controllers/participanteController.js` com `index`, `show`, `create`, `update`, `destroy`, `restore`
-- [ ] Criar `src/controllers/eventoController.js` com as mesmas operações
+- [x] Criar `src/controllers/eventoController.js` com as mesmas operações
 - [ ] Criar `src/controllers/certificadoController.js` com `index`, `show`, `create`, `cancel`, `restore`
 - [ ] Criar `src/controllers/tiposCertificadosController.js` com `index`, `show`, `create`, `update`, `destroy`
 - [ ] Cada controller delega para services (não implementa lógica de negócio diretamente)
