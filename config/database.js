@@ -1,10 +1,10 @@
-require('dotenv').config();
+require('dotenv').config()
 
 function requiredEnv(varName) {
   if (!process.env[varName]) {
-    throw new Error(`Variável de ambiente obrigatória não definida: ${varName}`);
+    throw new Error(`Variável de ambiente obrigatória não definida: ${varName}`)
   }
-  return process.env[varName];
+  return process.env[varName]
 }
 
 module.exports = {
@@ -36,4 +36,4 @@ module.exports = {
     logging: false,
     ssl: true,
   },
-};
+}

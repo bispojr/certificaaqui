@@ -1,7 +1,7 @@
 {
   "name": "certifique-me",
-    "description": "Sistema de gestão e emissão de certificados digitais para eventos.",
-    "author": "Esdras L. Bispo Jr. <esdraspiano@gmail.com>",
+  "description": "Sistema de gestão e emissão de certificados digitais para eventos.",
+  "author": "Esdras L. Bispo Jr. <esdraspiano@gmail.com>",
   "version": "0.0.0",
   "private": true,
   "scripts": {

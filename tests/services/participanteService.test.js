@@ -1,5 +1,5 @@
-const participanteService = require('../../src/services/participanteService');
-const { Participante } = require('../../src/models');
+const participanteService = require('../../src/services/participanteService')
+const { Participante } = require('../../src/models')
 
 jest.mock('../../src/models', () => ({
   Participante: {
@@ -9,66 +9,68 @@ jest.mock('../../src/models', () => ({
     update: jest.fn(),
     destroy: jest.fn(),
     restore: jest.fn(),
-  }
-}));
+  },
+}))
 
 describe('participanteService', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-  });
+    jest.clearAllMocks()
+  })
 
   it('findAll chama Participante.findAll', async () => {
-    await participanteService.findAll();
-    expect(Participante.findAll).toHaveBeenCalled();
-  });
+    await participanteService.findAll()
+    expect(Participante.findAll).toHaveBeenCalled()
+  })
 
   it('findById chama Participante.findByPk', async () => {
-    await participanteService.findById(1);
-    expect(Participante.findByPk).toHaveBeenCalledWith(1);
-  });
+    await participanteService.findById(1)
+    expect(Participante.findByPk).toHaveBeenCalledWith(1)
+  })
 
   it('create chama Participante.create', async () => {
-    const data = { nomeCompleto: 'Teste' };
-    await participanteService.create(data);
-    expect(Participante.create).toHaveBeenCalledWith(data);
-  });
+    const data = { nomeCompleto: 'Teste' }
+    await participanteService.create(data)
+    expect(Participante.create).toHaveBeenCalledWith(data)
+  })
 
   it('update retorna null se não encontrar', async () => {
-    Participante.findByPk.mockResolvedValue(null);
-    const result = await participanteService.update(1, {});
-    expect(result).toBeNull();
-  });
+    Participante.findByPk.mockResolvedValue(null)
+    const result = await participanteService.update(1, {})
+    expect(result).toBeNull()
+  })
 
   it('update chama update se encontrar', async () => {
-    const mockParticipante = { update: jest.fn() };
-    Participante.findByPk.mockResolvedValue(mockParticipante);
-    await participanteService.update(1, { nomeCompleto: 'Novo' });
-    expect(mockParticipante.update).toHaveBeenCalledWith({ nomeCompleto: 'Novo' });
-  });
+    const mockParticipante = { update: jest.fn() }
+    Participante.findByPk.mockResolvedValue(mockParticipante)
+    await participanteService.update(1, { nomeCompleto: 'Novo' })
+    expect(mockParticipante.update).toHaveBeenCalledWith({
+      nomeCompleto: 'Novo',
+    })
+  })
 
   it('destroy retorna null se não encontrar', async () => {
-    Participante.findByPk.mockResolvedValue(null);
-    const result = await participanteService.destroy(1);
-    expect(result).toBeNull();
-  });
+    Participante.findByPk.mockResolvedValue(null)
+    const result = await participanteService.destroy(1)
+    expect(result).toBeNull()
+  })
 
   it('destroy chama destroy se encontrar', async () => {
-    const mockParticipante = { destroy: jest.fn() };
-    Participante.findByPk.mockResolvedValue(mockParticipante);
-    await participanteService.destroy(1);
-    expect(mockParticipante.destroy).toHaveBeenCalled();
-  });
+    const mockParticipante = { destroy: jest.fn() }
+    Participante.findByPk.mockResolvedValue(mockParticipante)
+    await participanteService.destroy(1)
+    expect(mockParticipante.destroy).toHaveBeenCalled()
+  })
 
   it('restore retorna null se não encontrar', async () => {
-    Participante.findByPk.mockResolvedValue(null);
-    const result = await participanteService.restore(1);
-    expect(result).toBeNull();
-  });
+    Participante.findByPk.mockResolvedValue(null)
+    const result = await participanteService.restore(1)
+    expect(result).toBeNull()
+  })
 
   it('restore chama restore se encontrar', async () => {
-    const mockParticipante = { restore: jest.fn() };
-    Participante.findByPk.mockResolvedValue(mockParticipante);
-    await participanteService.restore(1);
-    expect(mockParticipante.restore).toHaveBeenCalled();
-  });
-});
+    const mockParticipante = { restore: jest.fn() }
+    Participante.findByPk.mockResolvedValue(mockParticipante)
+    await participanteService.restore(1)
+    expect(mockParticipante.restore).toHaveBeenCalled()
+  })
+})
