@@ -1,4 +1,4 @@
-const tiposCertificadosService = require('../src/services/tiposCertificadosService');
+const tiposCertificadosService = require('../services/tiposCertificadosService');
 
 class TiposCertificadosController {
   async create(req, res) {

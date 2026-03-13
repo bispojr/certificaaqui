@@ -1,4 +1,4 @@
-const eventoService = require('../src/services/eventoService');
+const eventoService = require('../services/eventoService');
 
 class EventoController {
   async create(req, res) {

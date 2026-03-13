@@ -1,4 +1,4 @@
-const participanteService = require('../src/services/participanteService');
+const participanteService = require('../services/participanteService');
 
 class ParticipanteController {
   async create(req, res) {
