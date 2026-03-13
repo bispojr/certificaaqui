@@ -8,6 +8,12 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'evento_id',
         as: 'certificados',
       })
+      Evento.belongsToMany(models.Usuario, {
+        through: models.UsuarioEvento,
+        foreignKey: 'evento_id',
+        otherKey: 'usuario_id',
+        as: 'usuarios',
+      })
     }
   }
 

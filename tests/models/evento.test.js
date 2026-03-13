@@ -1,8 +1,10 @@
-const { Evento, sequelize } = require('../../src/models')
+const { Evento, Usuario, UsuarioEvento, sequelize } = require('../../src/models')
 
 describe('Evento Model', () => {
   beforeEach(async () => {
-    await sequelize.query('TRUNCATE TABLE eventos CASCADE')
+    await UsuarioEvento.destroy({ where: {}, force: true })
+    await Usuario.destroy({ where: {}, force: true })
+    await Evento.destroy({ where: {}, force: true })
   })
 
   test('deve criar evento com dados válidos', async () => {
@@ -71,5 +73,21 @@ describe('Evento Model', () => {
     const restaurado = await Evento.findByPk(evento.id)
     expect(restaurado).toBeDefined()
     expect(restaurado.deleted_at).toBeNull()
+  })
+
+  test('deve associar evento a múltiplos usuários', async () => {
+    const evento = await Evento.create({ nome: 'Congresso', codigo_base: 'EDU', ano: 2026 })
+    const usuario1 = await Usuario.create({ nome: 'Usuário 1', email: 'u1@email.com', senha: 'senha123', perfil: 'monitor' })
+    const usuario2 = await Usuario.create({ nome: 'Usuário 2', email: 'u2@email.com', senha: 'senha123', perfil: 'gestor' })
+    await evento.addUsuarios([usuario1, usuario2])
+    const usuarios = await evento.getUsuarios()
+    expect(usuarios.length).toBe(2)
+    expect(usuarios.map(u => u.nome)).toEqual(expect.arrayContaining(['Usuário 1', 'Usuário 2']))
+  })
+
+  test('deve permitir evento sem usuários', async () => {
+    const evento = await Evento.create({ nome: 'SemUsuarios', codigo_base: 'SEM', ano: 2026 })
+    const usuarios = await evento.getUsuarios()
+    expect(usuarios.length).toBe(0)
   })
 })
