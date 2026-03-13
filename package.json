@@ -28,8 +28,7 @@
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.10.1",
     "pg": "^8.20.0",
-    "sequelize": "^6.37.7",
-    "zod": "^4.3.6"
+    "sequelize": "^6.37.7"
   },
   "devDependencies": {
     "eslint": "^10.0.3",
@@ -37,6 +36,7 @@
     "prettier": "^3.8.1",
     "sequelize-cli": "^6.6.5",
     "sqlite3": "^5.1.7",
-    "supertest": "^7.2.2"
+    "supertest": "^7.2.2",
+    "zod": "^3.22.2"
   }
 }
