@@ -83,7 +83,7 @@
 - [x] Criar `src/middlewares/rbac.js` — verifica perfil em relação à rota ✅
 - [x] Criar `src/controllers/usuarioController.js` com `login`, `logout`, `me`
 - [x] Criar `src/routes/usuarios.js`
-- [ ] Proteger todas as rotas de gestão com `auth` + `rbac`
+- [x] Proteger todas as rotas de gestão com `auth` + `rbac` ✅ (13/03/2026)
 - [ ] Adicionar `jsonwebtoken` e `bcryptjs` às dependências
 
 **Estimativa:** 13 pontos  

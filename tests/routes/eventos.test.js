@@ -1,9 +1,16 @@
 const request = require('supertest');
 const app = require('../../app');
-const { Evento, sequelize } = require('../../src/models');
+const jwt = require('jsonwebtoken');
+const { Evento, Usuario, sequelize } = require('../../src/models');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'segredo-super-seguro';
+let adminToken;
 
 beforeAll(async () => {
+  await sequelize.query('TRUNCATE TABLE usuarios RESTART IDENTITY CASCADE');
   await sequelize.query('TRUNCATE TABLE eventos CASCADE');
+  const admin = await Usuario.create({ nome: 'Admin', email: 'admin_eventos@test.com', senha: 'senha123', perfil: 'admin' });
+  adminToken = jwt.sign({ id: admin.id, perfil: admin.perfil, evento_id: admin.evento_id }, JWT_SECRET);
 });
 
 describe('Rotas de Eventos', () => {
@@ -12,6 +19,7 @@ describe('Rotas de Eventos', () => {
   it('deve criar evento com sucesso', async () => {
     const res = await request(app)
       .post('/eventos')
+      .set('Authorization', `Bearer ${adminToken}`)
       .send({ nome: 'Evento Teste', codigo_base: 'ABC', ano: 2026 });
     expect(res.status).toBe(201);
     expect(res.body).toHaveProperty('id');
@@ -20,14 +28,16 @@ describe('Rotas de Eventos', () => {
 
   it('deve listar eventos', async () => {
     const res = await request(app)
-      .get('/eventos');
+      .get('/eventos')
+      .set('Authorization', `Bearer ${adminToken}`);
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });
 
   it('deve buscar evento por id', async () => {
     const res = await request(app)
-      .get(`/eventos/${eventoId}`);
+      .get(`/eventos/${eventoId}`)
+      .set('Authorization', `Bearer ${adminToken}`);
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('id', eventoId);
   });
@@ -35,6 +45,7 @@ describe('Rotas de Eventos', () => {
   it('deve atualizar evento', async () => {
     const res = await request(app)
       .put(`/eventos/${eventoId}`)
+      .set('Authorization', `Bearer ${adminToken}`)
       .send({ nome: 'Evento Atualizado' });
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('nome', 'Evento Atualizado');
@@ -42,13 +53,15 @@ describe('Rotas de Eventos', () => {
 
   it('deve deletar evento', async () => {
     const res = await request(app)
-      .delete(`/eventos/${eventoId}`);
+      .delete(`/eventos/${eventoId}`)
+      .set('Authorization', `Bearer ${adminToken}`);
     expect(res.status).toBe(204);
   });
 
   it('deve restaurar evento', async () => {
     const res = await request(app)
-      .post(`/eventos/${eventoId}/restore`);
+      .post(`/eventos/${eventoId}/restore`)
+      .set('Authorization', `Bearer ${adminToken}`);
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('deleted_at', null);
   });
@@ -56,6 +69,7 @@ describe('Rotas de Eventos', () => {
   it('deve retornar 400 ao criar evento com payload inválido', async () => {
     const res = await request(app)
       .post('/eventos')
+      .set('Authorization', `Bearer ${adminToken}`)
       .send({ nome: '' });
     expect(res.status).toBe(400);
     expect(res.body).toHaveProperty('error');
@@ -63,7 +77,8 @@ describe('Rotas de Eventos', () => {
 
   it('deve retornar 404 ao buscar evento inexistente', async () => {
     const res = await request(app)
-      .get('/eventos/99999');
+      .get('/eventos/99999')
+      .set('Authorization', `Bearer ${adminToken}`);
     expect(res.status).toBe(404);
     expect(res.body).toHaveProperty('error');
   });
