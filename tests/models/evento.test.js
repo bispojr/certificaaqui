@@ -1,8 +1,8 @@
-const { Evento } = require('../../src/models');
+const { Evento, sequelize } = require('../../src/models');
 
 describe('Evento Model', () => {
   beforeEach(async () => {
-    await Evento.destroy({ where: {}, force: true });
+    await sequelize.query('TRUNCATE TABLE eventos CASCADE');
   });
 
   test('deve criar evento com dados válidos', async () => {

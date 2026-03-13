@@ -10,6 +10,7 @@ var participantesRouter = require('./src/routes/participantes');
 var eventosRouter = require('./src/routes/eventos');
 var certificadosRouter = require('./src/routes/certificados');
 var tiposCertificadosRouter = require('./src/routes/tipos-certificados');
+var usuariosRouter = require('./src/routes/usuarios');
 
 var app = express();
 
@@ -29,6 +30,7 @@ app.use('/participantes', participantesRouter);
 app.use('/eventos', eventosRouter);
 app.use('/certificados', certificadosRouter);
 app.use('/tipos-certificados', tiposCertificadosRouter);
+app.use('/usuarios', usuariosRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

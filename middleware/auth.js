@@ -4,10 +4,11 @@ const { Usuario } = require('../src/models');
 const secret = process.env.JWT_SECRET || 'segredo-super-seguro';
 
 module.exports = async function auth(req, res, next) {
-  const token = req.headers['authorization']?.replace('Bearer ', '');
-  if (!token) {
+  const authHeader = req.headers['authorization'];
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Token não fornecido' });
   }
+  const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, secret);
     const usuario = await Usuario.findByPk(decoded.id);

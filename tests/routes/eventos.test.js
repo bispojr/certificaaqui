@@ -1,9 +1,9 @@
 const request = require('supertest');
 const app = require('../../app');
-const { Evento } = require('../../src/models');
+const { Evento, sequelize } = require('../../src/models');
 
 beforeAll(async () => {
-  await Evento.destroy({ where: {}, force: true });
+  await sequelize.query('TRUNCATE TABLE eventos CASCADE');
 });
 
 describe('Rotas de Eventos', () => {

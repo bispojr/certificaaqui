@@ -1,9 +1,9 @@
 const request = require('supertest');
 const app = require('../../app');
-const { TiposCertificados } = require('../../src/models');
+const { TiposCertificados, sequelize } = require('../../src/models');
 
 beforeAll(async () => {
-  await TiposCertificados.destroy({ where: {}, force: true });
+  await sequelize.query('TRUNCATE TABLE tipos_certificados CASCADE');
 });
 
 describe('Rotas de TiposCertificados', () => {

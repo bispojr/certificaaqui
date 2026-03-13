@@ -1,9 +1,9 @@
 const request = require('supertest');
 const app = require('../../app');
-const { Participante } = require('../../src/models');
+const { Participante, sequelize } = require('../../src/models');
 
 beforeAll(async () => {
-  await Participante.destroy({ where: {}, force: true });
+  await sequelize.query('TRUNCATE TABLE participantes CASCADE');
 });
 
 describe('Rotas de Participantes', () => {

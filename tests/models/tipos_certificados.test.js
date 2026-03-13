@@ -1,8 +1,9 @@
-const { TiposCertificados } = require('../../src/models');
+const { TiposCertificados, sequelize } = require('../../src/models');
 
 describe('TiposCertificados Model', () => {
   beforeEach(async () => {
-    await TiposCertificados.destroy({ where: {}, force: true });
+    // Limpa tabela antes de cada teste (cascade remove certificados dependentes)
+    await sequelize.query('TRUNCATE TABLE tipos_certificados CASCADE');
   });
 
 

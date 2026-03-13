@@ -1,9 +1,9 @@
-const { Participante } = require('../../src/models');
+const { Participante, sequelize } = require('../../src/models');
 
 describe('Participante Model', () => {
   beforeEach(async () => {
-    // Limpa tabela antes de cada teste
-    await Participante.destroy({ where: {}, force: true });
+    // Limpa tabela antes de cada teste (cascade remove certificados dependentes)
+    await sequelize.query('TRUNCATE TABLE participantes CASCADE');
   });
 
   test('deve criar participante com dados válidos', async () => {
