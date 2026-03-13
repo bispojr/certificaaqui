@@ -19,6 +19,7 @@ module.exports = {
       displayName: 'migrations',
       testEnvironment: 'node',
       testMatch: ['<rootDir>/tests/migrations/**/*.test.js'],
+      setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
     },
     {
       displayName: 'routes',
