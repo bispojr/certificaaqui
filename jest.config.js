@@ -37,6 +37,11 @@ module.exports = {
       testMatch: ['<rootDir>/tests/controllers/**/*.test.js'],
       setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
     },
+    {
+      displayName: 'validators',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/tests/validators/**/*.test.js'],
+    },
   ],
   collectCoverageFrom: [
     'models/**/*.js',
