@@ -128,9 +128,9 @@
 **Por que:** `fs.readdirSync` impede análise estática, pode carregar arquivos inesperados e dificulta refatoração.
 
 **Critérios de aceite:**
-- [ ] Modelos registrados explicitamente em `models/index.js`
-- [ ] Nenhum uso de `fs.readdirSync` no loader
-- [ ] Todos os testes existentes continuam passando
+- [x] Modelos registrados explicitamente em `models/index.js` ✅ (13/03/2026)
+- [x] Nenhum uso de `fs.readdirSync` no loader ✅ (13/03/2026)
+- [x] Todos os testes existentes continuam passando ✅ (13/03/2026)
 
 **Estimativa:** 1 ponto  
 **Dependências:** nenhuma

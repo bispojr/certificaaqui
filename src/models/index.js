@@ -1,6 +1,5 @@
 'use strict';
 
-const fs = require('fs');
 const path = require('path');
 const Sequelize = require('sequelize');
 const process = require('process');
@@ -16,20 +15,18 @@ if (config.use_env_variable) {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 
-fs
-  .readdirSync(__dirname)
-  .filter(file => {
-    return (
-      file.indexOf('.') !== 0 &&
-      file !== basename &&
-      file.slice(-3) === '.js' &&
-      file.indexOf('.test.js') === -1
-    );
-  })
-  .forEach(file => {
-    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
-    db[model.name] = model;
-  });
+
+const certificado = require('./certificado')(sequelize, Sequelize.DataTypes);
+const evento = require('./evento')(sequelize, Sequelize.DataTypes);
+const participante = require('./participante')(sequelize, Sequelize.DataTypes);
+const tipos_certificados = require('./tipos_certificados')(sequelize, Sequelize.DataTypes);
+const usuario = require('./usuario')(sequelize, Sequelize.DataTypes);
+
+db.Certificado = certificado;
+db.Evento = evento;
+db.Participante = participante;
+db.TiposCertificados = tipos_certificados;
+db.Usuario = usuario;
 
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
