@@ -3,7 +3,7 @@
 const path = require('path')
 const Sequelize = require('sequelize')
 const process = require('process')
-// ...existing code...
+
 const env = process.env.NODE_ENV || 'development'
 const config = require(
   path.join(__dirname, '..', '..', 'config', 'database.js'),
@@ -30,12 +30,14 @@ const tipos_certificados = require('./tipos_certificados')(
   Sequelize.DataTypes,
 )
 const usuario = require('./usuario')(sequelize, Sequelize.DataTypes)
+const usuario_eventos = require('./usuario_eventos')(sequelize, Sequelize.DataTypes)
 
 db.Certificado = certificado
 db.Evento = evento
 db.Participante = participante
 db.TiposCertificados = tipos_certificados
 db.Usuario = usuario
+db.UsuarioEvento = usuario_eventos
 
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {

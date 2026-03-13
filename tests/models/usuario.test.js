@@ -1,9 +1,11 @@
-const { Usuario, sequelize } = require('../../src/models')
+const { Usuario, Evento, UsuarioEvento, sequelize } = require('../../src/models')
 const bcrypt = require('bcryptjs')
 
 describe('Usuario Model', () => {
   beforeEach(async () => {
+    await UsuarioEvento.destroy({ where: {}, force: true })
     await Usuario.destroy({ where: {}, force: true })
+    await Evento.destroy({ where: {}, force: true })
   })
 
   test('deve criar usuario com dados válidos e hash de senha', async () => {
@@ -121,5 +123,31 @@ describe('Usuario Model', () => {
     const restored = await Usuario.findByPk(usuario.id)
     expect(restored).not.toBeNull()
     expect(restored.deleted_at).toBeNull()
+  })
+
+  test('deve associar usuario a múltiplos eventos', async () => {
+    const usuario = await Usuario.create({
+      nome: 'MultiEvento',
+      email: 'multi@evento.com',
+      senha: 'senha123',
+      perfil: 'monitor',
+    })
+    const evento1 = await Evento.create({ nome: 'Evento 1', ano: 2026, codigo_base: 'ABC' })
+    const evento2 = await Evento.create({ nome: 'Evento 2', ano: 2026, codigo_base: 'DEF' })
+    await usuario.addEventos([evento1, evento2])
+    const eventos = await usuario.getEventos()
+    expect(eventos.length).toBe(2)
+    expect(eventos.map(e => e.nome)).toEqual(expect.arrayContaining(['Evento 1', 'Evento 2']))
+  })
+
+  test('deve permitir usuario sem eventos', async () => {
+    const usuario = await Usuario.create({
+      nome: 'SemEvento',
+      email: 'sem@evento.com',
+      senha: 'senha123',
+      perfil: 'gestor',
+    })
+    const eventos = await usuario.getEventos()
+    expect(eventos.length).toBe(0)
   })
 })

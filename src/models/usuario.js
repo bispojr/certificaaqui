@@ -5,9 +5,11 @@ const bcrypt = require('bcryptjs')
 module.exports = (sequelize, DataTypes) => {
   class Usuario extends Model {
     static associate(models) {
-      Usuario.belongsTo(models.Evento, {
-        foreignKey: 'evento_id',
-        as: 'evento',
+      Usuario.belongsToMany(models.Evento, {
+        through: models.UsuarioEvento,
+        foreignKey: 'usuario_id',
+        otherKey: 'evento_id',
+        as: 'eventos',
       })
     }
   }
@@ -33,10 +35,6 @@ module.exports = (sequelize, DataTypes) => {
       perfil: {
         type: DataTypes.ENUM('admin', 'gestor', 'monitor'),
         allowNull: false,
-      },
-      evento_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
       },
     },
     {
