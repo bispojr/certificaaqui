@@ -5,6 +5,11 @@ module.exports = {
   forceExit: true,
   projects: [
     {
+      displayName: 'middleware',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/tests/middleware/**/*.test.js'],
+    },
+    {
       displayName: 'models',
       testEnvironment: 'node',
       testMatch: ['<rootDir>/tests/models/**/*.test.js'],
