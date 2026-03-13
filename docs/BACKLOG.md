@@ -82,7 +82,7 @@
   - [x] Criar `src/middlewares/auth.js` — valida JWT e popula `req.user` ✅
 - [x] Criar `src/middlewares/rbac.js` — verifica perfil em relação à rota ✅
 - [x] Criar `src/controllers/usuarioController.js` com `login`, `logout`, `me`
-- [ ] Criar `src/routes/usuarios.js`
+- [x] Criar `src/routes/usuarios.js`
 - [ ] Proteger todas as rotas de gestão com `auth` + `rbac`
 - [ ] Adicionar `jsonwebtoken` e `bcryptjs` às dependências
 
