@@ -1,8 +1,13 @@
+
 var createError = require('http-errors')
 var express = require('express')
 var path = require('path')
 var cookieParser = require('cookie-parser')
 var logger = require('morgan')
+
+// Swagger/OpenAPI
+const swaggerJsdoc = require('swagger-jsdoc')
+const swaggerUi = require('swagger-ui-express')
 
 var indexRouter = require('./src/routes/index')
 // var usersRouter = require('./routes/users');
@@ -12,6 +17,7 @@ var certificadosRouter = require('./src/routes/certificados')
 var tiposCertificadosRouter = require('./src/routes/tipos-certificados')
 var usuariosRouter = require('./src/routes/usuarios')
 var healthRouter = require('./src/routes/health')
+
 
 var app = express()
 
@@ -24,6 +30,31 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
+
+
+// Swagger config
+const swaggerDefinition = {
+  openapi: '3.0.0',
+  info: {
+    title: 'Certifique-me API',
+    version: '1.0.0',
+    description: 'Documentação da API Certifique-me',
+  },
+  servers: [
+    {
+      url: 'http://localhost:3000',
+      description: 'Servidor local',
+    },
+  ],
+}
+
+const options = {
+  swaggerDefinition,
+  apis: ['./src/routes/*.js'], // Anotações nas rotas
+}
+
+const swaggerSpec = swaggerJsdoc(options)
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 app.use('/', indexRouter)
 // app.use('/users', usersRouter);

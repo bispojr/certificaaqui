@@ -225,11 +225,12 @@
 
 **Por que:** Validações do Sequelize ocorrem na camada de banco — payloads malformados devem ser rejeitados antes de chegar ao controller (defesa em profundidade).
 
+
 **Critérios de aceite:**
 
-- [ ] Schemas Zod criados em `src/validators/` para cada recurso
-- [ ] Middleware de validação aplicado nas rotas `POST` e `PUT`
-- [ ] Erros de validação retornam `400` com lista de campos inválidos
+- [x] Schemas Zod criados em `src/validators/` para cada recurso ✅ (14/03/2026)
+- [x] Middleware de validação aplicado nas rotas `POST` e `PUT` ✅ (14/03/2026)
+- [x] Erros de validação retornam `400` com lista de campos inválidos ✅ (14/03/2026)
 
 **Estimativa:** 3 pontos  
 **Dependências:** TASK-07
