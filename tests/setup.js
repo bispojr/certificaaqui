@@ -1,3 +1,7 @@
+// Garante que JWT_SECRET está definido para todos os testes
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'jwt_secret_teste'
+}
 const { sequelize } = require('../src/models')
 const { execSync } = require('child_process')
 

@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken')
 const { Usuario } = require('../src/models')
 
-const secret = process.env.JWT_SECRET || 'segredo-super-seguro'
+const secret = process.env.JWT_SECRET
+if (!secret) throw new Error('JWT_SECRET não configurado')
 
 module.exports = async function auth(req, res, next) {
   const authHeader = req.headers['authorization']

@@ -140,7 +140,8 @@
       perfil: 'admin',
     })
     const jwt = require('jsonwebtoken')
-    const JWT_SECRET = process.env.JWT_SECRET || 'segredo-super-seguro'
+    const JWT_SECRET = process.env.JWT_SECRET
+    if (!JWT_SECRET) throw new Error('JWT_SECRET não configurado')
     const token = jwt.sign(
       { id: admin.id, perfil: admin.perfil },
       JWT_SECRET,
@@ -166,7 +167,8 @@ const app = require('../../app')
 const { Usuario, sequelize } = require('../../src/models')
 const jwt = require('jsonwebtoken')
 
-const JWT_SECRET = process.env.JWT_SECRET || 'segredo-super-seguro'
+const JWT_SECRET = process.env.JWT_SECRET
+if (!JWT_SECRET) throw new Error('JWT_SECRET não configurado')
 global.adminToken = null
 
 describe('Rotas de Usuários', () => {

@@ -299,15 +299,16 @@ Sprint 4 (refinamento)
 
 ---
 
+
 ### TASK-17 🔴 Corrigir `JWT_SECRET` inconsistente entre `middleware/auth.js` e `usuarioController.js`
 
 **Por que:** `middleware/auth.js` usa fallback `'segredo-super-seguro'`; `usuarioController.js` usa fallback `'secret'`. Em ambientes sem `.env`, login retorna token mas toda requisição autenticada falha com 401.
 
 **Critérios de aceite:**
 
-- [ ] Ambos os arquivos usam `process.env.JWT_SECRET` sem fallback
-- [ ] Lançar erro explícito se `JWT_SECRET` não estiver configurado
-- [ ] Teste de integração de autenticação passa sem `.env` com erro claro
+- [x] Ambos os arquivos usam `process.env.JWT_SECRET` sem fallback
+- [x] Lançar erro explícito se `JWT_SECRET` não estiver configurado
+- [x] Teste de integração de autenticação passa sem `.env` com erro claro — concluído em 2026-03-14 19:18 (BRT)
 
 **Estimativa:** 0.5 ponto  
 **Dependências:** TASK-02

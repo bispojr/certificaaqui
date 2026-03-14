@@ -1,3 +1,7 @@
+// Garante JWT_SECRET antes de importar o middleware
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'jwt_secret_teste'
+}
 const request = require('supertest')
 const express = require('express')
 const jwt = require('jsonwebtoken')
@@ -5,7 +9,8 @@ const { Usuario, sequelize } = require('../../src/models')
 const migrationUsuarios = require('../../migrations/20260312180000-create-usuarios.js')
 const auth = require('../../middleware/auth')
 
-const secret = process.env.JWT_SECRET || 'segredo-super-seguro'
+const secret = process.env.JWT_SECRET
+if (!secret) throw new Error('JWT_SECRET não configurado')
 
 describe('Middleware auth', () => {
   let app

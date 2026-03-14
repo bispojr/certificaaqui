@@ -6,7 +6,8 @@ const participanteService = require('../../src/services/participanteService')
 
 jest.mock('../../src/services/participanteService')
 
-const JWT_SECRET = process.env.JWT_SECRET || 'segredo-super-seguro'
+const JWT_SECRET = process.env.JWT_SECRET
+if (!JWT_SECRET) throw new Error('JWT_SECRET não configurado')
 let adminToken
 
 beforeAll(async () => {
