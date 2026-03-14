@@ -5,6 +5,24 @@ const bcrypt = require('bcryptjs')
 const JWT_SECRET = process.env.JWT_SECRET || 'secret'
 
 module.exports = {
+  async updateEventos(req, res) {
+    try {
+      const usuario = await Usuario.findByPk(req.params.id)
+      if (!usuario) return res.status(404).json({ error: 'Usuário não encontrado' })
+      const { eventos } = req.body
+      if (!Array.isArray(eventos)) return res.status(400).json({ error: 'Eventos deve ser um array' })
+      // Checa duplicidade
+      if (new Set(eventos).size !== eventos.length) return res.status(400).json({ error: 'Eventos duplicados não são permitidos' })
+      // Checa existência dos eventos
+      const eventosExistentes = await usuario.sequelize.models.Evento.findAll({ where: { id: eventos } })
+      if (eventosExistentes.length !== eventos.length) return res.status(400).json({ error: 'Um ou mais eventos não existem' })
+      await usuario.setEventos(eventos)
+      const usuarioComEventos = await Usuario.findByPk(usuario.id, { include: 'eventos' })
+      return res.status(200).json(usuarioComEventos)
+    } catch (error) {
+      return res.status(400).json({ error: error.message })
+    }
+  },
   async login(req, res) {
     const { email, senha } = req.body
     const usuario = await Usuario.findOne({ where: { email } })
@@ -41,6 +59,17 @@ module.exports = {
   async create(req, res) {
     try {
       const { nome, email, senha, perfil, eventos } = req.body
+      if (Array.isArray(eventos)) {
+        // Checa duplicidade
+        if (new Set(eventos).size !== eventos.length) {
+          return res.status(400).json({ error: 'Eventos duplicados não são permitidos' })
+        }
+        // Checa existência dos eventos
+        const eventosExistentes = await Usuario.sequelize.models.Evento.findAll({ where: { id: eventos } })
+        if (eventosExistentes.length !== eventos.length) {
+          return res.status(400).json({ error: 'Um ou mais eventos não existem' })
+        }
+      }
       const usuario = await Usuario.create({ nome, email, senha, perfil })
       if (Array.isArray(eventos) && eventos.length > 0) {
         await usuario.setEventos(eventos)

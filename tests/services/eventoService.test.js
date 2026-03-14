@@ -10,6 +10,9 @@ jest.mock('../../src/models', () => ({
     destroy: jest.fn(),
     restore: jest.fn(),
   },
+  UsuarioEvento: {
+    update: jest.fn(),
+  },
 }))
 
 describe('eventoService', () => {
