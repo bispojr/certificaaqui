@@ -237,13 +237,14 @@
 
 ---
 
+
 ### TASK-15 🟢 Documentar API com Swagger/OpenAPI
 
 **Critérios de aceite:**
 
-- [ ] `swagger-jsdoc` e `swagger-ui-express` instalados
-- [ ] Anotações JSDoc `@swagger` nas rotas
-- [ ] Interface disponível em `GET /api-docs`
+- [x] `swagger-jsdoc` e `swagger-ui-express` instalados ✅ (2026-03-14 12:24 (BRT))
+- [x] Anotações JSDoc `@swagger` nas rotas ✅ (2026-03-14 12:24 (BRT))
+- [x] Interface disponível em `GET /api-docs` ✅ (2026-03-14 12:24 (BRT))
 
 **Estimativa:** 5 pontos  
 **Dependências:** TASK-07

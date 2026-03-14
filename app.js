@@ -33,6 +33,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 
 // Swagger config
+
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
@@ -46,6 +47,68 @@ const swaggerDefinition = {
       description: 'Servidor local',
     },
   ],
+  components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+    },
+    schemas: {
+      Participante: {
+        type: 'object',
+        properties: {
+          nomeCompleto: { type: 'string', minLength: 3 },
+          email: { type: 'string', format: 'email' },
+          instituicao: { type: 'string', minLength: 2 },
+        },
+        required: ['nomeCompleto', 'email'],
+      },
+      Evento: {
+        type: 'object',
+        properties: {
+          nome: { type: 'string', minLength: 3 },
+          ano: { type: 'integer', minimum: 2000 },
+          codigo_base: { type: 'string', pattern: '^[A-Za-z]{3}$' },
+        },
+        required: ['nome', 'ano', 'codigo_base'],
+      },
+      Certificado: {
+        type: 'object',
+        properties: {
+          nome: { type: 'string', minLength: 3 },
+          status: { type: 'string', enum: ['emitido', 'pendente', 'cancelado'] },
+          participante_id: { type: 'integer' },
+          evento_id: { type: 'integer' },
+          tipo_certificado_id: { type: 'integer' },
+        },
+        required: ['nome', 'status', 'participante_id', 'evento_id', 'tipo_certificado_id'],
+      },
+      TipoCertificado: {
+        type: 'object',
+        properties: {
+          codigo: { type: 'string', pattern: '^[A-Za-z]{2}$' },
+          descricao: { type: 'string', minLength: 1 },
+          campo_destaque: { type: 'string', minLength: 1 },
+          texto_base: { type: 'string', minLength: 1 },
+          dados_dinamicos: { type: 'object', additionalProperties: true },
+        },
+        required: ['codigo', 'descricao', 'campo_destaque', 'texto_base'],
+      },
+      Usuario: {
+        type: 'object',
+        properties: {
+          nome: { type: 'string', minLength: 3 },
+          email: { type: 'string', format: 'email' },
+          senha: { type: 'string', minLength: 6 },
+          perfil: { type: 'string', enum: ['admin', 'gestor', 'monitor'] },
+          eventos: { type: 'array', items: { type: 'integer' } },
+        },
+        required: ['nome', 'email', 'senha', 'perfil'],
+      },
+    },
+  },
 }
 
 const options = {

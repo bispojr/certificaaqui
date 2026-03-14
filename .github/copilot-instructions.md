@@ -14,6 +14,62 @@ Always prioritize these instructions over generic coding suggestions.
 
 ---
 
+# Time and Date Rules
+
+Whenever adding timestamps or completion dates (for example when marking tasks as completed in `docs/backlog.md`), always use the **real current time** in the Brasília time zone.
+
+Timezone specification:
+
+- Timezone name: Brasília Standard Time
+- IANA identifier: America/Sao_Paulo
+- UTC Offset: UTC-03:00
+
+## How to obtain the timestamp
+
+The timestamp MUST reflect the **actual moment the task was completed**.
+
+Before writing a timestamp, always obtain the current date and time from the **operating system**.
+
+Never:
+
+- invent timestamps
+- estimate timestamps
+- reuse timestamps from examples
+- assume the current time
+
+Always retrieve the time from the system using a command such as:
+
+```
+date
+```
+
+or an equivalent command that returns the current system time.
+
+## Formatting rule
+
+Use the following format when updating the backlog:
+
+```
+YYYY-MM-DD HH:mm (BRT)
+```
+
+Example:
+
+```
+- [x] Implement authentication middleware — completed on 2026-03-14 10:42 (BRT)
+```
+
+## Important rule
+
+If the real system time cannot be obtained, **do not add a timestamp** until the actual time can be retrieved.
+
+Additionally:
+
+- Every backlog item marked as `[x]` **must include a timestamp**.
+- Do not mark backlog items as completed without recording the completion time using the format above.
+
+---
+
 # Project Source of Truth
 
 Before making any change, ALWAYS read and consider:
@@ -74,7 +130,7 @@ If the implemented work corresponds to a backlog item:
 
 
 Example:
-- [x] Implementar feature X ✅ (13/03/2026, 14:00)
+- [x] Implementar feature X ✅ (13/03/2026, 14:00, BRT)
 
 
 Do not mark items as completed unless the implementation is actually finished.
