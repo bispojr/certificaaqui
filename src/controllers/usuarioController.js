@@ -18,8 +18,8 @@ module.exports = {
       const eventosExistentes = await usuario.sequelize.models.Evento.findAll({ where: { id: eventos } })
       if (eventosExistentes.length !== eventos.length) return res.status(400).json({ error: 'Um ou mais eventos não existem' })
       await usuario.setEventos(eventos)
-      const usuarioComEventos = await Usuario.findByPk(usuario.id, { include: 'eventos' })
-      return res.status(200).json(usuarioComEventos)
+      await usuario.reload({ include: 'eventos' })
+      return res.status(200).json(usuario)
     } catch (error) {
       return res.status(400).json({ error: error.message })
     }
@@ -75,8 +75,8 @@ module.exports = {
       if (Array.isArray(eventos) && eventos.length > 0) {
         await usuario.setEventos(eventos)
       }
-      const usuarioComEventos = await Usuario.findByPk(usuario.id, { include: 'eventos' })
-      return res.status(201).json(usuarioComEventos)
+      await usuario.reload({ include: 'eventos' })
+      return res.status(201).json(usuario)
     } catch (error) {
       return res.status(400).json({ error: error.message })
     }

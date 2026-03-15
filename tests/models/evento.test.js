@@ -2,10 +2,10 @@ const { Evento, Usuario, UsuarioEvento, sequelize } = require('../../src/models'
 
 describe('Evento Model', () => {
   beforeEach(async () => {
-    // Ordem correta: primeiro as tabelas de associação, depois dependentes, depois principais
+    // Ordem correta: primeiro as tabelas de associação, depois Usuario, depois Evento
     await UsuarioEvento.destroy({ where: {}, force: true })
-    await Evento.destroy({ where: {}, force: true })
     await Usuario.destroy({ where: {}, force: true })
+    await Evento.destroy({ where: {}, force: true })
   })
 
   test('deve criar evento com dados válidos', async () => {

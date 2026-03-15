@@ -5,11 +5,22 @@ const scopedEvento = require('../../src/middlewares/scopedEvento')
 const app = express()
 app.use(express.json())
 
+// Helper para simular req.usuario com método getEventos()
+// IMPORTANTE: funções não sobrevivem à serialização JSON, por isso o mock é
+// injetado diretamente no req pelo middleware de teste, não via req.body.
+function usuarioComEventos(perfil, eventosIds = []) {
+  return {
+    perfil,
+    getEventos: async () => eventosIds.map(id => ({ id })),
+  }
+}
+
+let mockUsuario = null
+
 app.post(
   '/evento/:eventoId/test',
   (req, res, next) => {
-    // Simula usuário autenticado
-    req.usuario = req.body.usuario
+    req.usuario = mockUsuario
     next()
   },
   scopedEvento,
@@ -20,42 +31,44 @@ app.post(
 
 describe('Middleware scopedEvento', () => {
   it('permite admin acessar qualquer evento', async () => {
-    const res = await request(app)
-      .post('/evento/42/test')
-      .send({ usuario: { perfil: 'admin' } })
+    mockUsuario = usuarioComEventos('admin')
+    const res = await request(app).post('/evento/42/test').send()
     expect(res.status).toBe(200)
     expect(res.body.acesso).toBe('permitido')
   })
 
   it('permite gestor acessar evento vinculado', async () => {
-    const res = await request(app)
-      .post('/evento/10/test')
-      .send({ usuario: { perfil: 'gestor', evento_id: '10' } })
+    mockUsuario = usuarioComEventos('gestor', [10, 20])
+    const res = await request(app).post('/evento/10/test').send()
     expect(res.status).toBe(200)
     expect(res.body.acesso).toBe('permitido')
   })
 
   it('bloqueia gestor para evento não vinculado', async () => {
-    const res = await request(app)
-      .post('/evento/99/test')
-      .send({ usuario: { perfil: 'gestor', evento_id: '10' } })
+    mockUsuario = usuarioComEventos('gestor', [10, 20])
+    const res = await request(app).post('/evento/99/test').send()
     expect(res.status).toBe(403)
     expect(res.body.error).toMatch(/restrito/)
   })
 
   it('permite monitor acessar evento vinculado', async () => {
-    const res = await request(app)
-      .post('/evento/20/test')
-      .send({ usuario: { perfil: 'monitor', evento_id: '20' } })
+    mockUsuario = usuarioComEventos('monitor', [20])
+    const res = await request(app).post('/evento/20/test').send()
     expect(res.status).toBe(200)
     expect(res.body.acesso).toBe('permitido')
   })
 
   it('bloqueia monitor para evento não vinculado', async () => {
-    const res = await request(app)
-      .post('/evento/21/test')
-      .send({ usuario: { perfil: 'monitor', evento_id: '20' } })
+    mockUsuario = usuarioComEventos('monitor', [20])
+    const res = await request(app).post('/evento/21/test').send()
     expect(res.status).toBe(403)
     expect(res.body.error).toMatch(/restrito/)
+  })
+
+  it('bloqueia gestor/monitor sem eventos vinculados', async () => {
+    mockUsuario = usuarioComEventos('gestor', [])
+    const res = await request(app).post('/evento/1/test').send()
+    expect(res.status).toBe(403)
+    expect(res.body.error).toMatch(/nenhum evento/)
   })
 })

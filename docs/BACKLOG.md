@@ -315,17 +315,18 @@ Sprint 4 (refinamento)
 
 ---
 
-### TASK-18 🔴 Corrigir `scopedEvento.js` para modelo N:N
+
+### TASK-18 🔴 Corrigir `scopedEvento.js` para modelo N:N — concluído em 2026-03-14 22:14 (BRT)
 
 **Por que:** `scopedEvento.js` usa `req.usuario.evento_id` (campo removido na migração `20260313195000-remove-evento_id-from-usuarios.js`). Gestores e monitores recebem 403 em todas as operações de alteração.
 
 **Critérios de aceite:**
 
-- [ ] `scopedEvento.js` carrega os eventos do usuário via `req.usuario.getEventos()`
-- [ ] Gestor/monitor com um evento vinculado consegue criar/editar certificados desse evento
-- [ ] Gestor/monitor sem evento vinculado recebe 403 com mensagem clara
-- [ ] Admin passa pelo middleware sem restrição
-- [ ] Testes de `scopedEvento` atualizados para o modelo N:N
+- [x] `scopedEvento.js` carrega os eventos do usuário via `req.usuario.getEventos()`
+- [x] Gestor/monitor com um evento vinculado consegue criar/editar certificados desse evento
+- [x] Gestor/monitor sem evento vinculado recebe 403 com mensagem clara
+- [x] Admin passa pelo middleware sem restrição
+- [x] Testes de `scopedEvento` atualizados para o modelo N:N
 
 **Estimativa:** 3 pontos  
 **Dependências:** TASK-05

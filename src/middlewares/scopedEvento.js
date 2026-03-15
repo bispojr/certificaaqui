@@ -1,31 +1,35 @@
 module.exports = async function scopedEvento(req, res, next) {
   if (req.usuario.perfil === 'admin') return next()
 
-  // Para rotas de listagem (GET sem id), gestor/monitor só pode acessar participantes do seu evento
+  // Carrega eventos vinculados ao usuário (N:N)
+  if (typeof req.usuario.getEventos !== 'function') {
+    return res.status(500).json({ error: 'Usuário sem método getEventos (modelo N:N)' })
+  }
+  const eventos = await req.usuario.getEventos()
+  const eventosIds = eventos.map(e => Number(e.id))
+
+  // Se não houver eventos vinculados, bloqueia
+  if (!eventosIds.length) {
+    return res.status(403).json({ error: 'Acesso restrito: nenhum evento vinculado.' })
+  }
+
+  // Para rotas de listagem (GET sem id), força filtro pelo(s) evento(s) do usuário
   if (req.method === 'GET' && !req.params.id) {
-    if (!req.usuario.evento_id) {
-      return res
-        .status(403)
-        .json({ error: 'Acesso restrito ao evento vinculado.' })
+    if (req.query.evento_id) {
+      if (!eventosIds.includes(Number(req.query.evento_id))) {
+        return res.status(403).json({ error: 'Acesso restrito ao evento vinculado.' })
+      }
+    } else {
+      req.query.evento_id = eventosIds.length === 1 ? eventosIds[0] : eventosIds
     }
-    // Se o token é de outro evento, bloqueia
-    if (
-      req.query.evento_id &&
-      Number(req.query.evento_id) !== req.usuario.evento_id
-    ) {
-      return res
-        .status(403)
-        .json({ error: 'Acesso restrito ao evento vinculado.' })
-    }
-    req.query.evento_id = req.usuario.evento_id
     return next()
   }
 
-  // Para rotas de consulta/alteração, buscar o evento vinculado
-  const eventoId =
-    req.body.evento_id || req.params.eventoId || req.usuario.evento_id
-  if (eventoId && req.usuario.evento_id === eventoId) {
+  // Para rotas de consulta/alteração, buscar o evento alvo
+  const eventoId = req.body.evento_id || req.params.eventoId || req.params.id
+  if (eventoId && eventosIds.includes(Number(eventoId))) {
     return next()
   }
+
   return res.status(403).json({ error: 'Acesso restrito ao evento vinculado.' })
 }
