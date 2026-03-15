@@ -282,7 +282,6 @@ Sprint 4 (refinamento)
 
 > Gerado com base na auditoria arquitetural comparativa de 14/03/2026.
 
-
 ### TASK-16 🔴 Corrigir `templateService.js` — formato de interpolação — concluído em 2026-03-14 22:32 (BRT)
 
 **Por que:** O `templateService.js` usa `{{chave}}` mas a especificação (FR-13) e o repositório de referência usam `${campo}`. Nenhuma interpolação de certificado funciona atualmente.
@@ -330,17 +329,18 @@ Sprint 4 (refinamento)
 
 ---
 
-### TASK-19 🔴 Implementar rotas públicas de consulta e validação (FR-23, FR-24)
+
+### TASK-19 🔴 Implementar rotas públicas de consulta e validação (FR-23, FR-24) — concluído em 2026-03-15 15:15 (BRT)
 
 **Por que:** As rotas públicas são o principal ponto de contato do participante com o sistema. Estão especificadas (FR-23, FR-24) mas não implementadas.
 
 **Subtarefas:**
 
-- [ ] Criar `src/routes/public.js` com rotas sem autenticação
-- [ ] `GET /public/certificados?email=...` — retorna certificados do participante por email
-- [ ] `GET /public/validar/:codigo` — valida autenticidade de um certificado por código
-- [ ] Registrar rotas em `app.js`
-- [ ] Testes cobrindo busca por email e validação por código (válido e inválido)
+- [x] Criar `src/routes/public.js` com rotas sem autenticação
+- [x] `GET /public/certificados?email=...` — retorna certificados do participante por email
+- [x] `GET /public/validar/:codigo` — valida autenticidade de um certificado por código
+- [x] Registrar rotas em `app.js`
+- [x] Testes cobrindo busca por email e validação por código (válido e inválido)
 
 **Estimativa:** 5 pontos  
 **Dependências:** TASK-07

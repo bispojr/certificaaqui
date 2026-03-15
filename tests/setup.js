@@ -16,8 +16,6 @@ afterAll(async () => {
   await sequelize.close()
 })
 
-// Limpa dados entre testes se necessário
 beforeEach(async () => {
-  // Cada teste começa com banco limpo
-  // Adicionar limpeza específica se necessário
+  // Limpeza específica por teste quando necessário
 })
