@@ -26,10 +26,6 @@ module.exports = {
         type: Sequelize.ENUM('admin', 'gestor', 'monitor'),
         allowNull: false,
       },
-      evento_id: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
-      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,

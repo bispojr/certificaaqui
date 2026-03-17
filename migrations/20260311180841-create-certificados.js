@@ -19,6 +19,11 @@ module.exports = {
         allowNull: false,
         defaultValue: 'emitido',
       },
+      codigo: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        unique: true,
+      },
       valores_dinamicos: {
         type: Sequelize.JSONB,
         allowNull: true,

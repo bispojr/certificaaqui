@@ -74,6 +74,8 @@ FR-20: O campo `valores_dinamicos` (JSONB) armazena os valores dos campos defini
 FR-21: Cada certificado deve estar associado a um participante (`participante_id`), um evento (`evento_id`) e um tipo de certificado (`tipo_certificado_id`).  
 FR-22: A remoção de certificados deve ser lógica (soft delete); os registros devem poder ser restaurados.
 
+FR-43: A geração do documento PDF do certificado só deve ser permitida se o certificado possuir um valor válido no campo `codigo`. Certificados sem código devem ser rejeitados na geração do documento.
+
 ## Consulta e Validação Pública de Certificados
 
 FR-23: O sistema deve disponibilizar uma rota pública para visualizar ou validar um certificado específico pelo seu ID (`/certificado/:id`).  

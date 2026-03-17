@@ -20,7 +20,6 @@ describe('Migration: usuarios', () => {
     expect(table).toHaveProperty('email')
     expect(table).toHaveProperty('senha')
     expect(table).toHaveProperty('perfil')
-    expect(table).toHaveProperty('evento_id')
     expect(table).toHaveProperty('created_at')
     expect(table).toHaveProperty('updated_at')
     expect(table).toHaveProperty('deleted_at')

@@ -329,7 +329,6 @@ Sprint 4 (refinamento)
 
 ---
 
-
 ### TASK-19 🔴 Implementar rotas públicas de consulta e validação (FR-23, FR-24) — concluído em 2026-03-15 15:15 (BRT)
 
 **Por que:** As rotas públicas são o principal ponto de contato do participante com o sistema. Estão especificadas (FR-23, FR-24) mas não implementadas.
@@ -353,7 +352,6 @@ Sprint 4 (refinamento)
 
 ---
 
-
 **[TASK-020-A] Instalar dependência pdfkit** — concluído em 2026-03-16 21:20 (BRT)
 
 - Arquivos: `package.json`
@@ -363,7 +361,7 @@ Sprint 4 (refinamento)
 
 ---
 
-**[TASK-020-B] Criar `src/services/pdfService.js`**
+**[TASK-020-B] Criar `src/services/pdfService.js`** — concluído em 2026-03-16 21:26 (BRT)
 
 - Arquivos: `src/services/pdfService.js` (CRIAR)
 - Contexto: usa `templateService.interpolate` para montar o texto final; recebe objeto `certificado` com associações `TiposCertificados`, `Participante` e `Evento` já carregadas
@@ -402,14 +400,16 @@ Sprint 4 (refinamento)
 
 ---
 
-**[TASK-020-D] Criar smoke test para `pdfService`**
 
-- Arquivos: `tests/services/pdfService.test.js` (CRIAR)
-- Contexto: teste unitário sem acesso ao banco; usa objeto mock com `TiposCertificados`, `Participante`, `Evento`, `nome`, `codigo` e `valores_dinamicos`
-- Passos: criar 3 casos — buffer não vazio, assinatura `%PDF`, e comportamento com `valores_dinamicos: {}`
-- Critério de aceite: `npm run check` passa; 3 testes passam sem banco
-- Escopo: 1 arquivo criado
-- Dependência: TASK-020-B
+  - [x] Criar smoke test para `pdfService` — concluído em 2026-03-17 08:22 (BRT)
+  - Arquivos: `tests/services/pdfService.test.js` (CRIAR)
+  - Contexto: teste unitário sem acesso ao banco; usa objeto mock com `TiposCertificados`, `Participante`, `Evento`, `nome`, `codigo` e `valores_dinamicos`
+  - Passos: criar 3 casos — buffer não vazio, assinatura `%PDF`, e comportamento com `valores_dinamicos: {}`
+  - Critério de aceite: `npm run check` passa; 3 testes passam sem banco
+  - Escopo: 1 arquivo criado
+  - Dependência: TASK-020-B
+
+  - [x] Requisito de obrigatoriedade do campo código para geração de PDF explicitado na especificação e coberto por teste — concluído em 2026-03-17 08:22 (BRT)
 
 ---
 
@@ -569,10 +569,19 @@ Sprint 4 (refinamento)
   1. Em `certificadoService.test.js`: adicionar `findAndCountAll: jest.fn()` ao mock do model; atualizar o teste `'findAll chama Certificado.findAll'` para:
      ```js
      it('findAll retorna data e meta com findAndCountAll', async () => {
-       Certificado.findAndCountAll.mockResolvedValue({ count: 2, rows: [{}, {}] })
+       Certificado.findAndCountAll.mockResolvedValue({
+         count: 2,
+         rows: [{}, {}],
+       })
        const result = await certificadoService.findAll()
-       expect(Certificado.findAndCountAll).toHaveBeenCalledWith({ limit: 20, offset: 0 })
-       expect(result).toEqual({ data: [{}, {}], meta: { total: 2, page: 1, perPage: 20 } })
+       expect(Certificado.findAndCountAll).toHaveBeenCalledWith({
+         limit: 20,
+         offset: 0,
+       })
+       expect(result).toEqual({
+         data: [{}, {}],
+         meta: { total: 2, page: 1, perPage: 20 },
+       })
      })
      ```
   2. Mesmo padrão em `eventoService.test.js`
@@ -660,6 +669,7 @@ Sprint 4 (refinamento)
      },
      ```
   2. Adicionar no `describe` principal dois novos testes:
+
      ```js
      describe('create com validação de dados_dinamicos', () => {
        it('lança erro com camposFaltantes quando campo obrigatório está ausente', async () => {
@@ -691,6 +701,7 @@ Sprint 4 (refinamento)
        })
      })
      ```
+
 - Critério de aceite: `npm run check` passa; os 2 novos testes passam
 - Escopo: 1 arquivo modificado
 - Dependência: TASK-023-A
@@ -782,7 +793,9 @@ Sprint 4 (refinamento)
        UsuarioEvento.destroy.mockResolvedValue(1)
        await eventoService.delete(1)
        expect(eventoMock.destroy).toHaveBeenCalled()
-       expect(UsuarioEvento.destroy).toHaveBeenCalledWith({ where: { evento_id: 1 } })
+       expect(UsuarioEvento.destroy).toHaveBeenCalledWith({
+         where: { evento_id: 1 },
+       })
      })
      ```
   3. Adicionar novo `describe('restore')` com teste de restauração das associações:
@@ -795,7 +808,9 @@ Sprint 4 (refinamento)
          UsuarioEvento.restore.mockResolvedValue(1)
          await eventoService.restore(1)
          expect(eventoMock.restore).toHaveBeenCalled()
-         expect(UsuarioEvento.restore).toHaveBeenCalledWith({ where: { evento_id: 1 } })
+         expect(UsuarioEvento.restore).toHaveBeenCalledWith({
+           where: { evento_id: 1 },
+         })
        })
      })
      ```
@@ -826,6 +841,7 @@ Sprint 4 (refinamento)
 - Contexto: o arquivo já possui a rota `router.post('/login', usuarioController.login)`. O rate limiter deve ser aplicado como middleware exclusivamente nessa rota. A janela é de 15 minutos e o máximo é 20 tentativas. Quando excedido, deve retornar JSON com mensagem em português (não HTML)
 - Passos:
   1. No topo de `src/routes/usuarios.js`, adicionar:
+
      ```js
      const rateLimit = require('express-rate-limit')
 
@@ -834,9 +850,12 @@ Sprint 4 (refinamento)
        max: 20,
        standardHeaders: true,
        legacyHeaders: false,
-       message: { error: 'Muitas tentativas de login. Tente novamente em 15 minutos.' },
+       message: {
+         error: 'Muitas tentativas de login. Tente novamente em 15 minutos.',
+       },
      })
      ```
+
   2. Localizar a linha:
      ```js
      router.post('/login', usuarioController.login)
@@ -845,6 +864,7 @@ Sprint 4 (refinamento)
      ```js
      router.post('/login', loginLimiter, usuarioController.login)
      ```
+
 - Critério de aceite: após 20 requisições em 15 minutos para `POST /usuarios/login`, a 21ª retorna status 429 com `{ error: 'Muitas tentativas de login. Tente novamente em 15 minutos.' }`; rotas de login não são afetadas por limite nas demais rotas
 - Escopo: 1 arquivo modificado
 - Dependência: TASK-025-A
@@ -861,26 +881,32 @@ Sprint 4 (refinamento)
 
 - Arquivo: `docs/decisoes/004-geracao-pdf.md` (CRIAR)
 - Conteúdo esperado (ADR no padrão dos existentes):
+
   ```markdown
   # ADR 004 — Engine de Geração de PDF
 
   ## Contexto
+
   O sistema precisa gerar certificados em formato PDF para download pelo participante.
 
   ## Decisão
+
   - PDFKit escolhido por ser uma biblioteca Node.js nativa, sem dependência de browser ou headless.
   - Geracão em memória (Buffer) sem persistência de arquivos em disco.
   - Layout do PDF montado programaticamente pelo `pdfService.js`.
 
   ## Alternativas consideradas
+
   - Puppeteer/Headless Chrome: mais flexível para HTML/CSS, mas muito mais pesado.
   - jsPDF: voltado para browser, menos adequado para Node.js server-side.
 
   ## Consequências
+
   - PDFs gerados sob demanda a cada requisição (sem cache).
   - Layout limitado ao que o PDFKit suporta programaticamente.
   - Simples de manter; sem estado persistido no servidor.
   ```
+
 - Critério de aceite: arquivo criado no caminho correto com seções Contexto, Decisão, Alternativas e Consequências
 - Escopo: 1 arquivo criado
 
@@ -890,42 +916,54 @@ Sprint 4 (refinamento)
 
 - Arquivos: `docs/decisoes/005-vinculo-usuario-evento.md` (CRIAR), `docs/decisoes/006-paginacao-api.md` (CRIAR)
 - Conteúdo esperado para `005`:
+
   ```markdown
   # ADR 005 — Vínculo Usuário-Evento: N:N via tabela `usuario_eventos`
 
   ## Contexto
+
   Um usuário pode estar vinculado a múltiplos eventos (gestor ou monitor).
 
   ## Decisão
+
   - Relação N:N implementada via tabela `usuario_eventos` com `paranoid: true`.
   - Removida a FK simples `evento_id` da tabela `usuarios` na migration `20260313195000`.
 
   ## Alternativas consideradas
+
   - FK simples `evento_id` em `usuarios`: impede gestão de múltiplos eventos.
 
   ## Consequências
+
   - Middleware `scopedEvento` usa `req.usuario.getEventos()` em vez de `req.usuario.evento_id`.
   - Delete/restore de evento requer cascata manual em `usuario_eventos`.
   ```
+
 - Conteúdo esperado para `006`:
+
   ```markdown
   # ADR 006 — Estratégia de Paginação da API
 
   ## Contexto
+
   Listagens sem limite retornam todos os registros, degradando performance com volume.
 
   ## Decisão
+
   - Paginação offset-based via parâmetros de query `?page=1&perPage=20`.
   - Resposta padronizada: `{ data: [], meta: { total, page, perPage } }`.
   - Implementada na camada de service via `Model.findAndCountAll`.
 
   ## Alternativas consideradas
+
   - Cursor-based pagination: mais eficiente para grandes volumes, mas mais complexa de implementar.
 
   ## Consequências
+
   - Todos os endpoints de listagem retornam o envelope `{ data, meta }`.
   - Controllers devem ler `req.query.page` e `req.query.perPage`.
   ```
+
 - Critério de aceite: ambos os arquivos criados com as 4 seções
 - Escopo: 2 arquivos criados
 
@@ -935,43 +973,55 @@ Sprint 4 (refinamento)
 
 - Arquivos: `docs/decisoes/007-validacao-valores-dinamicos.md` (CRIAR), `docs/decisoes/008-armazenamento-pdfs.md` (CRIAR)
 - Conteúdo esperado para `007`:
+
   ```markdown
   # ADR 007 — Onde Validar `valores_dinamicos` contra `dados_dinamicos`
 
   ## Contexto
+
   Certificados com campos ausentes passam validacão do Sequelize mas falham na interpolação.
 
   ## Decisão
+
   - Validação realizada em `certificadoService.create`, antes de `Certificado.create`.
   - Erro lançado com `statusCode: 400` e array `camposFaltantes`.
 
   ## Alternativas consideradas
+
   - Hook `beforeCreate` no model: oculta lógica de negócio na camada de dados.
   - Validação no validator Zod: não tem acesso ao banco para buscar o tipo.
 
   ## Consequências
+
   - Controller repassa `camposFaltantes` na resposta JSON.
   - Teste unitário de service pode mockar `TiposCertificados.findByPk` sem banco.
   ```
+
 - Conteúdo esperado para `008`:
+
   ```markdown
   # ADR 008 — Armazenamento de PDFs
 
   ## Contexto
+
   PDFs de certificados precisam ser entregues aos participantes de forma segura e rápida.
 
   ## Decisão
+
   - PDFs gerados sob demanda (on-the-fly) e devolvidos diretamente no corpo da resposta HTTP.
   - Sem persistência em disco ou cloud storage na versão 1.0.
 
   ## Alternativas consideradas
+
   - Armazenar em S3/GCS: reduz CPU por requisição, mas adiciona dependência de infra.
   - Salvar em `/public/pdfs/`: simples, mas cria lista de arquivos crescente sem gestão.
 
   ## Consequências
+
   - Cada download recalcula o PDF; aceitável para o volume atual.
   - Evolução futura pode adicionar cache ou storage externo sem mudar a interface da rota.
   ```
+
 - Critério de aceite: ambos os arquivos criados com as 4 seções
 - Escopo: 2 arquivos criados
 
@@ -1011,10 +1061,22 @@ Sprint 4 (refinamento)
       })
     },
     async down(queryInterface) {
-      await queryInterface.removeIndex('certificados', 'idx_certificados_evento_id')
-      await queryInterface.removeIndex('certificados', 'idx_certificados_participante_id')
-      await queryInterface.removeIndex('certificados', 'idx_certificados_status')
-      await queryInterface.removeIndex('participantes', 'idx_participantes_email')
+      await queryInterface.removeIndex(
+        'certificados',
+        'idx_certificados_evento_id',
+      )
+      await queryInterface.removeIndex(
+        'certificados',
+        'idx_certificados_participante_id',
+      )
+      await queryInterface.removeIndex(
+        'certificados',
+        'idx_certificados_status',
+      )
+      await queryInterface.removeIndex(
+        'participantes',
+        'idx_participantes_email',
+      )
       await queryInterface.removeIndex('usuarios', 'idx_usuarios_email')
     },
   }
@@ -1097,11 +1159,13 @@ Sprint 10 (documentação e otimização)
      ```
   2. Após a linha `app.use(cookieParser())`, adicionar:
      ```js
-     app.use(session({
-       secret: process.env.SESSION_SECRET || 'sessao-certifique-me',
-       resave: false,
-       saveUninitialized: false,
-     }))
+     app.use(
+       session({
+         secret: process.env.SESSION_SECRET || 'sessao-certifique-me',
+         resave: false,
+         saveUninitialized: false,
+       }),
+     )
      app.use(flash())
      app.use((req, res, next) => {
        res.locals.flash = {
@@ -1125,38 +1189,39 @@ Sprint 10 (documentação e otimização)
   ```html
   <!DOCTYPE html>
   <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{title}} | Certifique-me</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  </head>
-  <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div class="container">
-        <a class="navbar-brand" href="/">Certifique-me</a>
-        <div class="navbar-nav ms-auto">
-          <a class="nav-link text-white" href="/certificados">Meus Certificados</a>
-          <a class="nav-link text-white" href="/certificados/validar">Validar</a>
-          <a class="nav-link text-white" href="/auth/login">Entrar</a>
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>{{title}} | Certifique-me</title>
+      <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      />
+    </head>
+    <body>
+      <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+          <a class="navbar-brand" href="/">Certifique-me</a>
+          <div class="navbar-nav ms-auto">
+            <a class="nav-link text-white" href="/certificados"
+              >Meus Certificados</a
+            >
+            <a class="nav-link text-white" href="/certificados/validar"
+              >Validar</a
+            >
+            <a class="nav-link text-white" href="/auth/login">Entrar</a>
+          </div>
         </div>
+      </nav>
+      <div class="container mt-4">
+        {{#if flash.success}} {{#each flash.success}}
+        <div class="alert alert-success">{{this}}</div>
+        {{/each}} {{/if}} {{#if flash.error}} {{#each flash.error}}
+        <div class="alert alert-danger">{{this}}</div>
+        {{/each}} {{/if}} {{{body}}}
       </div>
-    </nav>
-    <div class="container mt-4">
-      {{#if flash.success}}
-        {{#each flash.success}}
-          <div class="alert alert-success">{{this}}</div>
-        {{/each}}
-      {{/if}}
-      {{#if flash.error}}
-        {{#each flash.error}}
-          <div class="alert alert-danger">{{this}}</div>
-        {{/each}}
-      {{/if}}
-      {{{body}}}
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
   </html>
   ```
 - Critério de aceite: `GET /` renderiza página com Bootstrap carregado e navbar visível
@@ -1173,52 +1238,62 @@ Sprint 10 (documentação e otimização)
   ```html
   <!DOCTYPE html>
   <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{title}} | Admin — Certifique-me</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  </head>
-  <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="/admin/dashboard">Certifique-me Admin</a>
-        <div class="navbar-nav me-auto">
-          <a class="nav-link text-white" href="/admin/dashboard">Dashboard</a>
-          <a class="nav-link text-white" href="/admin/certificados">Certificados</a>
-          <a class="nav-link text-white" href="/admin/participantes">Participantes</a>
-          {{#if usuario.isAdmin}}
-          <a class="nav-link text-white" href="/admin/eventos">Eventos</a>
-          <a class="nav-link text-white" href="/admin/tipos-certificados">Tipos</a>
-          <a class="nav-link text-white" href="/admin/usuarios">Usuários</a>
-          {{/if}}
-          {{#if usuario.isGestor}}
-          <a class="nav-link text-white" href="/admin/tipos-certificados">Tipos</a>
-          {{/if}}
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>{{title}} | Admin — Certifique-me</title>
+      <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      />
+    </head>
+    <body>
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="/admin/dashboard"
+            >Certifique-me Admin</a
+          >
+          <div class="navbar-nav me-auto">
+            <a class="nav-link text-white" href="/admin/dashboard">Dashboard</a>
+            <a class="nav-link text-white" href="/admin/certificados"
+              >Certificados</a
+            >
+            <a class="nav-link text-white" href="/admin/participantes"
+              >Participantes</a
+            >
+            {{#if usuario.isAdmin}}
+            <a class="nav-link text-white" href="/admin/eventos">Eventos</a>
+            <a class="nav-link text-white" href="/admin/tipos-certificados"
+              >Tipos</a
+            >
+            <a class="nav-link text-white" href="/admin/usuarios">Usuários</a>
+            {{/if}} {{#if usuario.isGestor}}
+            <a class="nav-link text-white" href="/admin/tipos-certificados"
+              >Tipos</a
+            >
+            {{/if}}
+          </div>
+          <div class="navbar-nav">
+            <span class="navbar-text text-white me-3"
+              >{{usuario.nome}} ({{usuario.perfil}})</span
+            >
+            <form action="/auth/logout" method="POST" class="d-inline">
+              <button type="submit" class="btn btn-sm btn-outline-light">
+                Sair
+              </button>
+            </form>
+          </div>
         </div>
-        <div class="navbar-nav">
-          <span class="navbar-text text-white me-3">{{usuario.nome}} ({{usuario.perfil}})</span>
-          <form action="/auth/logout" method="POST" class="d-inline">
-            <button type="submit" class="btn btn-sm btn-outline-light">Sair</button>
-          </form>
-        </div>
+      </nav>
+      <div class="container-fluid mt-4">
+        {{#if flash.success}} {{#each flash.success}}
+        <div class="alert alert-success">{{this}}</div>
+        {{/each}} {{/if}} {{#if flash.error}} {{#each flash.error}}
+        <div class="alert alert-danger">{{this}}</div>
+        {{/each}} {{/if}} {{{body}}}
       </div>
-    </nav>
-    <div class="container-fluid mt-4">
-      {{#if flash.success}}
-        {{#each flash.success}}
-          <div class="alert alert-success">{{this}}</div>
-        {{/each}}
-      {{/if}}
-      {{#if flash.error}}
-        {{#each flash.error}}
-          <div class="alert alert-danger">{{this}}</div>
-        {{/each}}
-      {{/if}}
-      {{{body}}}
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
   </html>
   ```
 - Critério de aceite: arquivo criado; quando renderizado com `{ layout: 'layouts/admin', usuario: { nome: 'Admin', perfil: 'admin', isAdmin: true } }` exibe a navbar administrativa completa
@@ -1263,8 +1338,14 @@ Sprint 10 (documentação e otimização)
      <div class="text-center mt-5">
        <h1>Certificados</h1>
        <div class="d-flex justify-content-center gap-3 mt-4">
-         <a href="/certificados/obter" class="btn btn-primary btn-lg">Obter meu certificado</a>
-         <a href="/certificados/validar" class="btn btn-outline-secondary btn-lg">Validar certificado</a>
+         <a href="/certificados/obter" class="btn btn-primary btn-lg"
+           >Obter meu certificado</a
+         >
+         <a
+           href="/certificados/validar"
+           class="btn btn-outline-secondary btn-lg"
+           >Validar certificado</a
+         >
        </div>
      </div>
      ```
@@ -1273,23 +1354,35 @@ Sprint 10 (documentação e otimização)
      <div class="row justify-content-center mt-5">
        <div class="col-md-6">
          <h2>Buscar meus certificados</h2>
-         {{#if mensagem}}<div class="alert alert-warning">{{mensagem}}</div>{{/if}}
+         {{#if mensagem}}
+         <div class="alert alert-warning">{{mensagem}}</div>
+         {{/if}}
          <form method="POST" action="/certificados/buscar" id="form-obter">
            <div class="mb-3">
              <label for="email" class="form-label">E-mail</label>
-             <input type="email" class="form-control" name="email" id="email" required>
+             <input
+               type="email"
+               class="form-control"
+               name="email"
+               id="email"
+               required
+             />
            </div>
-           <button type="submit" class="btn btn-primary" id="btn-buscar">Buscar</button>
+           <button type="submit" class="btn btn-primary" id="btn-buscar">
+             Buscar
+           </button>
          </form>
          <div id="spinner" class="text-center mt-3" style="display:none">
            <div class="spinner-border" role="status"></div>
            <p>Buscando certificados...</p>
          </div>
          <script>
-           document.getElementById('form-obter').addEventListener('submit', function() {
-             document.getElementById('btn-buscar').disabled = true;
-             document.getElementById('spinner').style.display = 'block';
-           });
+           document
+             .getElementById('form-obter')
+             .addEventListener('submit', function () {
+               document.getElementById('btn-buscar').disabled = true
+               document.getElementById('spinner').style.display = 'block'
+             })
          </script>
        </div>
      </div>
@@ -1299,11 +1392,21 @@ Sprint 10 (documentação e otimização)
      <div class="row justify-content-center mt-5">
        <div class="col-md-6">
          <h2>Validar certificado</h2>
-         {{#if mensagem}}<div class="alert alert-warning">{{mensagem}}</div>{{/if}}
+         {{#if mensagem}}
+         <div class="alert alert-warning">{{mensagem}}</div>
+         {{/if}}
          <form method="POST" action="/certificados/validar">
            <div class="mb-3">
-             <label for="codigo" class="form-label">Código do certificado</label>
-             <input type="text" class="form-control" name="codigo" id="codigo" required>
+             <label for="codigo" class="form-label"
+               >Código do certificado</label
+             >
+             <input
+               type="text"
+               class="form-control"
+               name="codigo"
+               id="codigo"
+               required
+             />
            </div>
            <button type="submit" class="btn btn-primary">Validar</button>
          </form>
@@ -1328,23 +1431,31 @@ Sprint 10 (documentação e otimização)
      <div class="mt-4">
        <h2>Certificados de {{email}}</h2>
        {{#if certificados}}
-         <div class="list-group mt-3">
-           {{#each certificados}}
-             <div class="list-group-item">
-               <div class="d-flex justify-content-between align-items-center">
-                 <div>
-                   <strong>{{nome}}</strong>
-                   <br><small class="text-muted">{{TiposCertificados.descricao}}</small>
-                 </div>
-                 <a href="/public/certificados/{{id}}/pdf" class="btn btn-sm btn-success">Baixar PDF</a>
-               </div>
+       <div class="list-group mt-3">
+         {{#each certificados}}
+         <div class="list-group-item">
+           <div class="d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{nome}}</strong>
+               <br /><small class="text-muted"
+                 >{{TiposCertificados.descricao}}</small
+               >
              </div>
-           {{/each}}
+             <a
+               href="/public/certificados/{{id}}/pdf"
+               class="btn btn-sm btn-success"
+               >Baixar PDF</a
+             >
+           </div>
          </div>
+         {{/each}}
+       </div>
        {{else}}
-         <p class="alert alert-info mt-3">Nenhum certificado encontrado.</p>
+       <p class="alert alert-info mt-3">Nenhum certificado encontrado.</p>
        {{/if}}
-       <a href="/certificados/obter" class="btn btn-link mt-3">Buscar novamente</a>
+       <a href="/certificados/obter" class="btn btn-link mt-3"
+         >Buscar novamente</a
+       >
      </div>
      ```
   2. Criar `views/certificados/validar-resultado.hbs`:
@@ -1352,26 +1463,37 @@ Sprint 10 (documentação e otimização)
      <div class="row justify-content-center mt-5">
        <div class="col-md-8">
          {{#if valido}}
-           <div class="card border-success">
-             <div class="card-header bg-success text-white">Certificado Válido ✔</div>
-             <div class="card-body">
-               <p><strong>Código:</strong> {{dados.codigo}}</p>
-               <p><strong>Evento:</strong> {{dados.evento}}</p>
-               <p><strong>Titular:</strong> {{dados.nome}}</p>
-               {{#if dados.valorDestaque}}
-               <p><strong>{{dados.campo_destaque}}:</strong> {{dados.valorDestaque}}</p>
-               {{/if}}
-             </div>
+         <div class="card border-success">
+           <div class="card-header bg-success text-white">
+             Certificado Válido ✔
            </div>
+           <div class="card-body">
+             <p><strong>Código:</strong> {{dados.codigo}}</p>
+             <p><strong>Evento:</strong> {{dados.evento}}</p>
+             <p><strong>Titular:</strong> {{dados.nome}}</p>
+             {{#if dados.valorDestaque}}
+             <p>
+               <strong>{{dados.campo_destaque}}:</strong>
+               {{dados.valorDestaque}}
+             </p>
+             {{/if}}
+           </div>
+         </div>
          {{else}}
-           <div class="card border-danger">
-             <div class="card-header bg-danger text-white">Certificado Inválido ✘</div>
-             <div class="card-body">
-               <p>O código informado não corresponde a nenhum certificado válido.</p>
-             </div>
+         <div class="card border-danger">
+           <div class="card-header bg-danger text-white">
+             Certificado Inválido ✘
            </div>
+           <div class="card-body">
+             <p>
+               O código informado não corresponde a nenhum certificado válido.
+             </p>
+           </div>
+         </div>
          {{/if}}
-         <a href="/certificados/validar" class="btn btn-link mt-3">Validar outro</a>
+         <a href="/certificados/validar" class="btn btn-link mt-3"
+           >Validar outro</a
+         >
        </div>
      </div>
      ```
@@ -1387,41 +1509,74 @@ Sprint 10 (documentação e otimização)
 - Contexto: o arquivo já possui rotas JSON (`GET /certificados?email=`, `GET /validar/:codigo`). As rotas SSR devem ser adicionadas para atender o browser — POST para formulários, GET para renderizar as views. As rotas SSR operam em caminhos diferentes dos da API JSON existente
 - Passos:
   1. No final do arquivo (antes do `module.exports = router`), adicionar:
+
      ```js
      // Rotas SSR (renderizam views Handlebars)
-     router.get('/pagina/opcoes', (req, res) => res.render('certificados/opcoes', { title: 'Certificados' }))
-     router.get('/pagina/obter', (req, res) => res.render('certificados/form-obter', { title: 'Buscar Certificados' }))
-     router.get('/pagina/validar', (req, res) => res.render('certificados/form-validar', { title: 'Validar Certificado' }))
+     router.get('/pagina/opcoes', (req, res) =>
+       res.render('certificados/opcoes', { title: 'Certificados' }),
+     )
+     router.get('/pagina/obter', (req, res) =>
+       res.render('certificados/form-obter', { title: 'Buscar Certificados' }),
+     )
+     router.get('/pagina/validar', (req, res) =>
+       res.render('certificados/form-validar', {
+         title: 'Validar Certificado',
+       }),
+     )
 
      router.post('/pagina/buscar', async (req, res) => {
        const { email } = req.body
-       if (!email) return res.render('certificados/form-obter', { mensagem: 'Informe o e-mail.', title: 'Buscar' })
+       if (!email)
+         return res.render('certificados/form-obter', {
+           mensagem: 'Informe o e-mail.',
+           title: 'Buscar',
+         })
        try {
          const participante = await Participante.findOne({ where: { email } })
-         if (!participante) return res.render('certificados/form-obter', { mensagem: 'Nenhum participante encontrado com este e-mail.', title: 'Buscar' })
+         if (!participante)
+           return res.render('certificados/form-obter', {
+             mensagem: 'Nenhum participante encontrado com este e-mail.',
+             title: 'Buscar',
+           })
          const certificados = await Certificado.findAll({
            where: { participante_id: participante.id },
            include: [{ model: TiposCertificados }],
          })
-         return res.render('certificados/obter-lista', { email, certificados: certificados.map(c => c.toJSON()), title: 'Meus Certificados' })
+         return res.render('certificados/obter-lista', {
+           email,
+           certificados: certificados.map((c) => c.toJSON()),
+           title: 'Meus Certificados',
+         })
        } catch (err) {
-         return res.render('certificados/form-obter', { mensagem: 'Erro ao buscar certificados.', title: 'Buscar' })
+         return res.render('certificados/form-obter', {
+           mensagem: 'Erro ao buscar certificados.',
+           title: 'Buscar',
+         })
        }
      })
 
      router.post('/pagina/validar', async (req, res) => {
        const { codigo } = req.body
-       if (!codigo) return res.render('certificados/form-validar', { mensagem: 'Informe o código.', title: 'Validar' })
+       if (!codigo)
+         return res.render('certificados/form-validar', {
+           mensagem: 'Informe o código.',
+           title: 'Validar',
+         })
        try {
          const certificado = await Certificado.findOne({
            where: { codigo },
            include: [{ model: Evento }, { model: TiposCertificados }],
          })
-         if (!certificado) return res.render('certificados/validar-resultado', { valido: false, title: 'Validar' })
+         if (!certificado)
+           return res.render('certificados/validar-resultado', {
+             valido: false,
+             title: 'Validar',
+           })
          const tipo = certificado.TiposCertificados
          const valores = certificado.valores_dinamicos || {}
          const campoDestaque = tipo.campo_destaque
-         const valorDestaque = campoDestaque !== 'nome' ? valores[campoDestaque] : null
+         const valorDestaque =
+           campoDestaque !== 'nome' ? valores[campoDestaque] : null
          return res.render('certificados/validar-resultado', {
            valido: true,
            dados: {
@@ -1434,11 +1589,16 @@ Sprint 10 (documentação e otimização)
            title: 'Certificado Válido',
          })
        } catch (err) {
-         return res.render('certificados/form-validar', { mensagem: 'Erro ao validar certificado.', title: 'Validar' })
+         return res.render('certificados/form-validar', {
+           mensagem: 'Erro ao validar certificado.',
+           title: 'Validar',
+         })
        }
      })
      ```
+
   2. Verificar que `Evento` e `TiposCertificados` já estão importados no topo do arquivo (foram adicionados em TASK-020-C); se não, adicionar ao destructuring existente
+
 - Critério de aceite:
   - `GET /public/pagina/opcoes` renderiza `opcoes.hbs`
   - `POST /public/pagina/buscar` com email válido renderiza `obter-lista.hbs`
@@ -1460,6 +1620,7 @@ Sprint 10 (documentação e otimização)
 - Arquivo: `src/middlewares/authSSR.js` (CRIAR)
 - Contexto: o middleware JWT existente (`middleware/auth.js`) valida via `Authorization: Bearer`. Para SSR, o token é armazenado em cookie httpOnly chamado `token`. Este middleware lê o cookie, verifica o JWT, carrega o usuário e popula `req.usuario` e `res.locals.usuario`. Se inválido, redireciona para `/auth/login`
 - Passos: criar o arquivo com o conteúdo:
+
   ```js
   const jwt = require('jsonwebtoken')
   const { Usuario } = require('../models')
@@ -1490,6 +1651,7 @@ Sprint 10 (documentação e otimização)
     }
   }
   ```
+
 - Critério de aceite: quando cookie `token` é ausente ou inválido, redireciona para `/auth/login`; quando válido, `res.locals.usuario.isAdmin` é `true` para usuário admin
 - Escopo: 1 arquivo criado
 
@@ -1505,16 +1667,29 @@ Sprint 10 (documentação e otimização)
     <div class="col-md-4">
       <h2 class="mb-4">Entrar</h2>
       {{#if mensagem}}
-        <div class="alert alert-danger">{{mensagem}}</div>
+      <div class="alert alert-danger">{{mensagem}}</div>
       {{/if}}
       <form method="POST" action="/auth/login">
         <div class="mb-3">
           <label for="email" class="form-label">E-mail</label>
-          <input type="email" class="form-control" name="email" id="email" required autofocus>
+          <input
+            type="email"
+            class="form-control"
+            name="email"
+            id="email"
+            required
+            autofocus
+          />
         </div>
         <div class="mb-3">
           <label for="senha" class="form-label">Senha</label>
-          <input type="password" class="form-control" name="senha" id="senha" required>
+          <input
+            type="password"
+            class="form-control"
+            name="senha"
+            id="senha"
+            required
+          />
         </div>
         <button type="submit" class="btn btn-primary w-100">Entrar</button>
       </form>
@@ -1531,6 +1706,7 @@ Sprint 10 (documentação e otimização)
 - Arquivo: `src/routes/auth.js` (CRIAR)
 - Contexto: rotas SSR de autenticação. `POST /auth/login` usa `bcrypt.compare` e `jwt.sign` (mesma lógica do `usuarioController.login`), depois seta cookie httpOnly e redireciona. `POST /auth/logout` limpa o cookie. `GET /auth/login` renderiza a view ou redireciona se já autenticado
 - Passos: criar o arquivo com conteúdo:
+
   ```js
   const express = require('express')
   const router = express.Router()
@@ -1557,14 +1733,29 @@ Sprint 10 (documentação e otimização)
     const { email, senha } = req.body
     try {
       const usuario = await Usuario.findOne({ where: { email } })
-      if (!usuario) return res.render('auth/login', { mensagem: 'Credenciais inválidas.', title: 'Entrar' })
+      if (!usuario)
+        return res.render('auth/login', {
+          mensagem: 'Credenciais inválidas.',
+          title: 'Entrar',
+        })
       const valid = await bcrypt.compare(senha, usuario.senha)
-      if (!valid) return res.render('auth/login', { mensagem: 'Credenciais inválidas.', title: 'Entrar' })
-      const token = jwt.sign({ id: usuario.id, perfil: usuario.perfil }, JWT_SECRET, { expiresIn: '8h' })
+      if (!valid)
+        return res.render('auth/login', {
+          mensagem: 'Credenciais inválidas.',
+          title: 'Entrar',
+        })
+      const token = jwt.sign(
+        { id: usuario.id, perfil: usuario.perfil },
+        JWT_SECRET,
+        { expiresIn: '8h' },
+      )
       res.cookie('token', token, { httpOnly: true, maxAge: 8 * 60 * 60 * 1000 })
       return res.redirect('/admin/dashboard')
     } catch (err) {
-      return res.render('auth/login', { mensagem: 'Erro interno. Tente novamente.', title: 'Entrar' })
+      return res.render('auth/login', {
+        mensagem: 'Erro interno. Tente novamente.',
+        title: 'Entrar',
+      })
     }
   })
 
@@ -1576,6 +1767,7 @@ Sprint 10 (documentação e otimização)
 
   module.exports = router
   ```
+
 - Critério de aceite: `POST /auth/login` com credenciais válidas seta cookie `token` e redireciona para `/admin/dashboard`; credenciais inválidas renderiza `auth/login` com mensagem; `POST /auth/logout` limpa o cookie
 - Escopo: 1 arquivo criado
 - Dependência: TASK-030-A, TASK-030-B
@@ -1612,6 +1804,7 @@ Sprint 10 (documentação e otimização)
 - Arquivo: `src/controllers/dashboardController.js` (CRIAR)
 - Contexto: o controller consulta contagens no banco conforme o perfil do usuário. Os models já disponíveis em `src/models` são `Evento`, `Participante`, `Certificado`, `Usuario`. Para gestor/monitor, os eventos vinculados são obtidos via `req.usuario.getEventos()` (associação N:N)
 - Passos: criar o arquivo com conteúdo:
+
   ```js
   const { Evento, Participante, Certificado, Usuario } = require('../models')
 
@@ -1622,22 +1815,37 @@ Sprint 10 (documentação e otimização)
         let stats = {}
 
         if (perfil === 'admin') {
-          const [totalEventos, totalParticipantes, totalCertificados, totalUsuarios] =
-            await Promise.all([
-              Evento.count(),
-              Participante.count(),
-              Certificado.count({ where: { status: 'emitido' } }),
-              Usuario.count(),
-            ])
-          stats = { totalEventos, totalParticipantes, totalCertificados, totalUsuarios }
+          const [
+            totalEventos,
+            totalParticipantes,
+            totalCertificados,
+            totalUsuarios,
+          ] = await Promise.all([
+            Evento.count(),
+            Participante.count(),
+            Certificado.count({ where: { status: 'emitido' } }),
+            Usuario.count(),
+          ])
+          stats = {
+            totalEventos,
+            totalParticipantes,
+            totalCertificados,
+            totalUsuarios,
+          }
         } else {
           const eventos = await req.usuario.getEventos()
           const eventoIds = eventos.map((e) => e.id)
           const [totalCertificados, totalParticipantes] = await Promise.all([
-            Certificado.count({ where: { evento_id: eventoIds, status: 'emitido' } }),
+            Certificado.count({
+              where: { evento_id: eventoIds, status: 'emitido' },
+            }),
             Participante.count(),
           ])
-          stats = { totalCertificados, totalParticipantes, eventos: eventos.map((e) => e.nome) }
+          stats = {
+            totalCertificados,
+            totalParticipantes,
+            eventos: eventos.map((e) => e.nome),
+          }
         }
 
         return res.render('admin/dashboard', {
@@ -1646,11 +1854,14 @@ Sprint 10 (documentação e otimização)
           ...stats,
         })
       } catch (err) {
-        return res.status(500).render('error', { message: err.message, error: { status: 500 } })
+        return res
+          .status(500)
+          .render('error', { message: err.message, error: { status: 500 } })
       }
     },
   }
   ```
+
 - Critério de aceite: `GET /admin/dashboard` com usuário admin retorna `res.render` com `totalEventos`, `totalParticipantes`, `totalCertificados`, `totalUsuarios`; com gestor retorna apenas `totalCertificados` e `eventos`
 - Escopo: 1 arquivo criado
 
@@ -1661,6 +1872,7 @@ Sprint 10 (documentação e otimização)
 - Arquivo: `views/admin/dashboard.hbs` (CRIAR)
 - Contexto: usa `layout: 'layouts/admin'` (passado pelo controller). Exibe cards de contagem condicionais ao perfil usando os helpers `{{#if isAdmin}}`, `{{#if isGestor}}` etc. disponíveis via `res.locals.usuario`
 - Passos: criar o arquivo com conteúdo:
+
   ```html
   <h1 class="mb-4">Dashboard</h1>
 
@@ -1668,42 +1880,63 @@ Sprint 10 (documentação e otimização)
     {{#if usuario.isAdmin}}
     <div class="col-md-3">
       <div class="card text-white bg-primary">
-        <div class="card-body"><h5>Eventos</h5><p class="display-6">{{totalEventos}}</p></div>
+        <div class="card-body">
+          <h5>Eventos</h5>
+          <p class="display-6">{{totalEventos}}</p>
+        </div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="card text-white bg-success">
-        <div class="card-body"><h5>Participantes</h5><p class="display-6">{{totalParticipantes}}</p></div>
+        <div class="card-body">
+          <h5>Participantes</h5>
+          <p class="display-6">{{totalParticipantes}}</p>
+        </div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="card text-white bg-info">
-        <div class="card-body"><h5>Certificados emitidos</h5><p class="display-6">{{totalCertificados}}</p></div>
+        <div class="card-body">
+          <h5>Certificados emitidos</h5>
+          <p class="display-6">{{totalCertificados}}</p>
+        </div>
       </div>
     </div>
     <div class="col-md-3">
       <div class="card text-white bg-secondary">
-        <div class="card-body"><h5>Usuários</h5><p class="display-6">{{totalUsuarios}}</p></div>
+        <div class="card-body">
+          <h5>Usuários</h5>
+          <p class="display-6">{{totalUsuarios}}</p>
+        </div>
       </div>
     </div>
     {{else}}
     <div class="col-md-4">
       <div class="card text-white bg-info">
-        <div class="card-body"><h5>Certificados emitidos</h5><p class="display-6">{{totalCertificados}}</p></div>
+        <div class="card-body">
+          <h5>Certificados emitidos</h5>
+          <p class="display-6">{{totalCertificados}}</p>
+        </div>
       </div>
     </div>
     <div class="col-md-4">
       <div class="card text-white bg-success">
-        <div class="card-body"><h5>Participantes</h5><p class="display-6">{{totalParticipantes}}</p></div>
+        <div class="card-body">
+          <h5>Participantes</h5>
+          <p class="display-6">{{totalParticipantes}}</p>
+        </div>
       </div>
     </div>
     {{/if}}
   </div>
 
   <div class="mt-4">
-    <a href="/certificados" class="btn btn-outline-primary">Ver certificados públicos</a>
+    <a href="/certificados" class="btn btn-outline-primary"
+      >Ver certificados públicos</a
+    >
   </div>
   ```
+
 - Critério de aceite: arquivo criado; ao renderizar com `{ usuario: { isAdmin: true }, totalEventos: 5, ... }` exibe os 4 cards; sem `isAdmin` exibe apenas os cards de certificados e participantes
 - Escopo: 1 arquivo criado
 - Dependência: TASK-031-A
@@ -1716,6 +1949,7 @@ Sprint 10 (documentação e otimização)
 - Contexto: cria o router `/admin` com a rota `GET /dashboard` protegida por `authSSR`. O `app.js` já tem o padrão de require/use para as rotas
 - Passos:
   1. Criar `src/routes/admin.js`:
+
      ```js
      const express = require('express')
      const router = express.Router()
@@ -1728,6 +1962,7 @@ Sprint 10 (documentação e otimização)
 
      module.exports = router
      ```
+
   2. Em `app.js`, no bloco de `require` das rotas, adicionar:
      ```js
      var adminRouter = require('./src/routes/admin')
@@ -1736,6 +1971,7 @@ Sprint 10 (documentação e otimização)
      ```js
      app.use('/admin', adminRouter)
      ```
+
 - Critério de aceite: `GET /admin/dashboard` sem cookie redireciona para `/auth/login`; com cookie válido renderiza `admin/dashboard` com dados do controller
 - Escopo: 2 arquivos (1 criado, 1 modificado)
 - Dependência: TASK-030-A, TASK-031-B
@@ -1759,7 +1995,14 @@ Sprint 10 (documentação e otimização)
     <a href="/admin/eventos/novo" class="btn btn-primary">+ Novo Evento</a>
   </div>
   <table class="table table-bordered">
-    <thead><tr><th>Nome</th><th>Código</th><th>Ano</th><th>Ações</th></tr></thead>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Código</th>
+        <th>Ano</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
     <tbody>
       {{#each eventos}}
       <tr>
@@ -1767,23 +2010,42 @@ Sprint 10 (documentação e otimização)
         <td><code>{{codigo_base}}</code></td>
         <td>{{ano}}</td>
         <td>
-          <a href="/admin/eventos/{{id}}/editar" class="btn btn-sm btn-warning">Editar</a>
-          <form method="POST" action="/admin/eventos/{{id}}/deletar" class="d-inline"
-                onsubmit="return confirm('Remover este evento?')">
+          <a href="/admin/eventos/{{id}}/editar" class="btn btn-sm btn-warning"
+            >Editar</a
+          >
+          <form
+            method="POST"
+            action="/admin/eventos/{{id}}/deletar"
+            class="d-inline"
+            onsubmit="return confirm('Remover este evento?')"
+          >
             <button type="submit" class="btn btn-sm btn-danger">Remover</button>
           </form>
         </td>
       </tr>
       {{else}}
-      <tr><td colspan="4" class="text-center text-muted">Nenhum evento cadastrado.</td></tr>
+      <tr>
+        <td colspan="4" class="text-center text-muted">
+          Nenhum evento cadastrado.
+        </td>
+      </tr>
       {{/each}}
     </tbody>
   </table>
   {{#if arquivados}}
   <details class="mt-4">
-    <summary class="btn btn-link">Eventos arquivados ({{arquivados.length}})</summary>
+    <summary class="btn btn-link">
+      Eventos arquivados ({{arquivados.length}})
+    </summary>
     <table class="table table-bordered mt-2">
-      <thead><tr><th>Nome</th><th>Código</th><th>Ano</th><th>Ações</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Código</th>
+          <th>Ano</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
       <tbody>
         {{#each arquivados}}
         <tr class="table-secondary">
@@ -1791,8 +2053,14 @@ Sprint 10 (documentação e otimização)
           <td><code>{{codigo_base}}</code></td>
           <td>{{ano}}</td>
           <td>
-            <form method="POST" action="/admin/eventos/{{id}}/restaurar" class="d-inline">
-              <button type="submit" class="btn btn-sm btn-success">Restaurar</button>
+            <form
+              method="POST"
+              action="/admin/eventos/{{id}}/restaurar"
+              class="d-inline"
+            >
+              <button type="submit" class="btn btn-sm btn-success">
+                Restaurar
+              </button>
             </form>
           </td>
         </tr>
@@ -1818,21 +2086,48 @@ Sprint 10 (documentação e otimização)
     <div class="col-md-6">
       <form method="POST" action="{{action}}">
         <div class="mb-3">
-          <label for="nome" class="form-label">Nome do evento <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" name="nome" id="nome"
-                 value="{{evento.nome}}" required>
+          <label for="nome" class="form-label"
+            >Nome do evento <span class="text-danger">*</span></label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="nome"
+            id="nome"
+            value="{{evento.nome}}"
+            required
+          />
         </div>
         <div class="mb-3">
-          <label for="codigo_base" class="form-label">Código base (3 letras) <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" name="codigo_base" id="codigo_base"
-                 value="{{evento.codigo_base}}" required
-                 pattern="[A-Za-z]{3}" maxlength="3"
-                 title="Exatamente 3 letras (sem números ou símbolos)">
+          <label for="codigo_base" class="form-label"
+            >Código base (3 letras) <span class="text-danger">*</span></label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="codigo_base"
+            id="codigo_base"
+            value="{{evento.codigo_base}}"
+            required
+            pattern="[A-Za-z]{3}"
+            maxlength="3"
+            title="Exatamente 3 letras (sem números ou símbolos)"
+          />
         </div>
         <div class="mb-3">
-          <label for="ano" class="form-label">Ano <span class="text-danger">*</span></label>
-          <input type="number" class="form-control" name="ano" id="ano"
-                 value="{{evento.ano}}" required min="2000" max="2100">
+          <label for="ano" class="form-label"
+            >Ano <span class="text-danger">*</span></label
+          >
+          <input
+            type="number"
+            class="form-control"
+            name="ano"
+            id="ano"
+            value="{{evento.ano}}"
+            required
+            min="2000"
+            max="2100"
+          />
         </div>
         <button type="submit" class="btn btn-primary">Salvar</button>
         <a href="/admin/eventos" class="btn btn-secondary ms-2">Cancelar</a>
@@ -1851,6 +2146,7 @@ Sprint 10 (documentação e otimização)
 - Arquivo: `src/controllers/eventoSSRController.js` (CRIAR)
 - Contexto: controller SSR com 7 métodos que delegam ao `eventoService` para as operações de CRUD. Para listar eventos arquivados usa `Evento.findAll({ paranoid: false, where: { deleted_at: { [Op.ne]: null } } })` diretamente (já que o service não expõe essa query). Após operações de escrita usa `req.flash` + `res.redirect`. Em erros de formulário, re-renderiza a view com os dados digitados.
 - Passos: criar o arquivo com conteúdo:
+
   ```js
   const eventoService = require('../services/eventoService')
   const { Evento } = require('../models')
@@ -1953,6 +2249,7 @@ Sprint 10 (documentação e otimização)
     },
   }
   ```
+
 - Critério de aceite: controller exporta os 7 métodos; `index` retorna eventos ativos e arquivados separados; `criar` re-renderiza o form com `evento: req.body` em caso de erro para preservar os valores digitados
 - Escopo: 1 arquivo criado
 - Dependência: TASK-032-A, TASK-032-B
@@ -1974,11 +2271,23 @@ Sprint 10 (documentação e otimização)
      // Gestão de eventos (somente admin)
      router.get('/eventos', rbac('admin'), eventoSSRController.index)
      router.get('/eventos/novo', rbac('admin'), eventoSSRController.novo)
-     router.get('/eventos/:id/editar', rbac('admin'), eventoSSRController.editar)
+     router.get(
+       '/eventos/:id/editar',
+       rbac('admin'),
+       eventoSSRController.editar,
+     )
      router.post('/eventos', rbac('admin'), eventoSSRController.criar)
      router.post('/eventos/:id', rbac('admin'), eventoSSRController.atualizar)
-     router.post('/eventos/:id/deletar', rbac('admin'), eventoSSRController.deletar)
-     router.post('/eventos/:id/restaurar', rbac('admin'), eventoSSRController.restaurar)
+     router.post(
+       '/eventos/:id/deletar',
+       rbac('admin'),
+       eventoSSRController.deletar,
+     )
+     router.post(
+       '/eventos/:id/restaurar',
+       rbac('admin'),
+       eventoSSRController.restaurar,
+     )
      ```
 - Critério de aceite: `GET /admin/eventos` sem cookie redireciona para `/auth/login` (pelo `authSSR` aplicado via `router.use`); com token de admin renderiza listagem; com token de gestor ou monitor retorna 403
 - Escopo: 1 arquivo modificado
@@ -2000,16 +2309,32 @@ Sprint 10 (documentação e otimização)
   ```html
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Participantes</h1>
-    <a href="/admin/participantes/novo" class="btn btn-primary">+ Novo Participante</a>
+    <a href="/admin/participantes/novo" class="btn btn-primary"
+      >+ Novo Participante</a
+    >
   </div>
   <form method="GET" action="/admin/participantes" class="mb-3 d-flex gap-2">
-    <input type="text" class="form-control" name="q" value="{{q}}" placeholder="Buscar por nome ou email">
+    <input
+      type="text"
+      class="form-control"
+      name="q"
+      value="{{q}}"
+      placeholder="Buscar por nome ou email"
+    />
     <button type="submit" class="btn btn-outline-secondary">Buscar</button>
-    {{#if q}}<a href="/admin/participantes" class="btn btn-outline-danger">Limpar</a>{{/if}}
+    {{#if q}}<a href="/admin/participantes" class="btn btn-outline-danger"
+      >Limpar</a
+    >{{/if}}
   </form>
   <table class="table table-bordered">
     <thead>
-      <tr><th>Nome</th><th>E-mail</th><th>Instituição</th><th>Certificados</th><th>Ações</th></tr>
+      <tr>
+        <th>Nome</th>
+        <th>E-mail</th>
+        <th>Instituição</th>
+        <th>Certificados</th>
+        <th>Ações</th>
+      </tr>
     </thead>
     <tbody>
       {{#each participantes}}
@@ -2019,31 +2344,57 @@ Sprint 10 (documentação e otimização)
         <td>{{instituicao}}</td>
         <td>{{numCertificados}}</td>
         <td>
-          <a href="/admin/participantes/{{id}}/editar" class="btn btn-sm btn-warning">Editar</a>
-          <form method="POST" action="/admin/participantes/{{id}}/deletar" class="d-inline"
-                onsubmit="return confirm('Remover este participante?')">
+          <a
+            href="/admin/participantes/{{id}}/editar"
+            class="btn btn-sm btn-warning"
+            >Editar</a
+          >
+          <form
+            method="POST"
+            action="/admin/participantes/{{id}}/deletar"
+            class="d-inline"
+            onsubmit="return confirm('Remover este participante?')"
+          >
             <button type="submit" class="btn btn-sm btn-danger">Remover</button>
           </form>
         </td>
       </tr>
       {{else}}
-      <tr><td colspan="5" class="text-center text-muted">Nenhum participante encontrado.</td></tr>
+      <tr>
+        <td colspan="5" class="text-center text-muted">
+          Nenhum participante encontrado.
+        </td>
+      </tr>
       {{/each}}
     </tbody>
   </table>
   {{#if arquivados}}
   <details class="mt-4">
-    <summary class="btn btn-link">Participantes arquivados ({{arquivados.length}})</summary>
+    <summary class="btn btn-link">
+      Participantes arquivados ({{arquivados.length}})
+    </summary>
     <table class="table table-bordered mt-2">
-      <thead><tr><th>Nome</th><th>E-mail</th><th>Ações</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>E-mail</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
       <tbody>
         {{#each arquivados}}
         <tr class="table-secondary">
           <td>{{nomeCompleto}}</td>
           <td>{{email}}</td>
           <td>
-            <form method="POST" action="/admin/participantes/{{id}}/restaurar" class="d-inline">
-              <button type="submit" class="btn btn-sm btn-success">Restaurar</button>
+            <form
+              method="POST"
+              action="/admin/participantes/{{id}}/restaurar"
+              class="d-inline"
+            >
+              <button type="submit" class="btn btn-sm btn-success">
+                Restaurar
+              </button>
             </form>
           </td>
         </tr>
@@ -2069,22 +2420,45 @@ Sprint 10 (documentação e otimização)
     <div class="col-md-6">
       <form method="POST" action="{{action}}">
         <div class="mb-3">
-          <label for="nomeCompleto" class="form-label">Nome completo <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" name="nomeCompleto" id="nomeCompleto"
-                 value="{{participante.nomeCompleto}}" required>
+          <label for="nomeCompleto" class="form-label"
+            >Nome completo <span class="text-danger">*</span></label
+          >
+          <input
+            type="text"
+            class="form-control"
+            name="nomeCompleto"
+            id="nomeCompleto"
+            value="{{participante.nomeCompleto}}"
+            required
+          />
         </div>
         <div class="mb-3">
-          <label for="email" class="form-label">E-mail <span class="text-danger">*</span></label>
-          <input type="email" class="form-control" name="email" id="email"
-                 value="{{participante.email}}" required>
+          <label for="email" class="form-label"
+            >E-mail <span class="text-danger">*</span></label
+          >
+          <input
+            type="email"
+            class="form-control"
+            name="email"
+            id="email"
+            value="{{participante.email}}"
+            required
+          />
         </div>
         <div class="mb-3">
           <label for="instituicao" class="form-label">Instituição</label>
-          <input type="text" class="form-control" name="instituicao" id="instituicao"
-                 value="{{participante.instituicao}}">
+          <input
+            type="text"
+            class="form-control"
+            name="instituicao"
+            id="instituicao"
+            value="{{participante.instituicao}}"
+          />
         </div>
         <button type="submit" class="btn btn-primary">Salvar</button>
-        <a href="/admin/participantes" class="btn btn-secondary ms-2">Cancelar</a>
+        <a href="/admin/participantes" class="btn btn-secondary ms-2"
+          >Cancelar</a
+        >
       </form>
     </div>
   </div>
@@ -2101,6 +2475,7 @@ Sprint 10 (documentação e otimização)
 - Contexto: controller SSR com 7 métodos. `index` aceita `?q=` para busca case-insensitive por `nome_completo` ou `email` via `Op.iLike`. Para cada participante retornado, conta certificados via `Certificado.count({ where: { participante_id: p.id } })`. Participantes arquivados via `paranoid: false`. Rotas adicionadas ao `src/routes/admin.js` criado na TASK-031-C (após as rotas de eventos da TASK-032-D), todas protegidas por `rbac('monitor')` (todos os perfis autenticados).
 - Passos:
   1. Criar `src/controllers/participanteSSRController.js`:
+
      ```js
      const participanteService = require('../services/participanteService')
      const { Participante, Certificado } = require('../models')
@@ -2155,7 +2530,9 @@ Sprint 10 (documentação e otimização)
 
        async editar(req, res) {
          try {
-           const participante = await participanteService.findById(req.params.id)
+           const participante = await participanteService.findById(
+             req.params.id,
+           )
            if (!participante) {
              req.flash('error', 'Participante não encontrado.')
              return res.redirect('/admin/participantes')
@@ -2222,18 +2599,48 @@ Sprint 10 (documentação e otimização)
        },
      }
      ```
+
   2. Em `src/routes/admin.js`, após as rotas de eventos (TASK-032-D), adicionar:
      ```js
      // Gestão de participantes (monitor, gestor, admin)
      const participanteSSRController = require('../controllers/participanteSSRController')
-     router.get('/participantes', rbac('monitor'), participanteSSRController.index)
-     router.get('/participantes/novo', rbac('monitor'), participanteSSRController.novo)
-     router.get('/participantes/:id/editar', rbac('monitor'), participanteSSRController.editar)
-     router.post('/participantes', rbac('monitor'), participanteSSRController.criar)
-     router.post('/participantes/:id', rbac('monitor'), participanteSSRController.atualizar)
-     router.post('/participantes/:id/deletar', rbac('monitor'), participanteSSRController.deletar)
-     router.post('/participantes/:id/restaurar', rbac('monitor'), participanteSSRController.restaurar)
+     router.get(
+       '/participantes',
+       rbac('monitor'),
+       participanteSSRController.index,
+     )
+     router.get(
+       '/participantes/novo',
+       rbac('monitor'),
+       participanteSSRController.novo,
+     )
+     router.get(
+       '/participantes/:id/editar',
+       rbac('monitor'),
+       participanteSSRController.editar,
+     )
+     router.post(
+       '/participantes',
+       rbac('monitor'),
+       participanteSSRController.criar,
+     )
+     router.post(
+       '/participantes/:id',
+       rbac('monitor'),
+       participanteSSRController.atualizar,
+     )
+     router.post(
+       '/participantes/:id/deletar',
+       rbac('monitor'),
+       participanteSSRController.deletar,
+     )
+     router.post(
+       '/participantes/:id/restaurar',
+       rbac('monitor'),
+       participanteSSRController.restaurar,
+     )
      ```
+
 - Critério de aceite: `GET /admin/participantes?q=silva` retorna participantes cujo `nome_completo` ou `email` contém "silva" (case insensitive via `Op.iLike`); `numCertificados` é exibido em cada linha; monitor, gestor e admin conseguem acessar
 - Escopo: 2 arquivos (1 criado, 1 modificado)
 - Dependências: TASK-032-D, TASK-033-A, TASK-033-B
@@ -2413,17 +2820,27 @@ Sprint 10 (documentação e otimização)
   <h2>Certificado #{{certificado.id}}</h2>
   <div class="card mt-3">
     <div class="card-body">
-      <p><strong>Participante:</strong> {{certificado.Participante.nomeCompleto}}</p>
+      <p>
+        <strong>Participante:</strong> {{certificado.Participante.nomeCompleto}}
+      </p>
       <p><strong>Evento:</strong> {{certificado.Evento.nome}}</p>
       <p><strong>Tipo:</strong> {{certificado.TiposCertificados.descricao}}</p>
-      <p><strong>Status:</strong> <span class="badge bg-secondary">{{certificado.status}}</span></p>
+      <p>
+        <strong>Status:</strong>
+        <span class="badge bg-secondary">{{certificado.status}}</span>
+      </p>
       <p><strong>Código:</strong> <code>{{certificado.codigo}}</code></p>
-      <hr>
+      <hr />
       <h5>Texto do certificado</h5>
       <p>{{textoInterpolado}}</p>
     </div>
     <div class="card-footer">
-      <a href="/public/certificados/{{certificado.id}}/pdf" class="btn btn-success" target="_blank">Baixar PDF</a>
+      <a
+        href="/public/certificados/{{certificado.id}}/pdf"
+        class="btn btn-success"
+        target="_blank"
+        >Baixar PDF</a
+      >
       <a href="/admin/certificados" class="btn btn-secondary ms-2">Voltar</a>
     </div>
   </div>
@@ -2439,9 +2856,15 @@ Sprint 10 (documentação e otimização)
 - Arquivo: `src/controllers/certificadoSSRController.js` (CRIAR)
 - Contexto: controller SSR com 8 métodos. `index` aplica filtros de `evento_id`, `status` e `tipo_id` na query. Para gestor/monitor, o `scopedEvento` middleware já força `req.query.evento_id` — o controller apenas usa esse valor se presente. `detalhe` usa `templateService.interpolate` para gerar o texto final. `criar` trata `valores_dinamicos` serializado pelo form como `valores_dinamicos[chave]=valor` (precisa recompor o objeto a partir de `req.body.valores_dinamicos`).
 - Passos: criar o arquivo com conteúdo:
+
   ```js
   const certificadoService = require('../services/certificadoService')
-  const { Certificado, Participante, Evento, TiposCertificados } = require('../models')
+  const {
+    Certificado,
+    Participante,
+    Evento,
+    TiposCertificados,
+  } = require('../models')
   const templateService = require('../services/templateService')
   const { Op } = require('sequelize')
 
@@ -2464,7 +2887,10 @@ Sprint 10 (documentação e otimização)
         ])
         const certificados = certificadosRaw.map((c) => {
           const json = c.toJSON()
-          json.statusBadge = { emitido: 'success', pendente: 'warning', cancelado: 'secondary' }[json.status] || 'secondary'
+          json.statusBadge =
+            { emitido: 'success', pendente: 'warning', cancelado: 'secondary' }[
+              json.status
+            ] || 'secondary'
           return json
         })
         return res.render('admin/certificados/index', {
@@ -2501,7 +2927,8 @@ Sprint 10 (documentação e otimização)
       try {
         const body = { ...req.body }
         // valores_dinamicos chegam como objeto do body-parser
-        if (typeof body.valores_dinamicos !== 'object') body.valores_dinamicos = {}
+        if (typeof body.valores_dinamicos !== 'object')
+          body.valores_dinamicos = {}
         await certificadoService.create(body)
         req.flash('success', 'Certificado emitido com sucesso.')
         return res.redirect('/admin/certificados')
@@ -2536,7 +2963,10 @@ Sprint 10 (documentação e otimização)
         }
         const tipo = certificado.TiposCertificados
         const textoInterpolado = tipo
-          ? templateService.interpolate(tipo.texto_base, certificado.valores_dinamicos || {})
+          ? templateService.interpolate(
+              tipo.texto_base,
+              certificado.valores_dinamicos || {},
+            )
           : ''
         return res.render('admin/certificados/detalhe', {
           layout: 'layouts/admin',
@@ -2584,6 +3014,7 @@ Sprint 10 (documentação e otimização)
     },
   }
   ```
+
 - Critério de aceite: controller exporta os 7 métodos; `index` aplica `where` condicional com filtros; `detalhe` chama `templateService.interpolate`; `criar` trata `valores_dinamicos` como objeto
 - Escopo: 1 arquivo criado
 - Dependência: TASK-034-A, TASK-034-B
@@ -2599,21 +3030,44 @@ Sprint 10 (documentação e otimização)
   // Gestão de certificados (monitor, gestor, admin)
   const scopedEvento = require('../middlewares/scopedEvento')
   const certificadoSSRController = require('../controllers/certificadoSSRController')
-  router.get('/certificados', rbac('monitor'), scopedEvento, certificadoSSRController.index)
-  router.get('/certificados/novo', rbac('monitor'), certificadoSSRController.novo)
-  router.get('/certificados/:id', rbac('monitor'), certificadoSSRController.detalhe)
+  router.get(
+    '/certificados',
+    rbac('monitor'),
+    scopedEvento,
+    certificadoSSRController.index,
+  )
+  router.get(
+    '/certificados/novo',
+    rbac('monitor'),
+    certificadoSSRController.novo,
+  )
+  router.get(
+    '/certificados/:id',
+    rbac('monitor'),
+    certificadoSSRController.detalhe,
+  )
   router.post('/certificados', rbac('monitor'), certificadoSSRController.criar)
-  router.post('/certificados/:id/cancelar', rbac('monitor'), certificadoSSRController.cancelar)
-  router.post('/certificados/:id/deletar', rbac('monitor'), certificadoSSRController.deletar)
-  router.post('/certificados/:id/restaurar', rbac('monitor'), certificadoSSRController.restaurar)
+  router.post(
+    '/certificados/:id/cancelar',
+    rbac('monitor'),
+    certificadoSSRController.cancelar,
+  )
+  router.post(
+    '/certificados/:id/deletar',
+    rbac('monitor'),
+    certificadoSSRController.deletar,
+  )
+  router.post(
+    '/certificados/:id/restaurar',
+    rbac('monitor'),
+    certificadoSSRController.restaurar,
+  )
   ```
 - Critério de aceite: `GET /admin/certificados` com gestor vinculado ao evento 1 exibe apenas certificados do evento 1 (scopedEvento força `req.query.evento_id`); admin vê todos; monitor acessa sem restrição de tipo mas com restrição de evento
 - Escopo: 1 arquivo modificado
 - Dependências: TASK-033-C, TASK-034-C
 
 ---
-
-
 
 ### TASK-35 🟡 Views de gestão de tipos de certificados
 
@@ -2629,10 +3083,20 @@ Sprint 10 (documentação e otimização)
   ```html
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Tipos de Certificados</h1>
-    <a href="/admin/tipos-certificados/novo" class="btn btn-primary">+ Novo Tipo</a>
+    <a href="/admin/tipos-certificados/novo" class="btn btn-primary"
+      >+ Novo Tipo</a
+    >
   </div>
   <table class="table table-bordered">
-    <thead><tr><th>Código</th><th>Descrição</th><th>Campo destaque</th><th>Certificados emitidos</th><th>Ações</th></tr></thead>
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Descrição</th>
+        <th>Campo destaque</th>
+        <th>Certificados emitidos</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
     <tbody>
       {{#each tipos}}
       <tr>
@@ -2641,31 +3105,57 @@ Sprint 10 (documentação e otimização)
         <td>{{campo_destaque}}</td>
         <td>{{numCertificados}}</td>
         <td>
-          <a href="/admin/tipos-certificados/{{id}}/editar" class="btn btn-sm btn-warning">Editar</a>
-          <form method="POST" action="/admin/tipos-certificados/{{id}}/deletar" class="d-inline"
-                onsubmit="return confirm('Remover este tipo de certificado?')">
+          <a
+            href="/admin/tipos-certificados/{{id}}/editar"
+            class="btn btn-sm btn-warning"
+            >Editar</a
+          >
+          <form
+            method="POST"
+            action="/admin/tipos-certificados/{{id}}/deletar"
+            class="d-inline"
+            onsubmit="return confirm('Remover este tipo de certificado?')"
+          >
             <button type="submit" class="btn btn-sm btn-danger">Remover</button>
           </form>
         </td>
       </tr>
       {{else}}
-      <tr><td colspan="5" class="text-center text-muted">Nenhum tipo cadastrado.</td></tr>
+      <tr>
+        <td colspan="5" class="text-center text-muted">
+          Nenhum tipo cadastrado.
+        </td>
+      </tr>
       {{/each}}
     </tbody>
   </table>
   {{#if arquivados}}
   <details class="mt-4">
-    <summary class="btn btn-link">Tipos arquivados ({{arquivados.length}})</summary>
+    <summary class="btn btn-link">
+      Tipos arquivados ({{arquivados.length}})
+    </summary>
     <table class="table table-bordered mt-2">
-      <thead><tr><th>Código</th><th>Descrição</th><th>Ações</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Descrição</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
       <tbody>
         {{#each arquivados}}
         <tr class="table-secondary">
           <td><code>{{codigo}}</code></td>
           <td>{{descricao}}</td>
           <td>
-            <form method="POST" action="/admin/tipos-certificados/{{id}}/restaurar" class="d-inline">
-              <button type="submit" class="btn btn-sm btn-success">Restaurar</button>
+            <form
+              method="POST"
+              action="/admin/tipos-certificados/{{id}}/restaurar"
+              class="d-inline"
+            >
+              <button type="submit" class="btn btn-sm btn-success">
+                Restaurar
+              </button>
             </form>
           </td>
         </tr>
@@ -2685,6 +3175,7 @@ Sprint 10 (documentação e otimização)
 - Arquivo: `views/admin/tipos-certificados/form.hbs` (CRIAR)
 - Contexto: formulário mais complexo do sistema. Campos fixos: `codigo` (2 letras, `pattern`), `descricao`, `texto_base` (textarea), `campo_destaque` (`<select>` dinâmico). Campos dinâmicos: botão "+ Adicionar campo" gera pares `<input name="campo">` + `<input name="valor">` que são coletados pelo JS antes do submit e serializados em `dados_dinamicos`. Preview ao vivo interpola `texto_base` com valores de exemplo enquanto o usuário digita.
 - Passos: criar o arquivo com conteúdo:
+
   ```html
   <h2>{{title}}</h2>
   <div class="row mt-3">
@@ -2789,6 +3280,7 @@ Sprint 10 (documentação e otimização)
     updateAll()
   </script>
   ```
+
 - Critério de aceite: `codigo` tem `pattern="[A-Za-z]{2}"` e `maxlength="2"`; botão "+ Adicionar campo" chama `addCampo()`; `campo_destaque` se atualiza dinamicamente; preview ao vivo usa `replace` com a mesma regex de `templateService`; `serializeDadosDinamicos()` é chamado no `onsubmit` para enviar `dados_dinamicos` como JSON no campo hidden
 - Escopo: 1 arquivo criado
 - Dependência: TASK-035-A
@@ -2801,6 +3293,7 @@ Sprint 10 (documentação e otimização)
 - Contexto: controller SSR com 7 métodos. `index` conta certificados emitidos por tipo via `Certificado.count`. Em `criar`/`atualizar`, o body traz `dados_dinamicos` como string JSON (campo hidden do form) — precisa fazer `JSON.parse` antes de passar ao service. `tipo.dados_dinamicos_json` passado ao template é `JSON.stringify(tipo.dados_dinamicos || {})` para inicializar o editor no modo edição. Rotas protegidas por `rbac('gestor')` (gestor e admin).
 - Passos:
   1. Criar `src/controllers/tiposCertificadosSSRController.js`:
+
      ```js
      const tiposCertificadosService = require('../services/tiposCertificadosService')
      const { TiposCertificados, Certificado } = require('../models')
@@ -2851,7 +3344,9 @@ Sprint 10 (documentação e otimização)
              return res.redirect('/admin/tipos-certificados')
            }
            const json = tipo.toJSON()
-           json.dados_dinamicos_json = JSON.stringify(json.dados_dinamicos || {})
+           json.dados_dinamicos_json = JSON.stringify(
+             json.dados_dinamicos || {},
+           )
            return res.render('admin/tipos-certificados/form', {
              layout: 'layouts/admin',
              title: 'Editar Tipo',
@@ -2867,7 +3362,11 @@ Sprint 10 (documentação e otimização)
        async criar(req, res) {
          try {
            const body = { ...req.body }
-           try { body.dados_dinamicos = JSON.parse(body.dados_dinamicos) } catch (_) { body.dados_dinamicos = {} }
+           try {
+             body.dados_dinamicos = JSON.parse(body.dados_dinamicos)
+           } catch (_) {
+             body.dados_dinamicos = {}
+           }
            await tiposCertificadosService.create(body)
            req.flash('success', 'Tipo de certificado criado com sucesso.')
            return res.redirect('/admin/tipos-certificados')
@@ -2877,7 +3376,10 @@ Sprint 10 (documentação e otimização)
              layout: 'layouts/admin',
              title: 'Novo Tipo de Certificado',
              action: '/admin/tipos-certificados',
-             tipo: { ...req.body, dados_dinamicos_json: req.body.dados_dinamicos || '{}' },
+             tipo: {
+               ...req.body,
+               dados_dinamicos_json: req.body.dados_dinamicos || '{}',
+             },
            })
          }
        },
@@ -2885,13 +3387,19 @@ Sprint 10 (documentação e otimização)
        async atualizar(req, res) {
          try {
            const body = { ...req.body }
-           try { body.dados_dinamicos = JSON.parse(body.dados_dinamicos) } catch (_) { body.dados_dinamicos = {} }
+           try {
+             body.dados_dinamicos = JSON.parse(body.dados_dinamicos)
+           } catch (_) {
+             body.dados_dinamicos = {}
+           }
            await tiposCertificadosService.update(req.params.id, body)
            req.flash('success', 'Tipo de certificado atualizado com sucesso.')
            return res.redirect('/admin/tipos-certificados')
          } catch (err) {
            req.flash('error', err.message)
-           return res.redirect(`/admin/tipos-certificados/${req.params.id}/editar`)
+           return res.redirect(
+             `/admin/tipos-certificados/${req.params.id}/editar`,
+           )
          }
        },
 
@@ -2918,25 +3426,53 @@ Sprint 10 (documentação e otimização)
        },
      }
      ```
+
   2. Em `src/routes/admin.js`, após as rotas de certificados (TASK-034-D), adicionar:
      ```js
      // Gestão de tipos de certificados (gestor e admin)
      const tiposCertificadosSSRController = require('../controllers/tiposCertificadosSSRController')
-     router.get('/tipos-certificados', rbac('gestor'), tiposCertificadosSSRController.index)
-     router.get('/tipos-certificados/novo', rbac('gestor'), tiposCertificadosSSRController.novo)
-     router.get('/tipos-certificados/:id/editar', rbac('gestor'), tiposCertificadosSSRController.editar)
-     router.post('/tipos-certificados', rbac('gestor'), tiposCertificadosSSRController.criar)
-     router.post('/tipos-certificados/:id', rbac('gestor'), tiposCertificadosSSRController.atualizar)
-     router.post('/tipos-certificados/:id/deletar', rbac('gestor'), tiposCertificadosSSRController.deletar)
-     router.post('/tipos-certificados/:id/restaurar', rbac('gestor'), tiposCertificadosSSRController.restaurar)
+     router.get(
+       '/tipos-certificados',
+       rbac('gestor'),
+       tiposCertificadosSSRController.index,
+     )
+     router.get(
+       '/tipos-certificados/novo',
+       rbac('gestor'),
+       tiposCertificadosSSRController.novo,
+     )
+     router.get(
+       '/tipos-certificados/:id/editar',
+       rbac('gestor'),
+       tiposCertificadosSSRController.editar,
+     )
+     router.post(
+       '/tipos-certificados',
+       rbac('gestor'),
+       tiposCertificadosSSRController.criar,
+     )
+     router.post(
+       '/tipos-certificados/:id',
+       rbac('gestor'),
+       tiposCertificadosSSRController.atualizar,
+     )
+     router.post(
+       '/tipos-certificados/:id/deletar',
+       rbac('gestor'),
+       tiposCertificadosSSRController.deletar,
+     )
+     router.post(
+       '/tipos-certificados/:id/restaurar',
+       rbac('gestor'),
+       tiposCertificadosSSRController.restaurar,
+     )
      ```
+
 - Critério de aceite: `GET /admin/tipos-certificados` com token de monitor retorna 403; com gestor ou admin renderiza a listagem; `POST /admin/tipos-certificados` com `dados_dinamicos` como string JSON válida cria o tipo corretamente
 - Escopo: 2 arquivos (1 criado, 1 modificado)
 - Dependências: TASK-034-D, TASK-035-A, TASK-035-B
 
 ---
-
-
 
 ### TASK-36 🟡 Views de gestão de usuários
 
@@ -2955,7 +3491,15 @@ Sprint 10 (documentação e otimização)
     <a href="/admin/usuarios/novo" class="btn btn-primary">+ Novo Usuário</a>
   </div>
   <table class="table table-bordered">
-    <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Eventos</th><th>Ações</th></tr></thead>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>E-mail</th>
+        <th>Perfil</th>
+        <th>Eventos</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
     <tbody>
       {{#each usuarios}}
       <tr>
@@ -2964,23 +3508,42 @@ Sprint 10 (documentação e otimização)
         <td><span class="badge bg-{{perfilBadge}}">{{perfil}}</span></td>
         <td><small>{{eventosVinculados}}</small></td>
         <td>
-          <a href="/admin/usuarios/{{id}}/editar" class="btn btn-sm btn-warning">Editar</a>
-          <form method="POST" action="/admin/usuarios/{{id}}/deletar" class="d-inline"
-                onsubmit="return confirm('Remover este usuário?')">
+          <a href="/admin/usuarios/{{id}}/editar" class="btn btn-sm btn-warning"
+            >Editar</a
+          >
+          <form
+            method="POST"
+            action="/admin/usuarios/{{id}}/deletar"
+            class="d-inline"
+            onsubmit="return confirm('Remover este usuário?')"
+          >
             <button type="submit" class="btn btn-sm btn-danger">Remover</button>
           </form>
         </td>
       </tr>
       {{else}}
-      <tr><td colspan="5" class="text-center text-muted">Nenhum usuário cadastrado.</td></tr>
+      <tr>
+        <td colspan="5" class="text-center text-muted">
+          Nenhum usuário cadastrado.
+        </td>
+      </tr>
       {{/each}}
     </tbody>
   </table>
   {{#if arquivados}}
   <details class="mt-4">
-    <summary class="btn btn-link">Usuários arquivados ({{arquivados.length}})</summary>
+    <summary class="btn btn-link">
+      Usuários arquivados ({{arquivados.length}})
+    </summary>
     <table class="table table-bordered mt-2">
-      <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Ações</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>E-mail</th>
+          <th>Perfil</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
       <tbody>
         {{#each arquivados}}
         <tr class="table-secondary">
@@ -2988,8 +3551,14 @@ Sprint 10 (documentação e otimização)
           <td>{{email}}</td>
           <td>{{perfil}}</td>
           <td>
-            <form method="POST" action="/admin/usuarios/{{id}}/restaurar" class="d-inline">
-              <button type="submit" class="btn btn-sm btn-success">Restaurar</button>
+            <form
+              method="POST"
+              action="/admin/usuarios/{{id}}/restaurar"
+              class="d-inline"
+            >
+              <button type="submit" class="btn btn-sm btn-success">
+                Restaurar
+              </button>
             </form>
           </td>
         </tr>
@@ -3083,12 +3652,17 @@ Sprint 10 (documentação e otimização)
 - Contexto: controller SSR com 7 métodos. `index` carrega usuários com associação `eventos` (via `Usuario.findAll({ include: 'eventos' })`) e transforma `usuario.eventos.map(e => e.nome).join(', ')` em `eventosVinculados`. `criar`/`atualizar` lêem `req.body['eventos[]']` (que chega como array ou string do form) e chamam `usuario.setEventos(eventoIds)` após criar/atualizar. Em modo edição, a senha só é atualizada se o campo `senha` não for vazio. `perfilBadge` é derivado no controller (` danger`/`primary`/`secondary`).
 - Passos:
   1. Criar `src/controllers/usuarioSSRController.js`:
+
      ```js
      const { Usuario, Evento } = require('../models')
      const bcrypt = require('bcryptjs')
      const { Op } = require('sequelize')
 
-     const PERFIL_BADGE = { admin: 'danger', gestor: 'primary', monitor: 'secondary' }
+     const PERFIL_BADGE = {
+       admin: 'danger',
+       gestor: 'primary',
+       monitor: 'secondary',
+     }
 
      module.exports = {
        async index(req, res) {
@@ -3096,7 +3670,9 @@ Sprint 10 (documentação e otimização)
            const usuariosRaw = await Usuario.findAll({ include: 'eventos' })
            const usuarios = usuariosRaw.map((u) => {
              const json = u.toJSON()
-             json.eventosVinculados = (json.eventos || []).map((e) => e.nome).join(', ')
+             json.eventosVinculados = (json.eventos || [])
+               .map((e) => e.nome)
+               .join(', ')
              json.perfilBadge = PERFIL_BADGE[json.perfil] || 'secondary'
              return json
            })
@@ -3129,7 +3705,9 @@ Sprint 10 (documentação e otimização)
 
        async editar(req, res) {
          try {
-           const usuario = await Usuario.findByPk(req.params.id, { include: 'eventos' })
+           const usuario = await Usuario.findByPk(req.params.id, {
+             include: 'eventos',
+           })
            if (!usuario) {
              req.flash('error', 'Usuário não encontrado.')
              return res.redirect('/admin/usuarios')
@@ -3154,7 +3732,10 @@ Sprint 10 (documentação e otimização)
        async criar(req, res) {
          try {
            const { nome, email, senha, perfil } = req.body
-           const eventoIds = [].concat(req.body['eventos[]'] || []).map(Number).filter(Boolean)
+           const eventoIds = []
+             .concat(req.body['eventos[]'] || [])
+             .map(Number)
+             .filter(Boolean)
            const usuario = await Usuario.create({ nome, email, senha, perfil })
            if (eventoIds.length > 0) await usuario.setEventos(eventoIds)
            req.flash('success', 'Usuário criado com sucesso.')
@@ -3180,12 +3761,19 @@ Sprint 10 (documentação e otimização)
              req.flash('error', 'Usuário não encontrado.')
              return res.redirect('/admin/usuarios')
            }
-           const updates = { nome: req.body.nome, email: req.body.email, perfil: req.body.perfil }
+           const updates = {
+             nome: req.body.nome,
+             email: req.body.email,
+             perfil: req.body.perfil,
+           }
            if (req.body.senha && req.body.senha.trim() !== '') {
              updates.senha = req.body.senha
            }
            await usuario.update(updates)
-           const eventoIds = [].concat(req.body['eventos[]'] || []).map(Number).filter(Boolean)
+           const eventoIds = []
+             .concat(req.body['eventos[]'] || [])
+             .map(Number)
+             .filter(Boolean)
            await usuario.setEventos(eventoIds)
            req.flash('success', 'Usuário atualizado com sucesso.')
            return res.redirect('/admin/usuarios')
@@ -3209,7 +3797,9 @@ Sprint 10 (documentação e otimização)
 
        async restaurar(req, res) {
          try {
-           const usuario = await Usuario.findByPk(req.params.id, { paranoid: false })
+           const usuario = await Usuario.findByPk(req.params.id, {
+             paranoid: false,
+           })
            if (usuario) await usuario.restore()
            req.flash('success', 'Usuário restaurado com sucesso.')
            return res.redirect('/admin/usuarios')
@@ -3220,25 +3810,37 @@ Sprint 10 (documentação e otimização)
        },
      }
      ```
+
   2. Em `src/routes/admin.js`, após as rotas de tipos de certificados (TASK-035-C), adicionar:
      ```js
      // Gestão de usuários (somente admin)
      const usuarioSSRController = require('../controllers/usuarioSSRController')
      router.get('/usuarios', rbac('admin'), usuarioSSRController.index)
      router.get('/usuarios/novo', rbac('admin'), usuarioSSRController.novo)
-     router.get('/usuarios/:id/editar', rbac('admin'), usuarioSSRController.editar)
+     router.get(
+       '/usuarios/:id/editar',
+       rbac('admin'),
+       usuarioSSRController.editar,
+     )
      router.post('/usuarios', rbac('admin'), usuarioSSRController.criar)
      router.post('/usuarios/:id', rbac('admin'), usuarioSSRController.atualizar)
-     router.post('/usuarios/:id/deletar', rbac('admin'), usuarioSSRController.deletar)
-     router.post('/usuarios/:id/restaurar', rbac('admin'), usuarioSSRController.restaurar)
+     router.post(
+       '/usuarios/:id/deletar',
+       rbac('admin'),
+       usuarioSSRController.deletar,
+     )
+     router.post(
+       '/usuarios/:id/restaurar',
+       rbac('admin'),
+       usuarioSSRController.restaurar,
+     )
      ```
+
 - Critério de aceite: `GET /admin/usuarios` com token de gestor retorna 403; com admin renderiza a listagem; `POST /admin/usuarios` cria usuário e associa eventos via `setEventos`; em modo edição, senha só é atualizada se campo não for vazio
 - Escopo: 2 arquivos (1 criado, 1 modificado)
 - Dependências: TASK-035-C, TASK-036-A, TASK-036-B
 
 ---
-
-
 
 ## ÉPICO 8 — Testes de Interface E2E (Playwright)
 
@@ -3277,6 +3879,7 @@ Sprint 10 (documentação e otimização)
 - Arquivo: `playwright.config.js` (CRIAR)
 - Contexto: a aplicação roda em `http://localhost:3000` no ambiente de teste E2E. O banco de testes é o mesmo do Jest (variável `DATABASE_URL` do `.env.test`). Os testes ficam em `tests/e2e/`. O relatório HTML é gerado em `playwright-report/`.
 - Passos: criar o arquivo com conteúdo:
+
   ```js
   const { defineConfig, devices } = require('@playwright/test')
 
@@ -3299,6 +3902,7 @@ Sprint 10 (documentação e otimização)
     ],
   })
   ```
+
 - Critério de aceite: `npx playwright test --list` (com a aplicação rodando) não lança erro de configuração; diretório `playwright-report/` está no `.gitignore`
 - Escopo: 1 arquivo criado
 - Dependência: TASK-037-A
@@ -3317,10 +3921,17 @@ Sprint 10 (documentação e otimização)
      test-results/
      ```
   2. Criar `tests/e2e/setup/seed.js` com conteúdo:
+
      ```js
      require('dotenv').config()
-     const { sequelize, Evento, Participante, TiposCertificados, Certificado, Usuario } =
-       require('../../../src/models')
+     const {
+       sequelize,
+       Evento,
+       Participante,
+       TiposCertificados,
+       Certificado,
+       Usuario,
+     } = require('../../../src/models')
 
      async function seed() {
        await sequelize.sync()
@@ -3332,7 +3943,11 @@ Sprint 10 (documentação e otimização)
        await Evento.destroy({ where: {}, force: true })
        await Usuario.destroy({ where: {}, force: true })
 
-       const evento = await Evento.create({ nome: 'Evento Teste E2E', codigo_base: 'ETE', ano: 2026 })
+       const evento = await Evento.create({
+         nome: 'Evento Teste E2E',
+         codigo_base: 'ETE',
+         ano: 2026,
+       })
 
        const tipo = await TiposCertificados.create({
          codigo: 'PT',
@@ -3353,29 +3968,49 @@ Sprint 10 (documentação e otimização)
          participante_id: participante.id,
          evento_id: evento.id,
          tipo_certificado_id: tipo.id,
-         valores_dinamicos: { nome: 'Participante Teste', evento: 'Evento Teste E2E' },
+         valores_dinamicos: {
+           nome: 'Participante Teste',
+           evento: 'Evento Teste E2E',
+         },
          status: 'emitido',
        })
 
-       await Usuario.create({ nome: 'Admin E2E', email: 'admin@e2e.com', senha: 'Admin@1234', perfil: 'admin' })
-       const gestor = await Usuario.create({ nome: 'Gestor E2E', email: 'gestor@e2e.com', senha: 'Gestor@1234', perfil: 'gestor' })
+       await Usuario.create({
+         nome: 'Admin E2E',
+         email: 'admin@e2e.com',
+         senha: 'Admin@1234',
+         perfil: 'admin',
+       })
+       const gestor = await Usuario.create({
+         nome: 'Gestor E2E',
+         email: 'gestor@e2e.com',
+         senha: 'Gestor@1234',
+         perfil: 'gestor',
+       })
        await gestor.setEventos([evento.id])
-       const monitor = await Usuario.create({ nome: 'Monitor E2E', email: 'monitor@e2e.com', senha: 'Monitor@1234', perfil: 'monitor' })
+       const monitor = await Usuario.create({
+         nome: 'Monitor E2E',
+         email: 'monitor@e2e.com',
+         senha: 'Monitor@1234',
+         perfil: 'monitor',
+       })
        await monitor.setEventos([evento.id])
 
        console.log('Seed E2E concluído.')
        await sequelize.close()
      }
 
-     seed().catch((err) => { console.error(err); process.exit(1) })
+     seed().catch((err) => {
+       console.error(err)
+       process.exit(1)
+     })
      ```
+
 - Critério de aceite: `playwright-report/` e `test-results/` estão no `.gitignore`; `node tests/e2e/setup/seed.js` popula o banco sem erros
 - Escopo: 2 arquivos (1 modificado, 1 criado)
 - Dependência: TASK-037-B
 
 ---
-
-
 
 ### TASK-38 🟡 Testes E2E — Fluxo Público de Certificados
 
@@ -3388,6 +4023,7 @@ Sprint 10 (documentação e otimização)
 - Arquivo: `tests/e2e/helpers/auth.js` (CRIAR)
 - Contexto: helper reutilizável por todos os suites E2E. `loginAs(page, perfil)` navega para `/auth/login`, preenche as credenciais do perfil correspondente ao seed criado em TASK-037-C e aguarda o redirecionamento para `/admin/dashboard`. As credenciais de cada perfil estão fixas no seed (`admin@e2e.com`, `gestor@e2e.com`, `monitor@e2e.com`).
 - Passos: criar o arquivo com conteúdo:
+
   ```js
   const CREDENTIALS = {
     admin: { email: 'admin@e2e.com', senha: 'Admin@1234' },
@@ -3407,6 +4043,7 @@ Sprint 10 (documentação e otimização)
 
   module.exports = { loginAs }
   ```
+
 - Critério de aceite: arquivo criado no caminho correto; importado por `publico.spec.js` e `auth.spec.js` sem erro
 - Escopo: 1 arquivo criado
 - Dependência: TASK-037-C
@@ -3418,6 +4055,7 @@ Sprint 10 (documentação e otimização)
 - Arquivo: `tests/e2e/helpers/api.js` (CRIAR)
 - Contexto: helper para criar dados via JSON API (bearer token) antes de executar casos de teste que dependem de registros pré-existentes. Evita dependência do seed fixo para testes que precisam de dados únicos. Usa `fetch` nativo do Node.js 18+ (disponibilizado pelo Playwright runtime).
 - Passos: criar o arquivo com conteúdo:
+
   ```js
   const BASE_URL = process.env.BASE_URL || 'http://localhost:3000'
 
@@ -3442,13 +4080,16 @@ Sprint 10 (documentação e otimização)
     })
     if (!res.ok) {
       const body = await res.text()
-      throw new Error(`createViaApi ${endpoint} falhou (${res.status}): ${body}`)
+      throw new Error(
+        `createViaApi ${endpoint} falhou (${res.status}): ${body}`,
+      )
     }
     return res.json()
   }
 
   module.exports = { getAdminToken, createViaApi }
   ```
+
 - Critério de aceite: arquivo criado; `getAdminToken()` retorna JWT válido quando a API está rodando; `createViaApi('/eventos', data, token)` cria um evento e retorna o objeto criado
 - Escopo: 1 arquivo criado
 - Dependência: TASK-038-A
@@ -3460,6 +4101,7 @@ Sprint 10 (documentação e otimização)
 - Arquivo: `tests/e2e/publico.spec.js` (CRIAR)
 - Contexto: 10 casos de uso do fluxo público. As rotas SSR públicas foram implementadas em TASK-029-C com prefixo `/public/pagina/...`. Os testes rodam com banco já populado pelo seed (TASK-037-C) que cria `e2e@teste.com` com um certificado com código gerado. Como o código do certificado é gerado automaticamente, UC-P07 e UC-P08 devem buscar o código via API antes de executar.
 - Passos: criar o arquivo com conteúdo:
+
   ```js
   const { test, expect } = require('@playwright/test')
   const { getAdminToken } = require('./helpers/api')
@@ -3474,24 +4116,30 @@ Sprint 10 (documentação e otimização)
       headers: { Authorization: `Bearer ${token}` },
     })
     const body = await res.json()
-    const certs = Array.isArray(body) ? body : (body.data || [])
+    const certs = Array.isArray(body) ? body : body.data || []
     codigoValido = certs[0]?.codigo || 'INVALIDO'
   })
 
-  test('UC-P01 — Página de opções exibe botões Obter e Validar', async ({ page }) => {
+  test('UC-P01 — Página de opções exibe botões Obter e Validar', async ({
+    page,
+  }) => {
     await page.goto('/public/pagina/opcoes')
     await expect(page.locator('a[href*="obter"]')).toBeVisible()
     await expect(page.locator('a[href*="validar"]')).toBeVisible()
   })
 
-  test('UC-P02 — Botão Obter leva ao formulário com campo email', async ({ page }) => {
+  test('UC-P02 — Botão Obter leva ao formulário com campo email', async ({
+    page,
+  }) => {
     await page.goto('/public/pagina/opcoes')
     await page.click('a[href*="obter"]')
     await expect(page).toHaveURL(/obter/)
     await expect(page.locator('#email')).toBeVisible()
   })
 
-  test('UC-P03 — Email cadastrado exibe lista de certificados com botão PDF', async ({ page }) => {
+  test('UC-P03 — Email cadastrado exibe lista de certificados com botão PDF', async ({
+    page,
+  }) => {
     await page.goto('/public/pagina/obter')
     await page.fill('#email', EMAIL_SEED)
     await page.click('button[type="submit"]')
@@ -3499,7 +4147,9 @@ Sprint 10 (documentação e otimização)
     await expect(page.locator('a[href*="/pdf"]')).toBeVisible()
   })
 
-  test('UC-P04 — Email não encontrado exibe mensagem de erro', async ({ page }) => {
+  test('UC-P04 — Email não encontrado exibe mensagem de erro', async ({
+    page,
+  }) => {
     await page.goto('/public/pagina/obter')
     await page.fill('#email', 'nao.existe@teste.com')
     await page.click('button[type="submit"]')
@@ -3507,13 +4157,17 @@ Sprint 10 (documentação e otimização)
     await expect(page).toHaveURL(/obter|buscar/)
   })
 
-  test('UC-P05 — Email inválido é barrado pela validação HTML5', async ({ page }) => {
+  test('UC-P05 — Email inválido é barrado pela validação HTML5', async ({
+    page,
+  }) => {
     await page.goto('/public/pagina/obter')
     await page.fill('#email', 'email-invalido')
     await page.click('button[type="submit"]')
     // Validação HTML5 impede o envio; permanece na página
     await expect(page).toHaveURL(/obter/)
-    const isInvalid = await page.locator('#email').evaluate((el) => !el.validity.valid)
+    const isInvalid = await page
+      .locator('#email')
+      .evaluate((el) => !el.validity.valid)
     expect(isInvalid).toBe(true)
   })
 
@@ -3536,7 +4190,9 @@ Sprint 10 (documentação e otimização)
     await expect(page.locator('.card.border-danger')).toBeVisible()
   })
 
-  test('UC-P09 — Link "Validar outro" volta ao formulário limpo', async ({ page }) => {
+  test('UC-P09 — Link "Validar outro" volta ao formulário limpo', async ({
+    page,
+  }) => {
     await page.goto('/public/pagina/validar')
     await page.fill('#codigo', 'QUALQUER')
     await page.click('button[type="submit"]')
@@ -3545,7 +4201,9 @@ Sprint 10 (documentação e otimização)
     await expect(page.locator('#codigo')).toHaveValue('')
   })
 
-  test('UC-P10 — Botão Baixar PDF inicia download com Content-Type correto', async ({ page }) => {
+  test('UC-P10 — Botão Baixar PDF inicia download com Content-Type correto', async ({
+    page,
+  }) => {
     await page.goto('/public/pagina/obter')
     await page.fill('#email', EMAIL_SEED)
     await page.click('button[type="submit"]')
@@ -3556,13 +4214,12 @@ Sprint 10 (documentação e otimização)
     expect(download.suggestedFilename()).toMatch(/\.pdf$/i)
   })
   ```
+
 - Critério de aceite: arquivo criado; `npx playwright test publico.spec.js` com servidor e banco rodando passa todos os 10 testes
 - Escopo: 1 arquivo criado
 - Dependência: TASK-038-A, TASK-038-B, TASK-037-C
 
 ---
-
-
 
 ### TASK-39 🟡 Testes E2E — Autenticação e RBAC
 
@@ -3575,6 +4232,7 @@ Sprint 10 (documentação e otimização)
 - Arquivo: `tests/e2e/auth.spec.js` (CRIAR)
 - Contexto: os primeiros 7 casos cobrem o fluxo de login com credenciais válidas/inválidas e o ciclo logout+redirect. Usa o helper `loginAs` criado em TASK-038-A. O helper `loginAs` aguarda `waitForURL('**/admin/dashboard')`, garantindo que o redirecionamento ocorreu antes das asserções.
 - Passos: criar o arquivo com os casos UC-A01 a UC-A07:
+
   ```js
   const { test, expect } = require('@playwright/test')
   const { loginAs } = require('./helpers/auth')
@@ -3585,7 +4243,9 @@ Sprint 10 (documentação e otimização)
     await expect(page.locator('text=Admin E2E')).toBeVisible()
   })
 
-  test('UC-A02 — Login com senha incorreta exibe mensagem de erro', async ({ page }) => {
+  test('UC-A02 — Login com senha incorreta exibe mensagem de erro', async ({
+    page,
+  }) => {
     await page.goto('/auth/login')
     await page.fill('#email', 'admin@e2e.com')
     await page.fill('#senha', 'senha-errada')
@@ -3594,7 +4254,9 @@ Sprint 10 (documentação e otimização)
     await expect(page.locator('.alert-danger')).toBeVisible()
   })
 
-  test('UC-A03 — Login com email não cadastrado exibe mensagem de erro', async ({ page }) => {
+  test('UC-A03 — Login com email não cadastrado exibe mensagem de erro', async ({
+    page,
+  }) => {
     await page.goto('/auth/login')
     await page.fill('#email', 'nao.existe@e2e.com')
     await page.fill('#senha', 'qualquer')
@@ -3603,29 +4265,38 @@ Sprint 10 (documentação e otimização)
     await expect(page.locator('.alert-danger')).toBeVisible()
   })
 
-  test('UC-A04 — Usuário não autenticado é redirecionado de /admin/dashboard', async ({ page }) => {
+  test('UC-A04 — Usuário não autenticado é redirecionado de /admin/dashboard', async ({
+    page,
+  }) => {
     await page.goto('/admin/dashboard')
     await expect(page).toHaveURL(/auth\/login/)
   })
 
-  test('UC-A05 — Usuário não autenticado é redirecionado de /admin/eventos', async ({ page }) => {
+  test('UC-A05 — Usuário não autenticado é redirecionado de /admin/eventos', async ({
+    page,
+  }) => {
     await page.goto('/admin/eventos')
     await expect(page).toHaveURL(/auth\/login/)
   })
 
-  test('UC-A06 — Admin faz logout e é redirecionado ao login', async ({ page }) => {
+  test('UC-A06 — Admin faz logout e é redirecionado ao login', async ({
+    page,
+  }) => {
     await loginAs(page, 'admin')
     await page.click('button[type="submit"]') // botão "Sair" do admin layout
     await expect(page).toHaveURL(/auth\/login/)
   })
 
-  test('UC-A07 — Após logout, acessar /admin/dashboard redireciona ao login', async ({ page }) => {
+  test('UC-A07 — Após logout, acessar /admin/dashboard redireciona ao login', async ({
+    page,
+  }) => {
     await loginAs(page, 'admin')
     await page.click('button[type="submit"]') // logout
     await page.goto('/admin/dashboard')
     await expect(page).toHaveURL(/auth\/login/)
   })
   ```
+
 - Critério de aceite: 7 testes no arquivo; UC-A01 verifica o nome do usuário na navbar; UC-A04/A05 verificam redirecionamento sem autenticação
 - Escopo: 1 arquivo criado
 - Dependência: TASK-038-A (helper `loginAs`)
@@ -3637,8 +4308,11 @@ Sprint 10 (documentação e otimização)
 - Arquivo: `tests/e2e/auth.spec.js` (MODIFICAR)
 - Contexto: os casos UC-A08 a UC-A11 verificam que RBAC bloqueia acesso a rotas protegidas. O `rbac` retorna JSON `{ error: 'Acesso negado...' }` com status 403 — no contexto SSR isso resulta em uma resposta JSON inline na página (pois o middleware é o mesmo para SSR e API). Para o caso UC-A10, o gestor precisa de um evento B separado do evento A do seed — o seed deve ter sido criado com dois eventos pelo TASK-039-C.
 - Passos: adicionar ao final de `tests/e2e/auth.spec.js`:
+
   ```js
-  test('UC-A08 — Monitor não acessa /admin/usuarios (403)', async ({ page }) => {
+  test('UC-A08 — Monitor não acessa /admin/usuarios (403)', async ({
+    page,
+  }) => {
     await loginAs(page, 'monitor')
     const res = await page.goto('/admin/usuarios')
     expect(res.status()).toBe(403)
@@ -3650,7 +4324,9 @@ Sprint 10 (documentação e otimização)
     expect(res.status()).toBe(403)
   })
 
-  test('UC-A10 — Gestor vê apenas certificados do seu evento', async ({ page }) => {
+  test('UC-A10 — Gestor vê apenas certificados do seu evento', async ({
+    page,
+  }) => {
     await loginAs(page, 'gestor')
     await page.goto('/admin/certificados')
     await expect(page).toHaveURL(/certificados/)
@@ -3659,7 +4335,9 @@ Sprint 10 (documentação e otimização)
     await expect(page.locator('h1')).toHaveText('Certificados')
   })
 
-  test('UC-A11 — Gestor com evento_id de outro evento recebe 403', async ({ page }) => {
+  test('UC-A11 — Gestor com evento_id de outro evento recebe 403', async ({
+    page,
+  }) => {
     await loginAs(page, 'gestor')
     // Tenta filtrar por evento_id=999 (inexistente no escopo do gestor)
     const res = await page.goto('/admin/certificados?evento_id=999')
@@ -3667,13 +4345,12 @@ Sprint 10 (documentação e otimização)
     expect(res.status()).toBe(403)
   })
   ```
+
 - Critério de aceite: arquivo atualizado com 4 testes adicionais (total 11); `npx playwright test auth.spec.js` passa sem flakiness
 - Escopo: 1 arquivo modificado
 - Dependência: TASK-039-A
 
 ---
-
-
 
 ### TASK-40 🟢 Testes E2E — Fluxo Administrativo Completo
 
@@ -3686,6 +4363,7 @@ Sprint 10 (documentação e otimização)
 - Arquivo: `tests/e2e/admin.spec.js` (CRIAR)
 - Contexto: cada teste cria seus próprios dados via API antes de executar (usando o helper `createViaApi` de TASK-038-B), para ser independente do seed fixo. O `beforeAll` obtém um token de admin e o armazena para uso nos testes. O `beforeEach` faz login via `loginAs` para garantir que o cookie está presente.
 - Passos: criar o arquivo com os 4 primeiros casos:
+
   ```js
   const { test, expect } = require('@playwright/test')
   const { loginAs } = require('./helpers/auth')
@@ -3701,7 +4379,9 @@ Sprint 10 (documentação e otimização)
     await loginAs(page, 'admin')
   })
 
-  test('UC-AD01 — Admin cria evento e flash de sucesso aparece', async ({ page }) => {
+  test('UC-AD01 — Admin cria evento e flash de sucesso aparece', async ({
+    page,
+  }) => {
     await page.goto('/admin/eventos/novo')
     await page.fill('#nome', 'Evento E2E Criado')
     await page.fill('#codigo_base', 'EEC')
@@ -3712,8 +4392,14 @@ Sprint 10 (documentação e otimização)
     await expect(page.locator('td')).toContainText('Evento E2E Criado')
   })
 
-  test('UC-AD02 — Admin edita evento e dados são atualizados', async ({ page }) => {
-    const evento = await createViaApi('/eventos', { nome: 'Evento Para Editar', codigo_base: 'EPE', ano: 2026 }, adminToken)
+  test('UC-AD02 — Admin edita evento e dados são atualizados', async ({
+    page,
+  }) => {
+    const evento = await createViaApi(
+      '/eventos',
+      { nome: 'Evento Para Editar', codigo_base: 'EPE', ano: 2026 },
+      adminToken,
+    )
     await page.goto(`/admin/eventos/${evento.id}/editar`)
     await page.fill('#nome', 'Evento Editado')
     await page.click('button[type="submit"]')
@@ -3722,8 +4408,14 @@ Sprint 10 (documentação e otimização)
     await expect(page.locator('td')).toContainText('Evento Editado')
   })
 
-  test('UC-AD03 — Admin remove evento e aparece em Arquivados', async ({ page }) => {
-    const evento = await createViaApi('/eventos', { nome: 'Evento Para Remover', codigo_base: 'EPR', ano: 2026 }, adminToken)
+  test('UC-AD03 — Admin remove evento e aparece em Arquivados', async ({
+    page,
+  }) => {
+    const evento = await createViaApi(
+      '/eventos',
+      { nome: 'Evento Para Remover', codigo_base: 'EPR', ano: 2026 },
+      adminToken,
+    )
     await page.goto('/admin/eventos')
     // Clica no botão Remover do evento reciém-criado (aceita o confirm via dialog handler)
     page.on('dialog', (dialog) => dialog.accept())
@@ -3732,8 +4424,14 @@ Sprint 10 (documentação e otimização)
     await expect(page.locator('details')).toContainText('Evento Para Remover')
   })
 
-  test('UC-AD04 — Admin restaura evento arquivado e volta à tabela ativa', async ({ page }) => {
-    const evento = await createViaApi('/eventos', { nome: 'Evento Para Restaurar', codigo_base: 'EPT', ano: 2026 }, adminToken)
+  test('UC-AD04 — Admin restaura evento arquivado e volta à tabela ativa', async ({
+    page,
+  }) => {
+    const evento = await createViaApi(
+      '/eventos',
+      { nome: 'Evento Para Restaurar', codigo_base: 'EPT', ano: 2026 },
+      adminToken,
+    )
     // Deleta via API para arquivar
     await fetch(`http://localhost:3000/eventos/${evento.id}`, {
       method: 'DELETE',
@@ -3742,9 +4440,12 @@ Sprint 10 (documentação e otimização)
     await page.goto('/admin/eventos')
     await page.click(`form[action*="${evento.id}/restaurar"] button`)
     await expect(page.locator('.alert-success')).toBeVisible()
-    await expect(page.locator('tbody td')).toContainText('Evento Para Restaurar')
+    await expect(page.locator('tbody td')).toContainText(
+      'Evento Para Restaurar',
+    )
   })
   ```
+
 - Critério de aceite: 4 testes no arquivo; cada um é independente; UC-AD03 usa `page.on('dialog', ...)` para aceitar o `confirm()` do browser
 - Escopo: 1 arquivo criado
 - Dependência: TASK-038-B
@@ -3756,11 +4457,21 @@ Sprint 10 (documentação e otimização)
 - Arquivo: `tests/e2e/admin.spec.js` (MODIFICAR)
 - Contexto: os casos UC-AD05 a UC-AD08 cobrem criação de participante com email duplicado, criação de tipo de certificado com campos dinâmicos, emissão e cancelamento de certificado. UC-AD06 precisa de interação com o editor JS dinâmico de campos (clicar "+ Adicionar campo" e preencher). UC-AD07 usa o select de tipo que dispara o fetch de campos dinâmicos.
 - Passos: adicionar ao final de `tests/e2e/admin.spec.js`:
+
   ```js
-  test('UC-AD05 — Email duplicado de participante exibe erro no formulário', async ({ page }) => {
+  test('UC-AD05 — Email duplicado de participante exibe erro no formulário', async ({
+    page,
+  }) => {
     // Cria o primeiro via API
-    await createViaApi('/participantes',
-      { nomeCompleto: 'Participante Dup', email: 'dup@e2e.com', instituicao: 'Org' }, adminToken)
+    await createViaApi(
+      '/participantes',
+      {
+        nomeCompleto: 'Participante Dup',
+        email: 'dup@e2e.com',
+        instituicao: 'Org',
+      },
+      adminToken,
+    )
     // Tenta cadastrar de novo via formulário
     await page.goto('/admin/participantes/novo')
     await page.fill('#nomeCompleto', 'Participante Dup 2')
@@ -3770,7 +4481,9 @@ Sprint 10 (documentação e otimização)
     await expect(page).toHaveURL(/participantes\/novo|participantes$/)
   })
 
-  test('UC-AD06 — Gestor cria tipo de certificado com campo dinâmico', async ({ page }) => {
+  test('UC-AD06 — Gestor cria tipo de certificado com campo dinâmico', async ({
+    page,
+  }) => {
     await page.goto('/auth/login')
     await page.fill('#email', 'gestor@e2e.com')
     await page.fill('#senha', 'Gestor@1234')
@@ -3789,14 +4502,24 @@ Sprint 10 (documentação e otimização)
     await expect(page.locator('td')).toContainText('Tipo Teste')
   })
 
-  test('UC-AD07 — Gestor emite certificado e status aparece como emitido', async ({ page }) => {
+  test('UC-AD07 — Gestor emite certificado e status aparece como emitido', async ({
+    page,
+  }) => {
     // Busca IDs necessários via API
     const [participantes, tipos, eventos] = await Promise.all([
-      fetch('http://localhost:3000/participantes', { headers: { Authorization: `Bearer ${adminToken}` } }).then(r => r.json()),
-      fetch('http://localhost:3000/tipos-certificados', { headers: { Authorization: `Bearer ${adminToken}` } }).then(r => r.json()),
-      fetch('http://localhost:3000/eventos', { headers: { Authorization: `Bearer ${adminToken}` } }).then(r => r.json()),
+      fetch('http://localhost:3000/participantes', {
+        headers: { Authorization: `Bearer ${adminToken}` },
+      }).then((r) => r.json()),
+      fetch('http://localhost:3000/tipos-certificados', {
+        headers: { Authorization: `Bearer ${adminToken}` },
+      }).then((r) => r.json()),
+      fetch('http://localhost:3000/eventos', {
+        headers: { Authorization: `Bearer ${adminToken}` },
+      }).then((r) => r.json()),
     ])
-    const p = Array.isArray(participantes) ? participantes[0] : participantes.data[0]
+    const p = Array.isArray(participantes)
+      ? participantes[0]
+      : participantes.data[0]
     const t = Array.isArray(tipos) ? tipos[0] : tipos.data[0]
     const e = Array.isArray(eventos) ? eventos[0] : eventos.data[0]
     await page.goto('/admin/certificados/novo')
@@ -3813,7 +4536,9 @@ Sprint 10 (documentação e otimização)
     await expect(page.locator('.badge')).toContainText('emitido')
   })
 
-  test('UC-AD08 — Gestor cancela certificado emitido e status muda', async ({ page }) => {
+  test('UC-AD08 — Gestor cancela certificado emitido e status muda', async ({
+    page,
+  }) => {
     await page.goto('/admin/certificados')
     const modalBtn = page.locator('button[data-bs-toggle="modal"]').first()
     await modalBtn.click()
@@ -3825,6 +4550,7 @@ Sprint 10 (documentação e otimização)
     await expect(page.locator('.badge')).toContainText('cancelado')
   })
   ```
+
 - Critério de aceite: 4 testes adicionados (total 8 no arquivo); UC-AD06 interage com o editor dinâmico de campos; UC-AD07 aguarda o fetch de campos dinâmicos com timeout de 5s
 - Escopo: 1 arquivo modificado
 - Dependência: TASK-040-A
@@ -3836,11 +4562,14 @@ Sprint 10 (documentação e otimização)
 - Arquivo: `tests/e2e/admin.spec.js` (MODIFICAR)
 - Contexto: os últimos 2 casos cobrem criação de usuário gestor com seleção de evento via checkbox e o comportamento de email duplicado. UC-AD09 verifica que após criar o usuário, o evento vinculado aparece na tabela. UC-AD10 cria o participante via API primeiro e depois tenta criar outro com o mesmo email.
 - Passos: adicionar ao final de `tests/e2e/admin.spec.js`:
+
   ```js
-  test('UC-AD09 — Admin cria usuário gestor e vincula a evento', async ({ page }) => {
+  test('UC-AD09 — Admin cria usuário gestor e vincula a evento', async ({
+    page,
+  }) => {
     const eventos = await fetch('http://localhost:3000/eventos', {
       headers: { Authorization: `Bearer ${adminToken}` },
-    }).then(r => r.json())
+    }).then((r) => r.json())
     const evento = Array.isArray(eventos) ? eventos[0] : eventos.data[0]
     await page.goto('/admin/usuarios/novo')
     await page.fill('#nome', 'Gestor Novo')
@@ -3854,8 +4583,20 @@ Sprint 10 (documentação e otimização)
     await expect(page.locator('td')).toContainText(evento.nome)
   })
 
-  test('UC-AD10 — Admin tenta criar usuário com email duplicado e vê erro', async ({ page }) => {
-    await createViaApi('/usuarios', { nome: 'Dup Admin', email: 'dup.admin@e2e.com', senha: 'Dup@1234', perfil: 'monitor', eventos: [] }, adminToken)
+  test('UC-AD10 — Admin tenta criar usuário com email duplicado e vê erro', async ({
+    page,
+  }) => {
+    await createViaApi(
+      '/usuarios',
+      {
+        nome: 'Dup Admin',
+        email: 'dup.admin@e2e.com',
+        senha: 'Dup@1234',
+        perfil: 'monitor',
+        eventos: [],
+      },
+      adminToken,
+    )
     await page.goto('/admin/usuarios/novo')
     await page.fill('#nome', 'Dup Admin 2')
     await page.fill('#email', 'dup.admin@e2e.com')
@@ -3865,9 +4606,9 @@ Sprint 10 (documentação e otimização)
     await expect(page).toHaveURL(/usuarios\/novo|usuarios$/)
   })
   ```
+
 - Critério de aceite: arquivo completo com 10 testes (UC-AD01 a UC-AD10); `npx playwright test admin.spec.js` passa com servidor e banco rodando; nenhum teste depende de estado deixado por outro
 - Escopo: 1 arquivo modificado
 - Dependência: TASK-040-B
 
 ---
-
