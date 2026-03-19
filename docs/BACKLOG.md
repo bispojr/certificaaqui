@@ -1108,12 +1108,12 @@ Sprint 10 (documentação e otimização)
 
 ---
 
-**[TASK-028-A] Instalar `connect-flash` e `express-session`**
 
-- Arquivo: `package.json`
-- Passos: executar `npm install connect-flash express-session`; verificar que ambos aparecem em `dependencies`
-- Critério de aceite: `require('connect-flash')` e `require('express-session')` não lançam erro
-- Escopo: 1 arquivo modificado (via npm)
+- [x] Instalar `connect-flash` e `express-session` — concluído em 2026-03-19 06:05 (BRT)
+  - Arquivo: `package.json`
+  - Passos: executar `npm install connect-flash express-session`; verificar que ambos aparecem em `dependencies`
+  - Critério de aceite: `require('connect-flash')` e `require('express-session')` não lançam erro
+  - Escopo: 1 arquivo modificado (via npm)
 
 ---
 
