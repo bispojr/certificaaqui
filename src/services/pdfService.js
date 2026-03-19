@@ -10,6 +10,8 @@ module.exports = {
   generateCertificadoPdf(certificado) {
     return new Promise((resolve, reject) => {
       try {
+        // Log para depuração
+        console.log('PDFService certificado:', certificado)
         if (!certificado.codigo) {
           return reject(new Error('Código de validação obrigatório'))
         }
@@ -23,12 +25,24 @@ module.exports = {
         // Dados principais
         const evento = certificado.Evento
         const participante = certificado.Participante
-        const tipo = certificado.TiposCertificados
-        const texto = templateService.interpolate(tipo.texto_base, {
-          ...participante?.dataValues,
-          ...certificado?.dataValues,
-          ...evento?.dataValues,
-        })
+        // Corrige para aceitar tanto TiposCertificados (plural) quanto TiposCertificado (singular)
+        const tipo =
+          certificado.TiposCertificado || certificado.TiposCertificados
+        if (!tipo || !tipo.texto_base) {
+          return reject(
+            new Error('Tipo de certificado inválido ou sem texto_base'),
+          )
+        }
+        let texto
+        try {
+          texto = templateService.interpolate(tipo.texto_base, {
+            ...participante?.dataValues,
+            ...certificado?.dataValues,
+            ...evento?.dataValues,
+          })
+        } catch (err) {
+          return reject(new Error(err.message || 'Erro de interpolação'))
+        }
 
         // Layout simples
         doc.fontSize(20).text(evento?.nome || 'Evento', { align: 'center' })

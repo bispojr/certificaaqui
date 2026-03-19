@@ -249,40 +249,11 @@
 
 ---
 
-## Ordem de Execução Sugerida
-
-```
-Sprint 1 (fundação)
-  TASK-02 → TASK-01 → TASK-03 → TASK-08 → TASK-09 → TASK-10
-
-Sprint 2 (backend funcional)
-  TASK-06 → TASK-04 → TASK-07 → TASK-05
-
-Sprint 3 (qualidade)
-  TASK-11 → TASK-12 → TASK-13 → TASK-14
-
-Sprint 4 (refinamento)
-  TASK-15
-```
-
-## Sumário de Pontuação
-
-| Épico                                    | Pontos   | Prioridade    |
-| ---------------------------------------- | -------- | ------------- |
-| Épico 1 — Integridade do Banco           | 7        | 🔴 Crítica    |
-| Épico 2 — Separação de Responsabilidades | 34       | 🔴/🟡         |
-| Épico 3 — Qualidade e Manutenibilidade   | 3.5      | 🟡 Importante |
-| Épico 4 — Documentação                   | 6        | 🟡/🟢         |
-| Épico 5 — Tooling                        | 10       | 🟢 Opcional   |
-| **Total**                                | **60.5** |               |
-
----
-
 ## ÉPICO 6 — Bugfixes e Funcionalidades Core (Auditoria 03 — 2026-03-14)
 
 > Gerado com base na auditoria arquitetural comparativa de 14/03/2026.
 
-### TASK-16 🔴 Corrigir `templateService.js` — formato de interpolação — concluído em 2026-03-14 22:32 (BRT)
+### TASK-16 🔴 Corrigir `templateService.js` — formato de interpolação — concluído em 2026-03-14 22:32 (BRT) ✅
 
 **Por que:** O `templateService.js` usa `{{chave}}` mas a especificação (FR-13) e o repositório de referência usam `${campo}`. Nenhuma interpolação de certificado funciona atualmente.
 
@@ -297,7 +268,7 @@ Sprint 4 (refinamento)
 
 ---
 
-### TASK-17 🔴 Corrigir `JWT_SECRET` inconsistente entre `middleware/auth.js` e `usuarioController.js`
+### TASK-17 🔴 Corrigir `JWT_SECRET` inconsistente entre `middleware/auth.js` e `usuarioController.js` ✅
 
 **Por que:** `middleware/auth.js` usa fallback `'segredo-super-seguro'`; `usuarioController.js` usa fallback `'secret'`. Em ambientes sem `.env`, login retorna token mas toda requisição autenticada falha com 401.
 
@@ -312,7 +283,7 @@ Sprint 4 (refinamento)
 
 ---
 
-### TASK-18 🔴 Corrigir `scopedEvento.js` para modelo N:N — concluído em 2026-03-14 22:14 (BRT)
+### TASK-18 🔴 Corrigir `scopedEvento.js` para modelo N:N — concluído em 2026-03-14 22:14 (BRT) ✅
 
 **Por que:** `scopedEvento.js` usa `req.usuario.evento_id` (campo removido na migração `20260313195000-remove-evento_id-from-usuarios.js`). Gestores e monitores recebem 403 em todas as operações de alteração.
 
@@ -329,7 +300,7 @@ Sprint 4 (refinamento)
 
 ---
 
-### TASK-19 🔴 Implementar rotas públicas de consulta e validação (FR-23, FR-24) — concluído em 2026-03-15 15:15 (BRT)
+### TASK-19 🔴 Implementar rotas públicas de consulta e validação (FR-23, FR-24) — concluído em 2026-03-15 15:15 (BRT) ✅
 
 **Por que:** As rotas públicas são o principal ponto de contato do participante com o sistema. Estão especificadas (FR-23, FR-24) mas não implementadas.
 
@@ -352,7 +323,7 @@ Sprint 4 (refinamento)
 
 ---
 
-**[TASK-020-A] Instalar dependência pdfkit** — concluído em 2026-03-16 21:20 (BRT)
+**[TASK-020-A] Instalar dependência pdfkit** — concluído em 2026-03-16 21:20 (BRT) ✅
 
 - Arquivos: `package.json`
 - Passos: executar `npm install pdfkit`; verificar que `"pdfkit"` aparece em `dependencies`
@@ -361,7 +332,7 @@ Sprint 4 (refinamento)
 
 ---
 
-**[TASK-020-B] Criar `src/services/pdfService.js`** — concluído em 2026-03-16 21:26 (BRT)
+**[TASK-020-B] Criar `src/services/pdfService.js`** — concluído em 2026-03-18 23:40 (BRT) ✅
 
 - Arquivos: `src/services/pdfService.js` (CRIAR)
 - Contexto: usa `templateService.interpolate` para montar o texto final; recebe objeto `certificado` com associações `TiposCertificados`, `Participante` e `Evento` já carregadas
@@ -386,7 +357,8 @@ Sprint 4 (refinamento)
 
 ---
 
-**[TASK-020-C] Adicionar rota `GET /public/certificados/:id/pdf`**
+
+**[TASK-020-C] Adicionar rota `GET /public/certificados/:id/pdf`** — concluído em 2026-03-18 23:40 (BRT) ✅
 
 - Arquivos: `src/routes/public.js` (MODIFICAR)
 - Contexto: o arquivo já existe com rotas de consulta pública; é necessário adicionar import de `Evento`, `TiposCertificados` e `pdfService`, e a nova rota que carrega o certificado com `include` e retorna o Buffer
@@ -400,16 +372,15 @@ Sprint 4 (refinamento)
 
 ---
 
+- [x] Criar smoke test para `pdfService` — concluído em 2026-03-17 08:22 (BRT) ✅
+- Arquivos: `tests/services/pdfService.test.js` (CRIAR)
+- Contexto: teste unitário sem acesso ao banco; usa objeto mock com `TiposCertificados`, `Participante`, `Evento`, `nome`, `codigo` e `valores_dinamicos`
+- Passos: criar 3 casos — buffer não vazio, assinatura `%PDF`, e comportamento com `valores_dinamicos: {}`
+- Critério de aceite: `npm run check` passa; 3 testes passam sem banco
+- Escopo: 1 arquivo criado
+- Dependência: TASK-020-B
 
-  - [x] Criar smoke test para `pdfService` — concluído em 2026-03-17 08:22 (BRT)
-  - Arquivos: `tests/services/pdfService.test.js` (CRIAR)
-  - Contexto: teste unitário sem acesso ao banco; usa objeto mock com `TiposCertificados`, `Participante`, `Evento`, `nome`, `codigo` e `valores_dinamicos`
-  - Passos: criar 3 casos — buffer não vazio, assinatura `%PDF`, e comportamento com `valores_dinamicos: {}`
-  - Critério de aceite: `npm run check` passa; 3 testes passam sem banco
-  - Escopo: 1 arquivo criado
-  - Dependência: TASK-020-B
-
-  - [x] Requisito de obrigatoriedade do campo código para geração de PDF explicitado na especificação e coberto por teste — concluído em 2026-03-17 08:22 (BRT)
+- [x] Requisito de obrigatoriedade do campo código para geração de PDF explicitado na especificação e coberto por teste — concluído em 2026-03-17 08:22 (BRT) ✅
 
 ---
 
@@ -4610,5 +4581,34 @@ Sprint 10 (documentação e otimização)
 - Critério de aceite: arquivo completo com 10 testes (UC-AD01 a UC-AD10); `npx playwright test admin.spec.js` passa com servidor e banco rodando; nenhum teste depende de estado deixado por outro
 - Escopo: 1 arquivo modificado
 - Dependência: TASK-040-B
+
+---
+
+## Ordem de Execução Sugerida
+
+```
+Sprint 1 (fundação)
+  TASK-02 → TASK-01 → TASK-03 → TASK-08 → TASK-09 → TASK-10
+
+Sprint 2 (backend funcional)
+  TASK-06 → TASK-04 → TASK-07 → TASK-05
+
+Sprint 3 (qualidade)
+  TASK-11 → TASK-12 → TASK-13 → TASK-14
+
+Sprint 4 (refinamento)
+  TASK-15
+```
+
+## Sumário de Pontuação
+
+| Épico                                    | Pontos   | Prioridade    |
+| ---------------------------------------- | -------- | ------------- |
+| Épico 1 — Integridade do Banco           | 7        | 🔴 Crítica    |
+| Épico 2 — Separação de Responsabilidades | 34       | 🔴/🟡         |
+| Épico 3 — Qualidade e Manutenibilidade   | 3.5      | 🟡 Importante |
+| Épico 4 — Documentação                   | 6        | 🟡/🟢         |
+| Épico 5 — Tooling                        | 10       | 🟢 Opcional   |
+| **Total**                                | **60.5** |               |
 
 ---

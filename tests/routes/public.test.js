@@ -10,17 +10,18 @@ const {
 describe('Rotas públicas de certificados', () => {
   let participante, certificado, evento, tipo
 
-  beforeAll(async () => {
-    // Limpa tabelas para evitar conflitos de FK
-    await Certificado.destroy({ where: {} })
-    await Participante.destroy({ where: {} })
-    await Evento.destroy({ where: {} })
-    await TiposCertificados.destroy({ where: {} })
+  beforeEach(async () => {
+    // Limpeza robusta: truncate com cascade e reinício de IDs
+    await Certificado.sequelize.query(
+      'TRUNCATE TABLE "certificados", "tipos_certificados", "participantes", "eventos" RESTART IDENTITY CASCADE',
+    )
 
     evento = await Evento.create({
       nome: 'Evento Teste',
       codigo_base: 'EVT',
       ano: 2026,
+      created_at: new Date(),
+      updated_at: new Date(),
     })
     tipo = await TiposCertificados.create({
       codigo: 'CT',
@@ -44,13 +45,10 @@ describe('Rotas públicas de certificados', () => {
     })
   })
 
-  afterAll(async () => {
-    if (certificado)
-      await Certificado.destroy({ where: { id: certificado.id } })
-    if (participante)
-      await Participante.destroy({ where: { id: participante.id } })
-    if (evento) await Evento.destroy({ where: { id: evento.id } })
-    if (tipo) await TiposCertificados.destroy({ where: { id: tipo.id } })
+  afterEach(async () => {
+    await Certificado.sequelize.query(
+      'TRUNCATE TABLE "certificados", "tipos_certificados", "participantes", "eventos" RESTART IDENTITY CASCADE',
+    )
   })
 
   it('GET /public/certificados?email retorna certificados do participante', async () => {
@@ -80,5 +78,18 @@ describe('Rotas públicas de certificados', () => {
     const res = await request(app).get('/public/validar/INVALIDO')
     expect(res.status).toBe(404)
     expect(res.body.valido).toBe(false)
+  })
+
+  it('GET /public/certificados/:id/pdf retorna PDF válido', async () => {
+    const res = await request(app).get(
+      `/public/certificados/${certificado.id}/pdf`,
+    )
+    expect(res.status).toBe(200)
+    expect(res.headers['content-type']).toBe('application/pdf')
+    expect(res.headers['content-disposition']).toContain(
+      `certificado-${certificado.id}.pdf`,
+    )
+    expect(Buffer.isBuffer(res.body)).toBe(true)
+    expect(res.body.slice(0, 4).toString()).toBe('%PDF')
   })
 })

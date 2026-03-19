@@ -1,6 +1,39 @@
 const express = require('express')
 const router = express.Router()
-const { Certificado, Participante } = require('../models')
+const {
+  Certificado,
+  Participante,
+  Evento,
+  TiposCertificados,
+} = require('../models')
+const pdfService = require('../services/pdfService')
+// GET /public/certificados/:id/pdf
+router.get('/certificados/:id/pdf', async (req, res) => {
+  const { id } = req.params
+  try {
+    const certificado = await Certificado.findByPk(id, {
+      include: [
+        { model: Participante },
+        { model: Evento },
+        { model: TiposCertificados },
+      ],
+    })
+    if (!certificado) {
+      return res.status(404).json({ error: 'Certificado não encontrado' })
+    }
+    const buffer = await pdfService.generateCertificadoPdf(certificado)
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename=certificado-${id}.pdf`,
+    )
+    return res.status(200).send(buffer)
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ error: 'Erro ao gerar PDF', detalhe: err.message })
+  }
+})
 
 // GET /public/certificados?email=...
 router.get('/certificados', async (req, res) => {
@@ -17,7 +50,7 @@ router.get('/certificados', async (req, res) => {
       where: { participante_id: participante.id },
     })
     return res.json({ certificados })
-  } catch (err) {
+  } catch (_) {
     return res.status(500).json({ error: 'Erro ao buscar certificados' })
   }
 })
@@ -33,7 +66,7 @@ router.get('/validar/:codigo', async (req, res) => {
         .json({ valido: false, mensagem: 'Certificado não encontrado' })
     }
     return res.json({ valido: true, certificado })
-  } catch (err) {
+  } catch (_) {
     return res.status(500).json({ error: 'Erro ao validar certificado' })
   }
 })
