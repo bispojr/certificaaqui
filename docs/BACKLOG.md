@@ -357,7 +357,6 @@
 
 ---
 
-
 **[TASK-020-C] Adicionar rota `GET /public/certificados/:id/pdf`** — concluído em 2026-03-18 23:40 (BRT) ✅
 
 - Arquivos: `src/routes/public.js` (MODIFICAR)

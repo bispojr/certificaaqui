@@ -21,10 +21,10 @@ services:
       - DATABASE_URL=postgresql://postgres:password@postgres_test:5432/certificados_test
       - DB_USER=postgres
       - DB_PASSWORD=password
-      - DB_NAME=certificados_db_test
+      - DB_NAME=certificados_test
       - DB_HOST=postgres_test
       - DB_PORT=5432
-      - DB_NAME_TEST=certificados_db_test
+      - DB_NAME_TEST=certificados_test
       - DB_PORT_TEST=5432
       - JWT_SECRET=sua_chave_jwt_super_secreta
       - NODE_ENV=development
