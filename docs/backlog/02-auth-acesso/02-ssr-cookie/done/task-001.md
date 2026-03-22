@@ -89,4 +89,5 @@ O formulário deve fazer `POST /auth/login`.
 - `npm run check` passa sem erros
 
 ## Metadados
+
 - Completado em: 22/03/2026 19:05 ✅

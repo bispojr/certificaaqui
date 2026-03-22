@@ -84,3 +84,7 @@ module.exports = async function authSSR(req, res, next) {
 - Contém `res.locals.usuario` com campos `isAdmin` e `isGestor`
 - Não retorna 401 — apenas chama `next()` em todos os casos
 - `npm run check` passa sem erros
+
+## Metadados
+
+- Completado em: 22/03/2026 19:10 ✅
