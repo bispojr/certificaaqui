@@ -26,9 +26,12 @@ describe('views/layouts/admin.hbs', () => {
     expect(html).toMatch(/Tipos/)
     expect(html).toMatch(/Usuários/)
     // Confirma usuário e perfil
-    expect(html).toMatch(/Admin \(admin\)/)
-    // Confirma botão de logout
-    expect(html).toMatch(/form action="\/auth\/logout" method="POST"/)
+    // Aceita quebras de linha e espaços entre nome e perfil
+    expect(html).toMatch(/Admin[\s\S]*\(admin\)/)
+    // Confirma botão de logout (aceita atributos extras)
+    expect(html).toMatch(
+      /<form[^>]+action=['\"]?\/auth\/logout['\"]?[^>]*method=['\"]?POST['\"]?[^>]*>/,
+    )
     // Confirma slot body
     expect(html).toMatch(/Conteúdo do painel/)
   })

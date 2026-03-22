@@ -87,3 +87,6 @@ O formulário deve fazer `POST /auth/login`.
 - Contém `<form action='/auth/login' method='POST'>`
 - Contém `{{#if flash.error}}` para exibição de erros
 - `npm run check` passa sem erros
+
+## Metadados
+- Completado em: 22/03/2026 19:05 ✅

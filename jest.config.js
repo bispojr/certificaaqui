@@ -43,6 +43,11 @@ module.exports = {
       testEnvironment: 'node',
       testMatch: ['<rootDir>/tests/validators/**/*.test.js'],
     },
+    {
+      displayName: 'views',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/tests/views/**/*.test.js'],
+    },
   ],
   collectCoverageFrom: [
     'models/**/*.js',

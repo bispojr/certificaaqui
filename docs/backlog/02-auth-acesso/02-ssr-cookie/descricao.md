@@ -10,7 +10,7 @@ Login via formulário web, token JWT armazenado em cookie `httpOnly`, redirecion
 
 ## Tasks pendentes
 
-- ⬜ [TASK-001] Criar `views/auth/login.hbs` — formulário de login com suporte a flash messages
+- ✅ [TASK-001] Criar `views/auth/login.hbs` — formulário de login com suporte a flash messages
 - ⬜ [TASK-002] Criar `src/middlewares/authSSR.js` — lê cookie `token`, verifica JWT, popula `req.usuario` e `res.locals.usuario`
 - ⬜ [TASK-003] Criar `src/routes/auth.js` — `GET /auth/login`, `POST /auth/login`, `POST /auth/logout`
 - ⬜ [TASK-004] Registrar rota `/auth` no `app.js`
