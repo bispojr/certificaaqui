@@ -11,6 +11,7 @@ Descrição:
 Cadastro, consulta, atualização e remoção lógica de participantes, com paginação na API e busca por nome/email no painel admin.
 
 TASKS:
+
 - ✅ participanteService.js com `findAll`, `findById`, `create`, `update`, `delete`, `restore`
 - ✅ participanteController.js com os métodos REST
 - ✅ participantes.js com rotas REST completas
@@ -29,6 +30,7 @@ Descrição:
 Cadastro e gerenciamento de eventos com código base único e cascata de soft delete/restore nas associações `usuario_eventos`.
 
 TASKS:
+
 - ✅ eventoService.js com `findAll`, `findById`, `create`, `update`, `delete`, `restore`
 - ✅ eventoController.js com os métodos REST
 - ✅ eventos.js com rotas REST completas
@@ -50,6 +52,7 @@ Descrição:
 Criação e edição de modelos de certificados com campos dinâmicos JSONB, template de texto com interpolação e campo destaque.
 
 TASKS:
+
 - ✅ tiposCertificadosService.js com `findAll`, `findById`, `create`, `update`, `delete`, `restore`
 - ✅ `tiposCertificadosController.js` com os métodos REST
 - ✅ tipos-certificados.js com rotas REST completas
@@ -69,6 +72,7 @@ Descrição:
 CRUD de usuários com controle de perfil, hash de senha, vinculação a eventos via N:N e soft delete.
 
 TASKS:
+
 - ✅ Model `Usuario` com `nome`, `email`, `senha` (bcrypt), `perfil`, `paranoid`
 - ✅ Model `UsuarioEvento` com associação N:N
 - ✅ usuarioController.js com `login`, `logout`, `me`, `create`, `updateEventos`
@@ -82,9 +86,9 @@ TASKS:
 
 **Status resumido:**
 
-| Feature | Progresso |
-|---|---|
-| Gestão de Participantes | 3/10 tasks — paginação e SSR totalmente pendentes |
-| Gestão de Eventos | 3/13 tasks — correção de cascata, paginação e SSR pendentes |
-| Gestão de Tipos de Certificados | 4/11 tasks — paginação e SSR pendentes |
-| Gestão de Usuários (Admin) | 4/8 tasks — SSR Controller e views pendentes |
+| Feature                         | Progresso                                                   |
+| ------------------------------- | ----------------------------------------------------------- |
+| Gestão de Participantes         | 3/10 tasks — paginação e SSR totalmente pendentes           |
+| Gestão de Eventos               | 3/13 tasks — correção de cascata, paginação e SSR pendentes |
+| Gestão de Tipos de Certificados | 4/11 tasks — paginação e SSR pendentes                      |
+| Gestão de Usuários (Admin)      | 4/8 tasks — SSR Controller e views pendentes                |

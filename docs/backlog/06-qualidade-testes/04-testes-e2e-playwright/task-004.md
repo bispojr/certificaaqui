@@ -1,18 +1,22 @@
 # TASK ID: E2E-004
 
 ## Título
+
 Criar `tests/e2e/publico.spec.js` — fluxo público de consulta e validação
 
 ## Objetivo
+
 Cobrir os casos de uso públicos (sem login): busca de certificados por e-mail, validação por código, exibição de certificado inválido e acesso à página inicial.
 
 ## Contexto
+
 - Rotas cobertas: `GET /`, `POST /public/pagina/buscar`, `POST /public/pagina/validar`
 - Dados vêm do seed E2E: participante com e-mail `participante.e2e@test.com`, código `E2E-2026-001`
 - Comandos Playwright: `page.goto`, `page.fill`, `page.click`, `page.locator`, `expect(page).toHaveURL`, `expect(locator).toBeVisible`
 - `beforeAll`: chama `seedE2E()`; `afterAll`: chama `cleanE2E()`
 
 ## Arquivos envolvidos
+
 - `tests/e2e/publico.spec.js` ← CRIAR
 
 ## Passos
@@ -52,7 +56,9 @@ test('UC-P03 — busca certificados por e-mail válido', async ({ page }) => {
   await expect(page.locator('text=Participante E2E')).toBeVisible()
 })
 
-test('UC-P04 — busca com e-mail sem certificados não exibe erro 500', async ({ page }) => {
+test('UC-P04 — busca com e-mail sem certificados não exibe erro 500', async ({
+  page,
+}) => {
   await page.goto('/public/pagina/buscar')
   await page.fill('input[name="email"]', 'nenhum@test.com')
   await page.click('button[type="submit"]')
@@ -80,6 +86,7 @@ test('UC-P07 — valida certificado com código inválido', async ({ page }) => 
 ```
 
 ## Critério de aceite
+
 - Todos os testes passam com servidor rodando e banco seedado
 - UC-P03: texto "Participante E2E" visível após busca por e-mail
 - UC-P06: texto indicando certificado válido visível após código correto

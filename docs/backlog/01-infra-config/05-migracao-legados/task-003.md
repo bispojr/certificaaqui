@@ -1,9 +1,11 @@
 # TASK ID: INFRA-LEGADOS-003
 
 ## Título
+
 Atualizar imports de `auth` e `validate` em `certificados.js` e `tipos-certificados.js`
 
 ## Objetivo
+
 Substituir os imports legados `../../middleware/auth` e `../../middleware/validate` pelas versões novas em `src/middlewares/` nos arquivos de rota `certificados.js` e `tipos-certificados.js`.
 
 ## Contexto
@@ -11,6 +13,7 @@ Substituir os imports legados `../../middleware/auth` e `../../middleware/valida
 **Pré-requisito:** TASK-001 já executada.
 
 Estado atual:
+
 ```js
 // src/routes/certificados.js (linhas 4 e 7)
 const auth = require('../../middleware/auth')

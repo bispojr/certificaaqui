@@ -1,17 +1,21 @@
 # TASK ID: TEST-UNIT-002
 
 ## Título
+
 Atualizar paginação em `participanteService.test.js` e `tiposCertificadosService.test.js`
 
 ## Objetivo
+
 Substituir o teste de `findAll` que chama `findAll` (sem paginação) pelo contrato `findAndCountAll` com `{ data, meta }` em ambos os arquivos.
 
 ## Contexto
+
 - `participanteService.test.js` linha atual: `expect(Participante.findAll).toHaveBeenCalled()` — obsoleto após ADMIN-PART-001
 - `tiposCertificadosService.test.js` linha atual: `expect(TiposCertificados.findAll).toHaveBeenCalled()` — obsoleto após ADMIN-TIPOS-001
 - Ambos os mocks precisam de `findAndCountAll: jest.fn()` adicionado
 
 ## Arquivos envolvidos
+
 - `tests/services/participanteService.test.js` ← MODIFICAR
 - `tests/services/tiposCertificadosService.test.js` ← MODIFICAR
 
@@ -20,6 +24,7 @@ Substituir o teste de `findAll` que chama `findAll` (sem paginação) pelo contr
 ### Em `participanteService.test.js`
 
 #### 1. Adicionar `findAndCountAll` ao mock
+
 ```js
 Participante: {
   findAll: jest.fn(),
@@ -33,6 +38,7 @@ Participante: {
 ```
 
 #### 2. Substituir o teste `findAll`
+
 ```js
 // Antes:
 it('findAll chama Participante.findAll', async () => {
@@ -45,7 +51,10 @@ describe('findAll', () => {
   it('retorna { data, meta } com página padrão', async () => {
     Participante.findAndCountAll.mockResolvedValue({ count: 2, rows: [{}, {}] })
     const result = await participanteService.findAll()
-    expect(Participante.findAndCountAll).toHaveBeenCalledWith({ offset: 0, limit: 20 })
+    expect(Participante.findAndCountAll).toHaveBeenCalledWith({
+      offset: 0,
+      limit: 20,
+    })
     expect(result.data).toHaveLength(2)
     expect(result.meta.total).toBe(2)
     expect(result.meta.totalPages).toBe(1)
@@ -54,7 +63,10 @@ describe('findAll', () => {
   it('calcula offset para page=3, perPage=10', async () => {
     Participante.findAndCountAll.mockResolvedValue({ count: 30, rows: [] })
     await participanteService.findAll({ page: 3, perPage: 10 })
-    expect(Participante.findAndCountAll).toHaveBeenCalledWith({ offset: 20, limit: 10 })
+    expect(Participante.findAndCountAll).toHaveBeenCalledWith({
+      offset: 20,
+      limit: 10,
+    })
   })
 })
 ```
@@ -64,6 +76,7 @@ describe('findAll', () => {
 ### Em `tiposCertificadosService.test.js`
 
 #### 1. Adicionar `findAndCountAll` ao mock
+
 ```js
 TiposCertificados: {
   findAll: jest.fn(),
@@ -77,6 +90,7 @@ TiposCertificados: {
 ```
 
 #### 2. Substituir o teste `findAll`
+
 ```js
 // Antes:
 it('findAll chama TiposCertificados.findAll', async () => {
@@ -87,9 +101,15 @@ it('findAll chama TiposCertificados.findAll', async () => {
 // Depois:
 describe('findAll', () => {
   it('retorna { data, meta } com página padrão', async () => {
-    TiposCertificados.findAndCountAll.mockResolvedValue({ count: 4, rows: [{}, {}, {}, {}] })
+    TiposCertificados.findAndCountAll.mockResolvedValue({
+      count: 4,
+      rows: [{}, {}, {}, {}],
+    })
     const result = await tiposCertificadosService.findAll()
-    expect(TiposCertificados.findAndCountAll).toHaveBeenCalledWith({ offset: 0, limit: 20 })
+    expect(TiposCertificados.findAndCountAll).toHaveBeenCalledWith({
+      offset: 0,
+      limit: 20,
+    })
     expect(result.data).toHaveLength(4)
     expect(result.meta.total).toBe(4)
     expect(result.meta.totalPages).toBe(1)
@@ -97,16 +117,21 @@ describe('findAll', () => {
 
   it('calcula totalPages corretamente', async () => {
     TiposCertificados.findAndCountAll.mockResolvedValue({ count: 11, rows: [] })
-    const result = await tiposCertificadosService.findAll({ page: 1, perPage: 5 })
+    const result = await tiposCertificadosService.findAll({
+      page: 1,
+      perPage: 5,
+    })
     expect(result.meta.totalPages).toBe(3)
   })
 })
 ```
 
 ## Resultado esperado
+
 Ambos os arquivos passam com `npm run check`.
 
 ## Critério de aceite
+
 - `findAll` não mais referencia `findAll` do model — usa `findAndCountAll`
 - `{ offset, limit }` calculados corretamente a partir de `page`/`perPage`
 - `meta.totalPages = Math.ceil(count / perPage)`

@@ -1,9 +1,11 @@
 # TASK ID: AUTH-SSR-003
 
 ## Título
+
 Criar `src/routes/auth.js` — rotas de login e logout SSR
 
 ## Objetivo
+
 Criar o arquivo de rotas SSR de autenticação com `GET /auth/login`, `POST /auth/login` e `POST /auth/logout`, usando cookie `httpOnly` para armazenar o JWT e flash messages para erros.
 
 ## Contexto
@@ -13,10 +15,12 @@ Criar o arquivo de rotas SSR de autenticação com `GET /auth/login`, `POST /aut
 Lógica esperada:
 
 **GET /auth/login:**
+
 - Se `req.usuario` já estiver populado (cookie válido), redirecionar para `/admin/dashboard`
 - Caso contrário, renderizar `auth/login` com `{ title: 'Login', layout: 'layout' }`
 
 **POST /auth/login:**
+
 - Receber `email` e `senha` do `req.body`
 - Buscar usuário com `Usuario.findOne({ where: { email } })`
 - Validar senha com `bcrypt.compare`
@@ -24,6 +28,7 @@ Lógica esperada:
 - Em caso de falha: `req.flash('error', 'Credenciais inválidas')` + redirect para `/auth/login`
 
 **POST /auth/logout:**
+
 - Limpar cookie `token` com `res.clearCookie('token')`
 - Redirecionar para `/auth/login`
 

@@ -1,6 +1,7 @@
 # Feature: Gestão de Tipos de Certificados
 
 ## Descrição
+
 Criação e edição de modelos de certificados com campos dinâmicos JSONB (`dados_dinamicos`), template de texto com interpolação (`texto_base`) e campo destaque configurável.
 
 ## Tasks (alto nível — apenas pendentes)
@@ -12,6 +13,7 @@ Criação e edição de modelos de certificados com campos dinâmicos JSONB (`da
 - Adicionar rotas SSR de tipos em `src/routes/admin.js` protegidas por `rbac('gestor')`
 
 ## Arquivos base
+
 - `src/services/tiposCertificadosService.js` (findAll sem paginação)
 - `src/controllers/tiposCertificadosController.js` (findAll retorna array puro)
 - `src/models/tipos_certificados.js` (campos: `codigo`, `descricao`, `campo_destaque`, `texto_base`, `dados_dinamicos: JSONB`; `hasMany(Certificado, { as: 'certificados' })`)
@@ -20,10 +22,12 @@ Criação e edição de modelos de certificados com campos dinâmicos JSONB (`da
 ## Dependências
 
 ### Externas (de outras features)
+
 - **`02-ssr-cookie` TASK-002** — `src/middlewares/authSSR.js` deve existir antes de ADMIN-TIPOS-005
 - **`02-gestao-eventos` ADMIN-EVT-005** — `src/routes/admin.js` deve existir antes de ADMIN-TIPOS-005
 
 ### Internas (ordem entre tasks desta feature)
+
 - ADMIN-TIPOS-001, 002, 003, 004 → independentes entre si
 - ADMIN-TIPOS-005 → depende de ADMIN-TIPOS-002 (controller SSR), 003 (index.hbs), 004 (form.hbs) e de `src/routes/admin.js` existir
 - ADMIN-TIPOS-004 inclui nota sobre helper `{{json}}` que pode precisar ser registrado em `app.js`

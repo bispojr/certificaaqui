@@ -1,12 +1,15 @@
 # TASK ID: TEST-SSR-004
 
 ## Título
+
 Criar `tests/routes/adminCertificados.test.js` — CRUD de certificados admin SSR
 
 ## Objetivo
+
 Cobrir as rotas administrativas de certificados (`GET /admin/certificados`, `POST /admin/certificados`, cancelar e restaurar), verificando RBAC e fluxo completo com fixtures.
 
 ## Contexto
+
 - Rotas implementadas por CERT-ADMIN-005 (Domínio 5) em `src/routes/admin.js`
 - `GET /admin/certificados` → rbac('monitor') = qualquer perfil autenticado
 - `POST /admin/certificados` → rbac('gestor') = gestor ou admin; cria certificado + redirect
@@ -16,6 +19,7 @@ Cobrir as rotas administrativas de certificados (`GET /admin/certificados`, `POS
 - `afterAll`: truncate completo
 
 ## Arquivos envolvidos
+
 - `tests/routes/adminCertificados.test.js` ← CRIAR
 
 ## Passos
@@ -68,7 +72,11 @@ beforeAll(async () => {
   adminCookie = makeAuthCookie(admin.id, 'admin')
   gestorCookie = makeAuthCookie(gestor.id, 'gestor')
 
-  const evento = await Evento.create({ nome: 'Ev CA', codigo_base: 'CA', ano: 2026 })
+  const evento = await Evento.create({
+    nome: 'Ev CA',
+    codigo_base: 'CA',
+    ano: 2026,
+  })
   const tipo = await TiposCertificados.create({
     codigo: 'CA',
     descricao: 'Tipo CA',
@@ -143,6 +151,7 @@ describe('POST /admin/certificados/:id/restaurar', () => {
 ```
 
 ## Critério de aceite
+
 - `GET /admin/certificados` sem cookie → 302 para `/auth/login`
 - `GET /admin/certificados` com admin → 200
 - `POST /:id/cancelar` com gestor → 302 (redirect após ação)

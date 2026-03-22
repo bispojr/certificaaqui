@@ -1,12 +1,15 @@
 # TASK ID: CERT-ADMIN-004
 
 ## Título
+
 Criar `views/admin/certificados/form.hbs` com campos dinâmicos carregados via `fetch`
 
 ## Objetivo
+
 Formulário para criar/editar certificado. Quando o usuário seleciona um `TipoCertificado`, o formulário faz `fetch` para a API REST (`GET /tipos-certificados/:id`) e renderiza dinamicamente os campos de `dados_dinamicos` como `<input>`, serializando os valores em `<input type="hidden" name="valores_dinamicos_json">` antes do submit.
 
 ## Contexto
+
 - Layout: `layouts/admin`
 - Dados: `certificado` (null em criação; JSON com includes em edição), `participantes`, `eventos`, `tipos`
 - `dados_dinamicos`: objeto `{ chave: rótulo }` — cada chave vira um campo do formulário
@@ -15,6 +18,7 @@ Formulário para criar/editar certificado. Quando o usuário seleciona um `TipoC
 - Serialização final: `valores_dinamicos_json = JSON.stringify({ chave: valor, ... })`
 
 ## Arquivos envolvidos
+
 - `views/admin/certificados/form.hbs` ← CRIAR
 
 ## Passos
@@ -143,6 +147,7 @@ Formulário para criar/editar certificado. Quando o usuário seleciona um `TipoC
 ```
 
 **Helpers necessários** (registrar em `app.js` se não existirem):
+
 ```js
 json: (obj) => JSON.stringify(obj ?? null),
 toString: (val) => String(val ?? ''),
@@ -150,6 +155,7 @@ eq: (a, b) => a === b,
 ```
 
 ## Critério de aceite
+
 - Selecionar tipo dispara `fetch` para `/tipos-certificados/:id`
 - Campos dinâmicos aparecem abaixo do select de tipo com rótulos corretos
 - Em modo edição, campos pré-preenchidos com `valoresExistentes[chave]`

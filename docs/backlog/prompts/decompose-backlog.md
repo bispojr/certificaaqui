@@ -6,9 +6,9 @@ IMPORTANTE:
 Você NÃO deve detalhar tarefas ainda.
 Você deve apenas ORGANIZAR o backlog em níveis estruturais.
 
---------------------------------------
-OBJETIVO
---------------------------------------
+---
+
+## OBJETIVO
 
 Converter o backlog em uma hierarquia de:
 
@@ -16,9 +16,9 @@ DOMÍNIO → FEATURE → TASK (alto nível)
 
 Essa estrutura será usada posteriormente para granularização em micro-tasks executáveis por GPT-4.1.
 
---------------------------------------
-REGRAS IMPORTANTES
---------------------------------------
+---
+
+## REGRAS IMPORTANTES
 
 1. NÃO gere micro-tasks ainda.
 2. NÃO escreva código.
@@ -27,9 +27,9 @@ REGRAS IMPORTANTES
 
 Seu foco é ESTRUTURAÇÃO.
 
---------------------------------------
-PROCESSO
---------------------------------------
+---
+
+## PROCESSO
 
 1. Analise todo o backlog fornecido.
 2. Identifique os principais DOMÍNIOS do sistema.
@@ -42,9 +42,9 @@ PROCESSO
 4. Para cada feature:
    - Liste TASKS de alto nível
 
---------------------------------------
-DEFINIÇÕES
---------------------------------------
+---
+
+## DEFINIÇÕES
 
 DOMÍNIO:
 Grande área funcional do sistema.
@@ -56,9 +56,9 @@ Funcionalidade clara dentro do domínio.
 TASK:
 Unidade de trabalho ainda não granular (será detalhada depois).
 
---------------------------------------
-FORMATO DE SAÍDA
---------------------------------------
+---
+
+## FORMATO DE SAÍDA
 
 Use EXATAMENTE este formato:
 
@@ -73,17 +73,18 @@ Descrição:
 [breve descrição]
 
 TASKS:
+
 - [task 1]
 - [task 2]
 - [task 3]
 
---------------------------------------
+---
 
 Repita a estrutura para todos os domínios.
 
---------------------------------------
-CONTROLE DE TAMANHO
---------------------------------------
+---
+
+## CONTROLE DE TAMANHO
 
 Se a resposta ficar muito longa:
 
@@ -94,9 +95,9 @@ Se a resposta ficar muito longa:
 
 Quando eu disser "CONTINUAR DOMÍNIOS", continue de onde parou.
 
---------------------------------------
-CRITÉRIOS DE QUALIDADE
---------------------------------------
+---
+
+## CRITÉRIOS DE QUALIDADE
 
 - Domínios devem ser independentes
 - Features devem ser coesas
@@ -104,13 +105,14 @@ CRITÉRIOS DE QUALIDADE
 - Evite sobreposição entre domínios
 - Use nomes consistentes
 
---------------------------------------
-SAÍDA ESPERADA
---------------------------------------
+---
+
+## SAÍDA ESPERADA
 
 Uma estrutura limpa que permita navegar no backlog sem precisar ler as 4000 linhas originais.
 
---------------------------------------
+---
+
 BACKLOG A SER DECOMPOSTO:
 
 [COLE AQUI O BACKLOG GIGANTE]

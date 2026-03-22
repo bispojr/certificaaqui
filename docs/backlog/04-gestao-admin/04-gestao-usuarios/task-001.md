@@ -1,12 +1,15 @@
 # TASK ID: ADMIN-USR-001
 
 ## Título
+
 Criar `src/controllers/usuarioSSRController.js` com 7 métodos CRUD
 
 ## Objetivo
+
 Implementar controller SSR completo para gestão de usuários no painel admin, incluindo associação de eventos via `setEventos` e tratamento seguro de senha (não atualizar se campo vazio).
 
 ## Contexto
+
 - `Usuario` model: campos `nome`, `email`, `senha`, `perfil`; hooks bcrypt automáticos
 - `usuario.setEventos(Array<id>)` substitui todas as associações existentes
 - `perfil`: ENUM `admin | gestor | monitor`
@@ -15,6 +18,7 @@ Implementar controller SSR completo para gestão de usuários no painel admin, i
 - Flash + redirect para todos os erros
 
 ## Arquivos envolvidos
+
 - `src/controllers/usuarioSSRController.js` ← CRIAR
 
 ## Passos
@@ -69,7 +73,10 @@ async function criar(req, res) {
   try {
     const { nome, email, senha, perfil, eventos } = req.body
     const usuario = await Usuario.create({ nome, email, senha, perfil })
-    const eventoIds = [].concat(eventos || []).map(Number).filter(Boolean)
+    const eventoIds = []
+      .concat(eventos || [])
+      .map(Number)
+      .filter(Boolean)
     if (eventoIds.length > 0) {
       await usuario.setEventos(eventoIds)
     }
@@ -92,7 +99,10 @@ async function atualizar(req, res) {
     const campos = { nome, email, perfil }
     if (senha && senha.trim() !== '') campos.senha = senha
     await usuario.update(campos)
-    const eventoIds = [].concat(eventos || []).map(Number).filter(Boolean)
+    const eventoIds = []
+      .concat(eventos || [])
+      .map(Number)
+      .filter(Boolean)
     await usuario.setEventos(eventoIds)
     req.flash('success', 'Usuário atualizado com sucesso.')
     return res.redirect('/admin/usuarios')
@@ -138,9 +148,11 @@ module.exports = { index, novo, editar, criar, atualizar, deletar, restaurar }
 ```
 
 ## Resultado esperado
+
 Controller com 7 métodos sem dependência de serviço externo.
 
 ## Critério de aceite
+
 - `atualizar`: senha só incluída em `campos` se `senha.trim() !== ''`
 - `criar`/`atualizar`: `eventoIds = [].concat(eventos || []).map(Number).filter(Boolean)` normaliza string única ou array
 - `editar`: inclui `eventoIds` no JSON enviado à view para pré-seleção

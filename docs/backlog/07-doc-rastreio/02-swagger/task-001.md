@@ -1,12 +1,15 @@
 # TASK ID: DOC-SWAGGER-001
 
 ## Título
+
 Adicionar anotações `@swagger` em `src/routes/public.js`
 
 ## Objetivo
+
 Documentar as 3 rotas públicas JSON de consulta de certificados com comentários `@swagger` no padrão OpenAPI 3.0 já adotado pelo projeto.
 
 ## Contexto
+
 - Rotas a documentar:
   - `GET /public/certificados?email=...` → busca certificados por e-mail do participante
   - `GET /public/validar/:codigo` → valida certificado por código
@@ -16,6 +19,7 @@ Documentar as 3 rotas públicas JSON de consulta de certificados com comentário
 - Padrão de referência: `src/routes/participantes.js` — comentários `/** @swagger */` antes de cada rota
 
 ## Arquivos envolvidos
+
 - `src/routes/public.js` ← EDITAR (adicionar anotações antes das definições de rota)
 
 ## Passos
@@ -142,6 +146,7 @@ Inserir os seguintes comentários antes das respectivas rotas:
 ```
 
 ## Critério de aceite
+
 - `GET /api-docs` exibe as 3 rotas da tag `Public` sem erros de parsing
 - Cada rota exibe parâmetros e responses corretamente na UI Swagger
 - Nenhuma rota existente é alterada (apenas comentários adicionados)

@@ -1,12 +1,15 @@
 # TASK ID: E2E-001
 
 ## Título
+
 Instalar `@playwright/test` e criar `playwright.config.js`
 
 ## Objetivo
+
 Configurar o ambiente Playwright no projeto: instalar a dependência, criar o arquivo de configuração base e registrar o script `test:e2e` no `package.json`.
 
 ## Contexto
+
 - O projeto usa Jest para testes unitários e de integração — Playwright é adicionado como runner E2E separado, sem interferir no Jest
 - `playwright.config.js` na raiz do projeto, apontando para `tests/e2e/`
 - `BASE_URL` lida de `process.env.BASE_URL` com fallback para `http://localhost:3000`
@@ -14,6 +17,7 @@ Configurar o ambiente Playwright no projeto: instalar a dependência, criar o ar
 - `webServer` do Playwright inicia o Express automaticamente antes da suíte se o servidor não estiver rodando
 
 ## Arquivos envolvidos
+
 - `package.json` ← EDITAR (adicionar `test:e2e` em scripts)
 - `playwright.config.js` ← CRIAR
 
@@ -70,6 +74,7 @@ No objeto `scripts`, adicionar:
 ```
 
 ## Critério de aceite
+
 - `npx playwright test --list` lista os spec files sem erros
 - `npm run test:e2e` executa sem interferir em `npm test` (Jest)
 - `BASE_URL` configurável via variável de ambiente

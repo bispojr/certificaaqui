@@ -1,31 +1,39 @@
 # TASK ID: CERT-API-001
 
 ## Título
+
 Adicionar paginação em `certificadoService.findAll` e propagar no controller
 
 ## Objetivo
+
 Substituir `Certificado.findAll()` por `findAndCountAll` com `offset`/`limit` e atualizar o controller para ler `req.query.page` e `req.query.perPage`, devolvendo `{ data, meta }`.
 
 ## Contexto
+
 - `src/services/certificadoService.js` linha 11-13: `findAll()` chama `Certificado.findAll()` sem parâmetros
 - `src/controllers/certificadoController.js` linha 13-17: `findAll` chama `certificadoService.findAll()` e devolve o array direto
 - Convenção de paginação já acordada: `{ data: rows, meta: { total, page, perPage, totalPages } }`
 - Valores padrão: `page = 1`, `perPage = 10`
 
 ## Arquivos envolvidos
+
 - `src/services/certificadoService.js`
 - `src/controllers/certificadoController.js`
 
 ## Passos
 
 ### 1. `src/services/certificadoService.js`
+
 Substituir:
+
 ```js
 async findAll() {
   return Certificado.findAll()
 },
 ```
+
 Por:
+
 ```js
 async findAll({ page = 1, perPage = 10 } = {}) {
   const offset = (page - 1) * perPage
@@ -46,7 +54,9 @@ async findAll({ page = 1, perPage = 10 } = {}) {
 ```
 
 ### 2. `src/controllers/certificadoController.js`
+
 Substituir o método `findAll`:
+
 ```js
 async findAll(req, res) {
   try {
@@ -57,7 +67,9 @@ async findAll(req, res) {
   }
 }
 ```
+
 Por:
+
 ```js
 async findAll(req, res) {
   try {
@@ -72,7 +84,9 @@ async findAll(req, res) {
 ```
 
 ## Resultado esperado
+
 `GET /certificados?page=2&perPage=5` devolve:
+
 ```json
 {
   "data": [...],
@@ -81,6 +95,7 @@ async findAll(req, res) {
 ```
 
 ## Critério de aceite
+
 - `certificadoService.findAll({ page: 2, perPage: 5 })` chama `findAndCountAll` com `{ offset: 5, limit: 5 }`
 - Resposta tem formato `{ data, meta }` com todas as 4 chaves em `meta`
 - `GET /certificados` sem query params usa `page=1, perPage=10`

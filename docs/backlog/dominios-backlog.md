@@ -11,6 +11,7 @@ Descrição:
 Controle versionado do schema do banco de dados via Sequelize migrations, substituindo `sync({ force: true })`.
 
 TASKS:
+
 - Criar migrations Sequelize para todos os modelos (`participantes`, `eventos`, `tipos_certificados`, `certificados`, `usuarios`)
 - Criar migration de tabela de associação `usuario_eventos` (N:N)
 - Criar migration de índices de performance (`certificados`, `participantes`, `usuarios`)
@@ -24,6 +25,7 @@ Descrição:
 Padronização de variáveis de ambiente, remoção de credenciais hard-coded e documentação de setup.
 
 TASKS:
+
 - Criar .env.example com todas as variáveis necessárias
 - Remover fallbacks inseguros em database.js e middlewares JWT
 - Garantir que variáveis obrigatórias lançam erro explícito se ausentes
@@ -37,6 +39,7 @@ Descrição:
 Separação de infraestrutura Docker por ambiente (produção vs. testes).
 
 TASKS:
+
 - Separar docker-compose.yml (produção) de docker-compose.test.yml (testes)
 - Garantir que o banco de testes é isolado do banco de desenvolvimento
 
@@ -48,6 +51,7 @@ Descrição:
 ESLint, Prettier e configuração de package.json para padronização e manutenibilidade.
 
 TASKS:
+
 - Configurar ESLint com `eslint:recommended`
 - Configurar Prettier (aspas simples, sem ponto-e-vírgula, 2 espaços)
 - Adicionar scripts `lint` e `format` ao package.json
@@ -70,6 +74,7 @@ Descrição:
 Login/logout via endpoint JSON com geração e validação de tokens JWT.
 
 TASKS:
+
 - Criar model `Usuario` com campos `nome`, `email`, `senha` (bcrypt), `perfil`
 - Criar `src/middlewares/auth.js` validando JWT e populando `req.usuario`
 - Criar usuarioController.js com `login`, `logout`, `me`
@@ -85,6 +90,7 @@ Descrição:
 Login via formulário web, token armazenado em cookie httpOnly, redirecionamento após autenticação.
 
 TASKS:
+
 - Criar `src/middlewares/authSSR.js` lendo cookie `token` e populando `res.locals.usuario`
 - Criar `src/routes/auth.js` com rotas `GET/POST /auth/login` e `POST /auth/logout`
 - Configurar `express-session` e `connect-flash` em app.js
@@ -98,6 +104,7 @@ Descrição:
 Middleware de autorização que restringe acesso a rotas com base nos perfis `admin`, `gestor` e `monitor`.
 
 TASKS:
+
 - Criar rbac.js verificando `req.usuario.perfil`
 - Proteger todas as rotas administrativas com `auth` + `rbac`
 - Garantir que monitor não acessa rotas exclusivas de gestor/admin
@@ -111,6 +118,7 @@ Descrição:
 Middleware que restringe gestores e monitores a operar exclusivamente dentro do(s) evento(s) vinculado(s).
 
 TASKS:
+
 - Corrigir `scopedEvento.js` para usar relação N:N via `req.usuario.getEventos()`
 - Garantir que admin passa sem restrição
 - Garantir que usuário sem evento vinculado recebe 403
@@ -133,6 +141,7 @@ Descrição:
 Endpoints JSON para emissão, consulta, cancelamento, restauração e listagem paginada de certificados.
 
 TASKS:
+
 - Criar certificadoService.js com operações de CRUD + cancel + restore
 - Criar certificadoController.js delegando ao service
 - Criar certificados.js com rotas REST completas
@@ -147,6 +156,7 @@ Descrição:
 Substituição de variáveis do `texto_base` com `valores_dinamicos` do certificado para gerar o texto final.
 
 TASKS:
+
 - Criar templateService.js com interpolação via regex `\$\{(\w+)\}`
 - Criar testes unitários do `templateService`
 - Integrar `templateService` ao `certificadoService` e ao controller de detalhe SSR
@@ -159,6 +169,7 @@ Descrição:
 Geração on-the-fly de PDF do certificado via PDFKit, devolvido diretamente no corpo da resposta HTTP.
 
 TASKS:
+
 - Instalar `pdfkit`
 - Criar pdfService.js retornando `Promise<Buffer>`
 - Adicionar rota `GET /public/certificados/:id/pdf` retornando o buffer com `Content-Type: application/pdf`
@@ -173,6 +184,7 @@ Descrição:
 Rotas públicas (sem autenticação) para participantes buscarem e validarem certificados.
 
 TASKS:
+
 - Criar public.js com `GET /public/certificados?email=` e `GET /public/validar/:codigo`
 - Adicionar rotas SSR públicas (`/public/pagina/opcoes`, `/public/pagina/obter`, `/public/pagina/validar`)
 - Criar views Handlebars do fluxo público (`opcoes.hbs`, `form-obter.hbs`, `form-validar.hbs`, `obter-lista.hbs`, `validar-resultado.hbs`)
@@ -192,6 +204,7 @@ Descrição:
 Cadastro, consulta, atualização e remoção lógica de participantes, com busca por nome/email e contagem de certificados vinculados.
 
 TASKS:
+
 - Criar participanteService.js com CRUD + soft delete + restore
 - Criar participanteController.js com paginação
 - Criar participantes.js com rotas REST completas
@@ -207,6 +220,7 @@ Descrição:
 Cadastro e gerenciamento de eventos com código base único, incluindo cascata de soft delete/restore nas associações `usuario_eventos`.
 
 TASKS:
+
 - Criar eventoService.js com CRUD + soft delete + restore com cascata em `usuario_eventos`
 - Criar eventoController.js com paginação
 - Criar eventos.js com rotas REST completas
@@ -224,6 +238,7 @@ Descrição:
 Criação e edição de modelos de certificados parametrizáveis com campos dinâmicos JSONB, template de texto e campo destaque.
 
 TASKS:
+
 - Criar tiposCertificadosService.js com CRUD + soft delete + restore
 - Criar tiposCertificadosController.js com paginação
 - Criar tipos-certificados.js com rotas REST completas
@@ -240,6 +255,7 @@ Descrição:
 CRUD de usuários com controle de perfil, hash de senha, vinculação a eventos via relação N:N e gestão de soft delete.
 
 TASKS:
+
 - Criar `src/services/usuarioService.js` com CRUD + soft delete + restore
 - Criar usuarioController.js com `login`, `logout`, `me`, CRUD admin
 - Criar vinculação N:N usuário-evento via `UsuarioEvento` (migration + model)
@@ -264,6 +280,7 @@ Descrição:
 Layout público com Bootstrap 5 e navbar, layout administrativo com sidebar condicional por perfil, e página de erro estilizada.
 
 TASKS:
+
 - Atualizar layout.hbs com Bootstrap 5 via CDN, navbar pública e slot de flash messages
 - Criar admin.hbs com navbar administrativa, links condicionais por perfil e botão de logout
 - Atualizar error.hbs com Bootstrap e botão "Voltar ao início"
@@ -277,6 +294,7 @@ Descrição:
 Painel inicial pós-login exibindo métricas de contagem condicionais ao perfil do usuário autenticado.
 
 TASKS:
+
 - Criar `src/controllers/dashboardController.js` com contagens por perfil (admin: 4 cards; gestor/monitor: 2 cards)
 - Criar `views/admin/dashboard.hbs` com cards Bootstrap condicionais
 - Criar `src/routes/admin.js` com rota `GET /admin/dashboard` protegida por `authSSR`
@@ -290,6 +308,7 @@ Descrição:
 Páginas web para o participante buscar certificados por e-mail e validar autenticidade por código, sem necessidade de login.
 
 TASKS:
+
 - Criar views estáticas do fluxo (`opcoes.hbs`, `form-obter.hbs`, `form-validar.hbs`)
 - Criar views de resultado (`obter-lista.hbs`, `validar-resultado.hbs`)
 - Adicionar rotas SSR em public.js (GET de páginas + POST de formulários)
@@ -303,6 +322,7 @@ Descrição:
 Conjunto completo de views CRUD para todas as entidades no painel admin, com filtros, seções de arquivados, modais de confirmação e formulários dinâmicos.
 
 TASKS:
+
 - Criar views de gestão de eventos (`index.hbs`, `form.hbs`)
 - Criar views de gestão de participantes com busca `?q=` e coluna de contagem de certificados
 - Criar views de gestão de certificados com filtros por evento/status/tipo e modal de cancelamento Bootstrap
@@ -328,6 +348,7 @@ Descrição:
 Testes isolados da lógica de negócio sem acesso ao banco, usando mocks dos models Sequelize.
 
 TASKS:
+
 - Criar testes para `templateService` (interpolação, campos ausentes, `valores_dinamicos` vazio)
 - Criar testes para `pdfService` (buffer não-vazio, assinatura `%PDF`, rejeição sem `codigo`)
 - Criar testes para `certificadoService.create` com validação de `valores_dinamicos` vs `dados_dinamicos`
@@ -342,6 +363,7 @@ Descrição:
 Testes de rotas HTTP com banco de testes dedicado, cobrindo casos de sucesso, validação (400/422) e not found (404).
 
 TASKS:
+
 - Criar testes de rota para todos os recursos REST (`participantes`, `eventos`, `certificados`, `tipos-certificados`, `usuarios`)
 - Criar testes de autenticação e RBAC (401, 403)
 - Criar testes de `scopedEvento` para modelo N:N
@@ -356,6 +378,7 @@ Descrição:
 Verificação de que todas as migrations `up`/`down` executam sem erros e produzem o schema esperado.
 
 TASKS:
+
 - Criar testes de migration para `certificados`, `participantes`, `eventos`, `tipos_certificados`, `usuarios`
 - Verificar que `down` desfaz corretamente cada migration
 - Verificar que índices são criados e removidos pela migration de performance
@@ -368,6 +391,7 @@ Descrição:
 Testes de interface browser automatizados cobrindo os três fluxos principais: público, autenticação/RBAC e administração.
 
 TASKS:
+
 - Instalar e configurar `@playwright/test` com `playwright.config.js`
 - Criar seed E2E (`tests/e2e/setup/seed.js`) com dados mínimos por perfil
 - Criar helpers `loginAs` e `createViaApi` para reutilização entre suites
@@ -392,6 +416,7 @@ Descrição:
 Registros de decisões arquiteturais explicando o porquê das escolhas técnicas mais relevantes.
 
 TASKS:
+
 - Criar ADR-001: escolha do ORM Sequelize
 - Criar ADR-002: soft delete via `paranoid`
 - Criar ADR-003: uso de JSONB para `dados_dinamicos`
@@ -409,6 +434,7 @@ Descrição:
 Guias de referência para desenvolvedores e operadores do sistema.
 
 TASKS:
+
 - Criar visao-geral.md — descrição, stakeholders, glossário
 - Criar arquitetura.md — diagramas C4 em Mermaid
 - Criar modulos.md — entidades, campos, regras
@@ -423,6 +449,7 @@ Descrição:
 Interface interativa de documentação dos endpoints REST disponível em `/api-docs`.
 
 TASKS:
+
 - Instalar `swagger-jsdoc` e `swagger-ui-express`
 - Adicionar anotações `@swagger` (JSDoc) em todas as rotas
 - Expor interface em `GET /api-docs`
@@ -444,6 +471,7 @@ Descrição:
 Endpoint de monitoramento que reporta status da aplicação e conectividade com o banco de dados.
 
 TASKS:
+
 - Criar `GET /health` retornando `{ status, db, uptime }`
 - Retornar HTTP 503 quando o banco estiver indisponível
 - Criar testes de rota para o health check
@@ -456,6 +484,7 @@ Descrição:
 Schemas de validação aplicados nas rotas `POST`/`PUT` para rejeitar payloads malformados antes de chegar ao controller.
 
 TASKS:
+
 - Criar schemas Zod em validators para cada recurso
 - Criar middleware de validação `src/middlewares/validate.js`
 - Aplicar middleware nas rotas de criação e atualização
@@ -469,6 +498,7 @@ Descrição:
 Reorganização de arquivos de middleware e rotas do diretório raiz para src, removendo código legado.
 
 TASKS:
+
 - Criar `src/middlewares/auth.js` substituindo auth.js
 - Atualizar todos os imports de `auth` em rotas e testes
 - Remover auth.js após migração completa

@@ -1,12 +1,15 @@
 # TASK ID: ADMIN-EVT-005
 
 ## Título
+
 Criar `src/controllers/eventoSSRController.js` e `src/routes/admin.js` com rotas de eventos
 
 ## Objetivo
+
 Criar o controller SSR com 7 métodos de CRUD de eventos, e criar o arquivo `src/routes/admin.js` com `authSSR` global + rotas de eventos protegidas por `rbac('admin')`.
 
 ## Contexto
+
 - `src/middlewares/authSSR.js` deve existir (criado em AUTH-SSR-002 do Domínio 2)
 - `src/middlewares/rbac.js` ✅ já existe
 - `src/services/eventoService.js` tem `findById`, `create`, `update`, `delete`, `restore`
@@ -16,12 +19,14 @@ Criar o controller SSR com 7 métodos de CRUD de eventos, e criar o arquivo `src
 - **ATENÇÃO:** Após criar admin.js, registrá-lo em `app.js` deve ser feito em task separada (ADMIN-EVT-006 — via CONTINUAR FEATURE)
 
 ## Arquivos envolvidos
+
 - `src/controllers/eventoSSRController.js` (CRIAR)
 - `src/routes/admin.js` (CRIAR)
 
 ## Passos
 
 ### 1. Criar `src/controllers/eventoSSRController.js`:
+
 ```js
 const eventoService = require('../services/eventoService')
 const { Evento } = require('../models')
@@ -126,6 +131,7 @@ module.exports = {
 ```
 
 ### 2. Criar `src/routes/admin.js`:
+
 ```js
 const express = require('express')
 const router = express.Router()
@@ -143,17 +149,23 @@ router.get('/eventos/:id/editar', rbac('admin'), eventoSSRController.editar)
 router.post('/eventos', rbac('admin'), eventoSSRController.criar)
 router.post('/eventos/:id', rbac('admin'), eventoSSRController.atualizar)
 router.post('/eventos/:id/deletar', rbac('admin'), eventoSSRController.deletar)
-router.post('/eventos/:id/restaurar', rbac('admin'), eventoSSRController.restaurar)
+router.post(
+  '/eventos/:id/restaurar',
+  rbac('admin'),
+  eventoSSRController.restaurar,
+)
 
 module.exports = router
 ```
 
 ## Resultado esperado
+
 - `GET /admin/eventos` renderiza listagem com eventos ativos e arquivados separados
 - `POST /admin/eventos` cria evento e redireciona com flash de sucesso
 - Gestor ou monitor recebe 403 ao tentar acessar `/admin/eventos`
 
 ## Critério de aceite
+
 - `eventoSSRController` exporta os 7 métodos
 - `admin.js` aplica `authSSR` via `router.use` (afeta todas as rotas do router)
 - Rotas de eventos usam `rbac('admin')` individualmente
@@ -161,4 +173,5 @@ module.exports = router
 - `GET /admin/eventos/novo` declarado ANTES de `GET /admin/eventos/:id/editar` para evitar conflito ✅ (ordem correta no código acima)
 
 ## Observação
+
 Após criar este arquivo, é necessário registrar `adminRouter` em `app.js`. Isso será feito na próxima task (ADMIN-EVT-006) via CONTINUAR FEATURE.

@@ -1,14 +1,17 @@
 # TASK ID: AUTH-SSR-002
 
 ## Título
+
 Criar `src/middlewares/authSSR.js`
 
 ## Objetivo
+
 Criar o middleware de autenticação SSR que lê o cookie `token`, verifica o JWT, busca o usuário no banco e popula `req.usuario` e `res.locals.usuario` (incluindo helpers `isAdmin` e `isGestor` usados pelo layout `admin.hbs`).
 
 ## Contexto
 
 O layout `views/layouts/admin.hbs` usa as propriedades:
+
 ```hbs
 {{#if usuario.isAdmin}}
 {{#if usuario.isGestor}}

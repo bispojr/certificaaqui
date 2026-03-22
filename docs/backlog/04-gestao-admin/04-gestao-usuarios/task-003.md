@@ -1,12 +1,15 @@
 # TASK ID: ADMIN-USR-003
 
 ## Título
+
 Criar `views/admin/usuarios/form.hbs` com multi-select de eventos e senha opcional
 
 ## Objetivo
+
 Formulário para criar/editar usuário com seleção múltipla de eventos (multi-select com checkboxes JS), select de perfil e campo senha opcional em modo edição.
 
 ## Contexto
+
 - Layout: `layouts/admin`
 - Dados: `usuario` (null em criação; JSON com `eventoIds: number[]` em edição) e `eventos` (array `{id, nome}`)
 - `<select multiple name="eventos">` com opções pré-selecionadas em edição (via `eventoIds`)
@@ -15,6 +18,7 @@ Formulário para criar/editar usuário com seleção múltipla de eventos (multi
 - Bootstrap 5 via layout admin
 
 ## Arquivos envolvidos
+
 - `views/admin/usuarios/form.hbs` ← CRIAR
 
 ## Passos
@@ -79,6 +83,7 @@ Formulário para criar/editar usuário com seleção múltipla de eventos (multi
 ```
 
 **Helpers Handlebars necessários** — registrar em `app.js` se não existirem:
+
 ```js
 eq: (a, b) => a === b,
 includes: (arr, val) => Array.isArray(arr) && arr.includes(val),
@@ -87,9 +92,11 @@ includes: (arr, val) => Array.isArray(arr) && arr.includes(val),
 O helper `includes` é necessário para `{{#if (includes ../usuario.eventoIds id)}}`.
 
 ## Resultado esperado
+
 Formulário funcional com senha opcional em edição (vazio = sem alteração), seleção múltipla de eventos pré-marcada.
 
 ## Critério de aceite
+
 - Senha sem `required` em modo edição; com `required` em modo criação
 - Multi-select pré-seleciona eventos já associados ao usuário em modo edição
 - Perfil select pré-selecionado em modo edição

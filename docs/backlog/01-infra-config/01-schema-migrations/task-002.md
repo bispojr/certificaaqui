@@ -1,9 +1,11 @@
 # TASK ID: INFRA-MIGRATIONS-002
 
 ## Título
+
 Criar teste de migration para os índices de performance
 
 ## Objetivo
+
 Criar um arquivo de teste Jest que verifica que a migration de índices (TASK-001) cria e remove corretamente os 5 índices nas tabelas `certificados`, `participantes` e `usuarios`.
 
 ## Contexto
@@ -12,6 +14,7 @@ O padrão de testes de migration do projeto está em `tests/migrations/`.
 Referência: `tests/migrations/certificados.migration.test.js`.
 
 Padrão observado:
+
 - Importa `sequelize` de `../../src/models`
 - Importa as migrations necessárias diretamente dos arquivos
 - No `beforeEach`, dropa e recria o schema com `DROP SCHEMA IF EXISTS public CASCADE`

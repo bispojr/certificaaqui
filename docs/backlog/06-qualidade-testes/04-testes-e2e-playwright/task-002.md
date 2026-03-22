@@ -1,12 +1,15 @@
 # TASK ID: E2E-002
 
 ## Título
+
 Criar `tests/e2e/setup/seed.js` — seed E2E com dados mínimos por perfil
 
 ## Objetivo
+
 Criar script de seed que popula o banco de testes com dados mínimos necessários para a suíte E2E: um usuário por perfil (admin, gestor, monitor), um evento, um tipo de certificado, um participante e um certificado emitido com código.
 
 ## Contexto
+
 - O seed usa a API REST autenticada como admin (Bearer token) para criar fixtures de forma realista
 - Usuários precisam de senha em texto plano para login SSR — o seed os cria via `POST /api/usuarios` que faz hash internamente
 - O seed é chamado via `require` ou `import` nos `beforeAll` dos spec files, não rodado diretamente
@@ -14,6 +17,7 @@ Criar script de seed que popula o banco de testes com dados mínimos necessário
 - Expõe função `cleanE2E()` para teardown — trunca as tabelas via conexão direta ao banco
 
 ## Arquivos envolvidos
+
 - `tests/e2e/setup/seed.js` ← CRIAR
 
 ## Passos
@@ -30,8 +34,13 @@ const JWT_SECRET = process.env.JWT_SECRET || 'secret'
 
 async function seedE2E() {
   // Admin inicial criado direto (sem rota pública de criação de admin)
-  const { Usuario, Evento, TiposCertificados, Participante, Certificado } =
-    require('../../../src/models')
+  const {
+    Usuario,
+    Evento,
+    TiposCertificados,
+    Participante,
+    Certificado,
+  } = require('../../../src/models')
 
   const admin = await Usuario.create({
     nome: 'Admin E2E',
@@ -93,8 +102,12 @@ async function seedE2E() {
     tipo,
     participante,
     certificado,
-    adminToken: jwt.sign({ id: admin.id, perfil: 'admin' }, JWT_SECRET, { expiresIn: '1h' }),
-    gestorToken: jwt.sign({ id: gestor.id, perfil: 'gestor' }, JWT_SECRET, { expiresIn: '1h' }),
+    adminToken: jwt.sign({ id: admin.id, perfil: 'admin' }, JWT_SECRET, {
+      expiresIn: '1h',
+    }),
+    gestorToken: jwt.sign({ id: gestor.id, perfil: 'gestor' }, JWT_SECRET, {
+      expiresIn: '1h',
+    }),
   }
 }
 
@@ -108,6 +121,7 @@ module.exports = { seedE2E, cleanE2E }
 ```
 
 ## Critério de aceite
+
 - `seedE2E()` retorna objeto com todos os registros criados e tokens válidos
 - `cleanE2E()` remove todos os dados sem erros
 - Certificado tem `codigo: 'E2E-2026-001'` para uso nos testes de validação pública

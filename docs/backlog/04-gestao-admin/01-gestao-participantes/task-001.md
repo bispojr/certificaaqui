@@ -1,31 +1,39 @@
 # TASK ID: ADMIN-PART-001
 
 ## Título
+
 Adicionar paginação em `participanteService.findAll` e propagar no controller
 
 ## Objetivo
+
 Substituir `Participante.findAll()` por `findAndCountAll` com `offset`/`limit` e atualizar o controller para ler `req.query.page`/`perPage`, devolvendo `{ data, meta }`.
 
 ## Contexto
+
 - `src/services/participanteService.js` linha 5: `findAll()` chama `Participante.findAll()` sem parâmetros
 - `src/controllers/participanteController.js`: método `findAll` chama `participanteService.findAll()` e retorna o array direto
 - Convenção: `{ data: rows, meta: { total, page, perPage, totalPages } }` — mesma estrutura do CERT-API-001
 - Valores padrão: `page = 1`, `perPage = 20`
 
 ## Arquivos envolvidos
+
 - `src/services/participanteService.js`
 - `src/controllers/participanteController.js`
 
 ## Passos
 
 ### 1. `src/services/participanteService.js`
+
 Substituir:
+
 ```js
 async findAll() {
   return Participante.findAll()
 },
 ```
+
 Por:
+
 ```js
 async findAll({ page = 1, perPage = 20 } = {}) {
   const offset = (page - 1) * perPage
@@ -46,7 +54,9 @@ async findAll({ page = 1, perPage = 20 } = {}) {
 ```
 
 ### 2. `src/controllers/participanteController.js`
+
 Substituir o método `findAll`:
+
 ```js
 async findAll(req, res) {
   try {
@@ -57,7 +67,9 @@ async findAll(req, res) {
   }
 }
 ```
+
 Por:
+
 ```js
 async findAll(req, res) {
   try {
@@ -72,7 +84,9 @@ async findAll(req, res) {
 ```
 
 ## Resultado esperado
+
 `GET /participantes?page=2&perPage=5` devolve:
+
 ```json
 {
   "data": [...],
@@ -81,6 +95,7 @@ async findAll(req, res) {
 ```
 
 ## Critério de aceite
+
 - `participanteService.findAll({ page: 2, perPage: 5 })` chama `findAndCountAll` com `{ offset: 5, limit: 5 }`
 - Resposta tem formato `{ data, meta }` com `totalPages` calculado
 - `GET /participantes` sem query params usa `page=1, perPage=20`

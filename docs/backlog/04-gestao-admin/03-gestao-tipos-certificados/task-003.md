@@ -1,12 +1,15 @@
 # TASK ID: ADMIN-TIPOS-003
 
 ## Título
+
 Criar `views/admin/tipos-certificados/index.hbs`
 
 ## Objetivo
+
 View Handlebars para listar tipos de certificados ativos e arquivados no painel admin, exibindo contagem de certificados vinculados.
 
 ## Contexto
+
 - Layout: `layouts/admin`
 - Dados disponíveis: `tipos` (ativos) e `arquivados` — ambos com `numCertificados`
 - Botão de arquivar usa `<form method="POST" action="/admin/tipos-certificados/{{id}}/deletar">`
@@ -15,6 +18,7 @@ View Handlebars para listar tipos de certificados ativos e arquivados no painel 
 - Bootstrap 5 já disponível via layout admin
 
 ## Arquivos envolvidos
+
 - `views/admin/tipos-certificados/index.hbs` ← CRIAR (incluindo diretório)
 
 ## Passos
@@ -99,9 +103,11 @@ View Handlebars para listar tipos de certificados ativos e arquivados no painel 
 ```
 
 ## Resultado esperado
+
 Listagem funcional com tabela de ativos e seção `<details>` para arquivados; flash messages visíveis no topo.
 
 ## Critério de aceite
+
 - Tabela de ativos tem colunas: Código, Descrição, Campo Destaque, Certificados, Ações
 - Ações: botão "Editar" (GET) + form POST "Arquivar" com `confirm()`
 - Seção arquivados só aparece quando `arquivados.length > 0`

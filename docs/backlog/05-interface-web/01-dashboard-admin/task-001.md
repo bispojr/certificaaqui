@@ -1,12 +1,15 @@
 # TASK ID: DASH-001
 
 ## Título
+
 Criar `src/controllers/dashboardController.js`
 
 ## Objetivo
+
 Implementar controller que busca contagens de entidades e renderiza `views/admin/dashboard`, adaptando os dados ao perfil do usuário autenticado.
 
 ## Contexto
+
 - `req.usuario` vem de `authSSR.js`: `{ id, nome, email, perfil, isAdmin, isGestor }`
 - **admin**: conta todos os registros ativos em `Evento`, `TiposCertificados`, `Participante`, `Usuario`
 - **gestor/monitor**: re-busca o usuário do DB com `include: [Evento as 'eventos']` para obter `eventoIds`; conta `Certificado` e participantes distintos filtrados por `evento_id: eventoIds`
@@ -14,6 +17,7 @@ Implementar controller que busca contagens de entidades e renderiza `views/admin
 - Participantes de gestor/monitor: contagem distinta via `Certificado.count({ distinct: true, col: 'participante_id' })`
 
 ## Arquivos envolvidos
+
 - `src/controllers/dashboardController.js` ← CRIAR
 
 ## Passos
@@ -21,7 +25,13 @@ Implementar controller que busca contagens de entidades e renderiza `views/admin
 ### Criar `src/controllers/dashboardController.js`
 
 ```js
-const { Evento, TiposCertificados, Participante, Usuario, Certificado } = require('../models')
+const {
+  Evento,
+  TiposCertificados,
+  Participante,
+  Usuario,
+  Certificado,
+} = require('../models')
 
 async function dashboard(req, res) {
   try {
@@ -55,7 +65,11 @@ async function dashboard(req, res) {
     const [totalCertificados, totalParticipantes] = whereEvento
       ? await Promise.all([
           Certificado.count({ where: whereEvento }),
-          Certificado.count({ where: whereEvento, distinct: true, col: 'participante_id' }),
+          Certificado.count({
+            where: whereEvento,
+            distinct: true,
+            col: 'participante_id',
+          }),
         ])
       : [0, 0]
 
@@ -73,9 +87,11 @@ module.exports = { dashboard }
 ```
 
 ## Resultado esperado
+
 Controller sem erros de importação que diferencia admin de gestor/monitor.
 
 ## Critério de aceite
+
 - admin recebe `{ totalEventos, totalTipos, totalParticipantes, totalUsuarios }`
 - gestor/monitor recebe `{ totalCertificados, totalParticipantes }` filtrados pelos seus eventos
 - Se `eventoIds` for vazio: `[0, 0]` (sem chamar `Certificado.count` desnecessariamente)

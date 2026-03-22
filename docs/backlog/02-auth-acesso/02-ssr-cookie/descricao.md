@@ -18,10 +18,12 @@ Login via formulário web, token JWT armazenado em cookie `httpOnly`, redirecion
 ## Dependências
 
 ### Externas (de outras features)
+
 Nenhuma — esta feature é pré-requisito para todas as features SSR do Domínio 4.
 
 > **BLOQUEANTE:** `src/middlewares/authSSR.js` (TASK-002) é exigido por todas as features de gestão admin (Domínio 4). Execute esta feature antes de qualquer feature do Domínio 4.
 
 ### Internas (ordem entre tasks desta feature)
+
 - 001 → 002 → 003 → 004 (sequencial)
 - TASK-002 precisa da view criada em TASK-001 para redirecionar o login; TASK-003 usa `authSSR` de TASK-002; TASK-004 registra a rota de TASK-003 no `app.js`.

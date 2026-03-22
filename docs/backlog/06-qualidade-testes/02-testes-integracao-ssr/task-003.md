@@ -1,12 +1,15 @@
 # TASK ID: TEST-SSR-003
 
 ## Título
+
 Criar `tests/routes/adminDashboard.test.js` — rota `/admin/dashboard`
 
 ## Objetivo
+
 Cobrir proteção de autenticação e renderização do painel admin, incluindo diferença de conteúdo entre perfis `admin` e `gestor`.
 
 ## Contexto
+
 - Rota implementada por DASH-003 (Domínio 5): `GET /admin/dashboard`
 - Sem cookie → `authSSR.js` redireciona para `/auth/login` (302)
 - Com cookie `admin` → 200, HTML com "Dashboard"
@@ -16,6 +19,7 @@ Cobrir proteção de autenticação e renderização do painel admin, incluindo 
 - Padrão de truncate + create em `beforeAll`; truncate em `afterAll`
 
 ## Arquivos envolvidos
+
 - `tests/routes/adminDashboard.test.js` ← CRIAR
 
 ## Passos
@@ -88,6 +92,7 @@ describe('GET /admin/dashboard', () => {
 ```
 
 ## Critério de aceite
+
 - `GET /admin/dashboard` sem cookie → 302 redirecionando para `/auth/login`
 - `GET /admin/dashboard` com cookie `admin` → 200 + HTML contendo "Dashboard"
 - `GET /admin/dashboard` com cookie `gestor` → 200

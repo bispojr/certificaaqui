@@ -1,12 +1,15 @@
 # TASK ID: TEST-SSR-005
 
 ## Título
+
 Criar `tests/routes/adminEntidades.test.js` — smoke tests das entidades admin
 
 ## Objetivo
+
 Cobrir os GETs de listagem das entidades administrativas (participantes, eventos, tipos-certificados, usuários), verificando proteção de rota e restrição RBAC de `GET /admin/usuarios` para admin.
 
 ## Contexto
+
 - Rotas de participantes, eventos e tipos-certificados: rbac('monitor') = todos os perfis autenticados
 - Rota `/admin/usuarios`: rbac('admin') = apenas admin → gestor recebe 403
 - Padrão `makeAuthCookie(id, perfil)` idêntico ao usado em TEST-SSR-003 e TEST-SSR-004
@@ -14,6 +17,7 @@ Cobrir os GETs de listagem das entidades administrativas (participantes, eventos
 - `afterAll`: truncate de usuários
 
 ## Arquivos envolvidos
+
 - `tests/routes/adminEntidades.test.js` ← CRIAR
 
 ## Passos
@@ -62,7 +66,11 @@ afterAll(async () => {
   )
 })
 
-const rotas = ['/admin/participantes', '/admin/eventos', '/admin/tipos-certificados']
+const rotas = [
+  '/admin/participantes',
+  '/admin/eventos',
+  '/admin/tipos-certificados',
+]
 
 rotas.forEach((rota) => {
   describe(`GET ${rota}`, () => {
@@ -108,6 +116,7 @@ describe('GET /admin/usuarios', () => {
 ```
 
 ## Critério de aceite
+
 - `GET /admin/participantes`, `/admin/eventos`, `/admin/tipos-certificados` sem cookie → 302
 - Todos retornam 200 para admin e gestor autenticados
 - `GET /admin/usuarios` sem cookie → 302

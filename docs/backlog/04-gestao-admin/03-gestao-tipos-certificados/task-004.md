@@ -1,22 +1,27 @@
 # TASK ID: ADMIN-TIPOS-004
 
 ## Título
+
 Criar `views/admin/tipos-certificados/form.hbs` com editor JSONB dinâmico
 
 ## Objetivo
+
 Formulário para criar/editar tipo de certificado, incluindo:
+
 - Editor dinâmico de campos (`dados_dinamicos`) via JS — adicionar/remover pares chave→rótulo
 - `<select id="campo_destaque">` populado dinamicamente via JS a partir dos campos da lista + opção fixa "nome"
 - `<input type="hidden" name="dados_dinamicos_json">` serializado antes do submit
 - Preview ao vivo de `texto_base` com substituição de `${chave}` pelos rótulos dos campos
 
 ## Contexto
+
 - Layout: `layouts/admin`
 - Em modo edição: `tipo` tem `dados_dinamicos` (objeto JS) e demais campos preenchidos
 - `beforeValidate` hook valida `campo_destaque ∈ keys(dados_dinamicos) ∪ {nome}`
 - Bootstrap 5 disponível via layout admin
 
 ## Arquivos envolvidos
+
 - `views/admin/tipos-certificados/form.hbs` ← CRIAR (incluindo diretório)
 
 ## Passos
@@ -145,15 +150,18 @@ Formulário para criar/editar tipo de certificado, incluindo:
 ```
 
 **Observação:** O helper `{{json ...}}` precisa estar registrado no express-handlebars (serializa objeto para JSON inline). Se não existir, registrar em `app.js`:
+
 ```js
 // em hbs helpers
 json: (obj) => JSON.stringify(obj ?? null)
 ```
 
 ## Resultado esperado
+
 Formulário funcional com editor JSONB dinâmico, select `campo_destaque` auto-populado e preview ao vivo.
 
 ## Critério de aceite
+
 - "+ Adicionar campo" adiciona par chave/rótulo
 - `dados_dinamicos_json` é serializado antes do submit
 - `campo_destaque` sempre tem opção "nome" + opções dos campos dinâmicos

@@ -1,12 +1,15 @@
 # TASK ID: ADMIN-TIPOS-002
 
 ## Título
+
 Criar `src/controllers/tiposCertificadosSSRController.js`
 
 ## Objetivo
+
 Implementar o controller SSR para CRUD de Tipos de Certificados no painel admin, com inclusão da contagem de certificados vinculados e tratamento de `dados_dinamicos` (JSONB) vindo do formulário como JSON serializado.
 
 ## Contexto
+
 - `TiposCertificados` tem `hasMany(Certificado, { as: 'certificados' })`
 - `dados_dinamicos`: JSONB — chaves e nomes dos campos personalizados do certificado
 - `beforeValidate` hook valida que `campo_destaque` é um dos keys de `dados_dinamicos` ou `'nome'`
@@ -15,6 +18,7 @@ Implementar o controller SSR para CRUD de Tipos de Certificados no painel admin,
 - Flash: `req.flash('success' | 'error', mensagem)` + redirect
 
 ## Arquivos envolvidos
+
 - `src/controllers/tiposCertificadosSSRController.js` ← CRIAR
 
 ## Passos
@@ -35,7 +39,10 @@ async function index(req, res) {
       include: [{ model: Certificado, as: 'certificados', attributes: ['id'] }],
     })
     const mapCount = (list) =>
-      list.map((t) => ({ ...t.toJSON(), numCertificados: t.certificados.length }))
+      list.map((t) => ({
+        ...t.toJSON(),
+        numCertificados: t.certificados.length,
+      }))
     return res.render('admin/tipos-certificados/index', {
       tipos: mapCount(ativos),
       arquivados: mapCount(arquivados),
@@ -123,7 +130,9 @@ async function deletar(req, res) {
 
 async function restaurar(req, res) {
   try {
-    const tipo = await TiposCertificados.findByPk(req.params.id, { paranoid: false })
+    const tipo = await TiposCertificados.findByPk(req.params.id, {
+      paranoid: false,
+    })
     if (!tipo) {
       req.flash('error', 'Tipo de certificado não encontrado.')
       return res.redirect('/admin/tipos-certificados')
@@ -141,9 +150,11 @@ module.exports = { index, novo, editar, criar, atualizar, deletar, restaurar }
 ```
 
 ## Resultado esperado
+
 Controller criado com 7 métodos sem erros de importação.
 
 ## Critério de aceite
+
 - `dados_dinamicos` vem de `JSON.parse(req.body.dados_dinamicos_json)`
 - `numCertificados` é calculado via `t.certificados.length`
 - Arquivados: busca com `paranoid: false` + filtro `deleted_at != null`

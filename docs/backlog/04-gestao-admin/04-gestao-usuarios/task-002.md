@@ -1,12 +1,15 @@
 # TASK ID: ADMIN-USR-002
 
 ## Título
+
 Criar `views/admin/usuarios/index.hbs`
 
 ## Objetivo
+
 View Handlebars para listar usuários ativos e arquivados no painel admin, exibindo perfil e quantidade de eventos associados.
 
 ## Contexto
+
 - Layout: `layouts/admin`
 - Dados: `usuarios` (array com `eventos` incluído) e `arquivados` (array sem include)
 - Perfil badge: `admin` → `badge-danger`, `gestor` → `badge-warning`, `monitor` → `badge-info`
@@ -16,6 +19,7 @@ View Handlebars para listar usuários ativos e arquivados no painel admin, exibi
 - Bootstrap 5 via layout admin
 
 ## Arquivos envolvidos
+
 - `views/admin/usuarios/index.hbs` ← CRIAR (incluindo diretório)
 
 ## Passos
@@ -107,14 +111,17 @@ View Handlebars para listar usuários ativos e arquivados no painel admin, exibi
 ```
 
 **Observação:** O helper `eq` deve estar registrado no express-handlebars. Se não existir, registrar em `app.js`:
+
 ```js
 eq: (a, b) => a === b
 ```
 
 ## Resultado esperado
+
 Listagem com badge de perfil colorido, contagem de eventos e seção arquivados expansível.
 
 ## Critério de aceite
+
 - Badge de perfil usa cores diferentes por nível
 - `eventos.length` exibe número de eventos do usuário
 - Seção arquivados só aparece quando `arquivados.length > 0`

@@ -18,7 +18,9 @@ Todas as tabelas principais já foram criadas. Resta criar a migration de índic
 ## Dependências
 
 ### Externas (de outras features)
+
 Nenhuma — esta feature não depende de outras.
 
 ### Internas (ordem entre tasks desta feature)
+
 - TASK-001 → TASK-002 — o teste de migração referencia o arquivo criado em TASK-001; substituir `<TIMESTAMP>` no `require` pelo timestamp real gerado.

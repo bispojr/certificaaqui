@@ -1,12 +1,15 @@
 # TASK ID: TEST-UNIT-003
 
 ## Título
+
 Atualizar `certificadoService.test.js` — paginação + testes de `create` com validação de `valores_dinamicos`
 
 ## Objetivo
+
 (1) Substituir teste de `findAll` pelo contrato paginado. (2) Adicionar `TiposCertificados` ao mock. (3) Criar 3 testes para `certificadoService.create` cobrindo: tipo inexistente, campos faltantes e criação com sucesso.
 
 ## Contexto
+
 - `certificadoService.create` após CERT-API-003:
   - Busca `TiposCertificados.findByPk(data.tipo_certificado_id)`
   - Se não encontrar → lança `Error('Tipo de certificado não encontrado')`
@@ -16,11 +19,13 @@ Atualizar `certificadoService.test.js` — paginação + testes de `create` com 
 - `findAll` atual: `expect(Certificado.findAll).toHaveBeenCalled()` — obsoleto após CERT-API-001
 
 ## Arquivos envolvidos
+
 - `tests/services/certificadoService.test.js` ← MODIFICAR
 
 ## Passos
 
 ### 1. Adicionar `TiposCertificados` ao `jest.mock` e ao destructuring
+
 ```js
 // No require:
 const { Certificado, TiposCertificados } = require('../../src/models')
@@ -43,6 +48,7 @@ jest.mock('../../src/models', () => ({
 ```
 
 ### 2. Substituir teste `findAll` pelo contrato paginado
+
 ```js
 // Antes:
 it('findAll chama Certificado.findAll', async () => {
@@ -53,9 +59,15 @@ it('findAll chama Certificado.findAll', async () => {
 // Depois:
 describe('findAll', () => {
   it('retorna { data, meta } com página padrão', async () => {
-    Certificado.findAndCountAll.mockResolvedValue({ count: 5, rows: [{}, {}, {}, {}, {}] })
+    Certificado.findAndCountAll.mockResolvedValue({
+      count: 5,
+      rows: [{}, {}, {}, {}, {}],
+    })
     const result = await certificadoService.findAll()
-    expect(Certificado.findAndCountAll).toHaveBeenCalledWith({ offset: 0, limit: 20 })
+    expect(Certificado.findAndCountAll).toHaveBeenCalledWith({
+      offset: 0,
+      limit: 20,
+    })
     expect(result.data).toHaveLength(5)
     expect(result.meta.total).toBe(5)
     expect(result.meta.page).toBe(1)
@@ -64,12 +76,16 @@ describe('findAll', () => {
   it('aplica offset para page=2, perPage=5', async () => {
     Certificado.findAndCountAll.mockResolvedValue({ count: 10, rows: [] })
     await certificadoService.findAll({ page: 2, perPage: 5 })
-    expect(Certificado.findAndCountAll).toHaveBeenCalledWith({ offset: 5, limit: 5 })
+    expect(Certificado.findAndCountAll).toHaveBeenCalledWith({
+      offset: 5,
+      limit: 5,
+    })
   })
 })
 ```
 
 ### 3. Substituir o teste genérico `create chama Certificado.create` por 3 testes de validação
+
 ```js
 // Remover:
 it('create chama Certificado.create', async () => {
@@ -123,9 +139,11 @@ describe('create', () => {
 ```
 
 ## Resultado esperado
+
 `certificadoService.test.js` passa com `npm run check` após CERT-API-001 e CERT-API-003 implementados.
 
 ## Critério de aceite
+
 - `findAll` usa `findAndCountAll` — nenhuma referência a `Certificado.findAll` nos novos testes
 - Teste `tipo não encontrado`: `TiposCertificados.findByPk` retorna null → rejeita com mensagem correta
 - Teste `campos faltantes`: erro contém `camposFaltantes: ['carga_horaria']`

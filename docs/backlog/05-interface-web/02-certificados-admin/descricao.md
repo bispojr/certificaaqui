@@ -1,12 +1,15 @@
 # Feature: Gestão de Certificados Admin (SSR)
 
 ## Domínio
+
 05 — Interface Web (SSR / Handlebars)
 
 ## Objetivo
+
 Interface SSR no painel admin para visualizar, criar, editar, cancelar e restaurar certificados, com filtros por evento/status/tipo, texto interpolado na view de detalhe e campos dinâmicos carregados via `fetch` no formulário.
 
 ## Contexto técnico
+
 - Model `Certificado`: campos `nome`, `status` (ENUM: `emitido`/`pendente`/`cancelado`), `codigo`, `valores_dinamicos: JSONB`
   - `belongsTo(Participante)`, `belongsTo(Evento)`, `belongsTo(TiposCertificados)`
   - `paranoid: true`
@@ -20,11 +23,13 @@ Interface SSR no painel admin para visualizar, criar, editar, cancelar e restaur
 - Flash + redirect pattern (igual demais SSR controllers)
 
 ## Estado atual
+
 - `src/controllers/certificadoSSRController.js` NÃO existe
 - `views/admin/certificados/` NÃO existe
 - Nenhuma rota SSR de certificados em `src/routes/admin.js`
 
 ## Tasks
+
 - task-001: Criar `src/controllers/certificadoSSRController.js` (7 métodos)
 - task-002: Criar `views/admin/certificados/index.hbs` com filtros e modal de cancelamento
 - task-003: Criar `views/admin/certificados/detalhe.hbs` com texto interpolado e link de PDF
@@ -34,10 +39,12 @@ Interface SSR no painel admin para visualizar, criar, editar, cancelar e restaur
 ## Dependências
 
 ### Externas (de outras features)
+
 - **`02-ssr-cookie` TASK-002** — `authSSR.js` deve existir antes de CERT-ADMIN-005
 - **`02-gestao-eventos` ADMIN-EVT-005** — `src/routes/admin.js` deve existir antes de CERT-ADMIN-005
 - **`03-gestao-certificados/01-api-rest-certificados` CERT-API-003** — validação de `valores_dinamicos` no service; o form de criar (CERT-ADMIN-004) envia `valores_dinamicos` que o service valida
 
 ### Internas (ordem entre tasks desta feature)
+
 - CERT-ADMIN-001, 002, 003, 004 → independentes entre si
 - CERT-ADMIN-005 → depende de CERT-ADMIN-001 (controller), 002, 003, 004 (views) e de `src/routes/admin.js` existir

@@ -1,6 +1,7 @@
 # Feature: Consulta e Validação Pública (SSR)
 
 ## Descrição
+
 Páginas web para o participante buscar e validar certificados, com formulários e views Handlebars.
 As views de formulário e opções já existem; faltam os resultados, as rotas SSR com lógica de busca/validação, e a atualização dos links para apontarem para as novas rotas.
 
@@ -13,6 +14,7 @@ As views de formulário e opções já existem; faltam os resultados, as rotas S
 - Atualizar form actions nas views existentes (`form-obter.hbs`, `form-validar.hbs`, `opcoes.hbs`) e registrar redirect `/certificados` → `/public/pagina/opcoes` no `app.js`
 
 ## Arquivos base
+
 - `src/routes/public.js` (tem modelos e lógica JSON já importados)
 - `views/certificados/opcoes.hbs` (links apontam para `/certificados/obter` e `/certificados/validar` — a corrigir)
 - `views/certificados/form-obter.hbs` (action `/certificados/buscar` — a corrigir)
@@ -22,9 +24,11 @@ As views de formulário e opções já existem; faltam os resultados, as rotas S
 ## Dependências
 
 ### Externas (de outras features)
+
 Nenhuma — `publicRouter` já está registrado em `app.js` (linha 159); as rotas são públicas (sem `authSSR`).
 
 ### Internas (ordem entre tasks desta feature)
+
 - CERT-SSR-001 e CERT-SSR-002 → CERT-SSR-004 — as rotas POST (004) fazem `res.render` das views criadas em 001/002
 - CERT-SSR-003 e CERT-SSR-004 → CERT-SSR-005 — os links corrigidos em 005 precisam das rotas já existentes
 - CERT-SSR-001 e CERT-SSR-002 podem ser executadas em paralelo

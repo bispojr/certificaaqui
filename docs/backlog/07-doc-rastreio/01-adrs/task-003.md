@@ -1,17 +1,20 @@
 # TASK ID: DOC-ADR-003
 
 ## Título
+
 Criar ADR-006 — Estratégia de paginação offset-based
 
 ## Objetivo
+
 Documentar a decisão de adotar paginação offset-based (`LIMIT` + `OFFSET`) com `findAndCountAll`, em vez de paginação por cursor (keyset pagination).
 
 ## Arquivo envolvido
+
 - `docs/decisoes/006-paginacao-offset.md` ← CRIAR
 
 ## Conteúdo a criar
 
-```markdown
+````markdown
 # ADR 006 — Estratégia de Paginação: Offset-Based
 
 ## Contexto
@@ -28,6 +31,7 @@ O sistema opera com volumes de dados de pequeno a médio porte (eventos acadêmi
 Paginação offset-based com `Sequelize.findAndCountAll` e resposta no formato `{ data: [], meta: { total, page, limit, totalPages } }`.
 
 Razões:
+
 - Simplicidade de implementação e consumo via API (`?page=2&limit=10`)
 - `findAndCountAll` retorna `{ count, rows }` — translação direta para o formato de resposta
 - Suporte a navegação aleatória de páginas (ex.: ir direto para página 5) sem estado extra
@@ -36,11 +40,13 @@ Razões:
 ## Consequências
 
 **Positivas:**
+
 - API intuitiva: `GET /api/participantes?page=1&limit=20`
 - Sem estado no servidor — cada requisição é independente
 - Fácil de testar e documentar
 
 **Negativas:**
+
 - Instabilidade em inserções concorrentes: novo registro pode "deslocar" a página seguinte
 - Performance degrada com `OFFSET` muito alto em tabelas grandes (aceitável no escopo atual)
 - Não adequado para feeds em tempo real (aceitável — o sistema não tem esse requisito)
@@ -58,15 +64,18 @@ Razões:
   }
 }
 ```
+````
 
 ## Alternativas rejeitadas
 
-| Alternativa | Motivo da rejeição |
-|-------------|-------------------|
-| Cursor-based | Complexidade desnecessária para o volume de dados esperado; não suporta navegação aleatória |
-| Sem paginação | Inaceitável para produção — resposta pode ser ilimitada |
+| Alternativa   | Motivo da rejeição                                                                          |
+| ------------- | ------------------------------------------------------------------------------------------- |
+| Cursor-based  | Complexidade desnecessária para o volume de dados esperado; não suporta navegação aleatória |
+| Sem paginação | Inaceitável para produção — resposta pode ser ilimitada                                     |
+
 ```
 
 ## Critério de aceite
 - Arquivo criado em `docs/decisoes/006-paginacao-offset.md`
 - Documenta formato de resposta `{ data, meta }` e razões da escolha
+```

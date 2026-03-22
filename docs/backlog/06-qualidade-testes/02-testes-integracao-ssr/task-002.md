@@ -1,12 +1,15 @@
 # TASK ID: TEST-SSR-002
 
 ## Título
+
 Criar `tests/routes/publicSSR.test.js` — POST do fluxo público SSR
 
 ## Objetivo
+
 Cobrir `POST /public/pagina/buscar` (busca certificados por e-mail) e `POST /public/pagina/validar` (valida certificado por código), incluindo cenários de sucesso e não-encontrado.
 
 ## Contexto
+
 - Rotas POST criadas por CERT-SSR-004 (Domínio 3) em `src/routes/public.js`
 - `POST /public/pagina/buscar` com e-mail válido → renderiza `obter-lista.hbs` com certificados
 - `POST /public/pagina/buscar` com e-mail sem certificados → renderiza `obter-lista.hbs` com lista vazia (ou redirect com flash)
@@ -16,6 +19,7 @@ Cobrir `POST /public/pagina/buscar` (busca certificados por e-mail) e `POST /pub
 - Banco de dados real: `beforeAll` cria dados mínimos, `afterAll` faz truncate
 
 ## Arquivos envolvidos
+
 - `tests/routes/publicSSR.test.js` ← CRIAR
 
 ## Passos
@@ -39,7 +43,11 @@ beforeAll(async () => {
   await sequelize.query(
     'TRUNCATE TABLE certificados, tipos_certificados, participantes, eventos RESTART IDENTITY CASCADE',
   )
-  const evento = await Evento.create({ nome: 'Ev SSR', codigo_base: 'SSR', ano: 2026 })
+  const evento = await Evento.create({
+    nome: 'Ev SSR',
+    codigo_base: 'SSR',
+    ano: 2026,
+  })
   const tipo = await TiposCertificados.create({
     codigo: 'SS',
     descricao: 'Tipo SSR',
@@ -109,6 +117,7 @@ describe('POST /public/pagina/validar', () => {
 ```
 
 ## Critério de aceite
+
 - `POST /public/pagina/buscar` com e-mail existente: 200 + HTML contendo nome do participante
 - `POST /public/pagina/buscar` com e-mail inexistente: não retorna 500
 - `POST /public/pagina/validar` com código válido: 200 + HTML indicando certificado válido

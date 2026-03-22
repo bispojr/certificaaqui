@@ -1,14 +1,17 @@
 # TASK ID: AUTH-SSR-001
 
 ## Título
+
 Criar `views/auth/login.hbs` — formulário de login
 
 ## Objetivo
+
 Criar a view Handlebars do formulário de login SSR, exibindo campos `email` e `senha`, mensagens de erro via flash e usando o layout público (`layout.hbs`).
 
 ## Contexto
 
 O layout público existe em `views/layout.hbs` e já possui:
+
 - Bootstrap 5 via CDN
 - Slot de flash messages (`{{#if flash.error}}`)
 - Navbar pública

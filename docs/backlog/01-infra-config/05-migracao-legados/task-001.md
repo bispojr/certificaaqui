@@ -1,18 +1,23 @@
 # TASK ID: INFRA-LEGADOS-001
 
 ## Título
+
 Criar `src/middlewares/auth.js` e `src/middlewares/validate.js`
 
 ## Objetivo
+
 Criar as versões corretas de `auth.js` e `validate.js` dentro de `src/middlewares/`, substituindo os arquivos legados que estão na raiz do projeto em `middleware/`.
 
 ## Contexto
 
 O arquivo `middleware/auth.js` atual usa:
+
 ```js
 const { Usuario } = require('../src/models')
 ```
+
 Esse path é relativo à posição atual (`middleware/`) e aponta para `src/models`. Ao mover para `src/middlewares/`, o path correto passa a ser:
+
 ```js
 const { Usuario } = require('../models')
 ```
@@ -20,6 +25,7 @@ const { Usuario } = require('../models')
 O arquivo `middleware/validate.js` não possui imports com path relativo, portanto pode ser copiado sem alterações.
 
 O conteúdo completo do `middleware/auth.js` atual é:
+
 ```js
 const jwt = require('jsonwebtoken')
 const { Usuario } = require('../src/models')
@@ -48,6 +54,7 @@ module.exports = async function auth(req, res, next) {
 ```
 
 O conteúdo completo do `middleware/validate.js` atual é:
+
 ```js
 const { ZodError } = require('zod')
 

@@ -1,9 +1,11 @@
 # TASK ID: AUTH-SSR-004
 
 ## Título
+
 Registrar rota `/auth` no `app.js`
 
 ## Objetivo
+
 Adicionar o import do `authRouter` e registrá-lo em `app.use('/auth', authRouter)` no `app.js`, tornando as rotas de login/logout SSR acessíveis.
 
 ## Contexto
@@ -11,6 +13,7 @@ Adicionar o import do `authRouter` e registrá-lo em `app.use('/auth', authRoute
 **Pré-requisito:** TASK-003 (`src/routes/auth.js`) já executada.
 
 O padrão de registro existente no `app.js` (linhas 13–22 e 151–160):
+
 ```js
 // imports
 var participantesRouter = require('./src/routes/participantes')
@@ -33,11 +36,13 @@ O `authRouter` deve ser adicionado seguindo o mesmo padrão, preferencialmente j
 ## Passos
 
 1. Na seção de imports (entre as linhas de `publicRouter` e a linha em branco seguinte), adicionar:
+
    ```js
    var authRouter = require('./src/routes/auth')
    ```
 
 2. Na seção de registros de rotas (junto com os demais `app.use`), adicionar antes de `app.use('/public', publicRouter)`:
+
    ```js
    app.use('/auth', authRouter)
    ```

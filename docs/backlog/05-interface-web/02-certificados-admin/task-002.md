@@ -1,12 +1,15 @@
 # TASK ID: CERT-ADMIN-002
 
 ## Título
+
 Criar `views/admin/certificados/index.hbs` com filtros e modal de cancelamento
 
 ## Objetivo
+
 View de listagem de certificados com formulário de filtros (evento, status, tipo), tabela de ativos, modal de confirmação de cancelamento e seção `<details>` de arquivados.
 
 ## Contexto
+
 - Layout: `layouts/admin`
 - Dados: `certificados`, `arquivados`, `eventos`, `tipos`, `filtros: { status, evento_id, tipo_id }`
 - Cancelar: `POST /admin/certificados/:id/cancelar` — não destrói, muda status
@@ -18,6 +21,7 @@ View de listagem de certificados com formulário de filtros (evento, status, tip
 - Modal Bootstrap 5 para confirmar cancelamento (evita form submit acidental)
 
 ## Arquivos envolvidos
+
 - `views/admin/certificados/index.hbs` ← CRIAR (incluindo diretório)
 
 ## Passos
@@ -168,11 +172,13 @@ View de listagem de certificados com formulário de filtros (evento, status, tip
 ```
 
 **Helper necessário:** `toString` para comparar `id` (integer) com `filtros.evento_id` (string de query). Registrar em `app.js` se não existir:
+
 ```js
 toString: (val) => String(val ?? '')
 ```
 
 ## Critério de aceite
+
 - Filtros submetidos como GET preservam valores selecionados nos selects
 - Badge de status usa cor correta em cada estado
 - Botão "Cancelar" não aparece em certificados já cancelados (`{{#unless (eq status 'cancelado')}}`)

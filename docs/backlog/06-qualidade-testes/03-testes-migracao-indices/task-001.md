@@ -1,15 +1,19 @@
 # TASK ID: TEST-MIG-001
 
 ## Título
+
 Criar `tests/migrations/performanceIndexes.migration.test.js`
 
 ## Objetivo
+
 Verificar que a migration de índices de performance (`up`) cria os 5 índices esperados e que (`down`) os remove completamente.
 
 ## Bloqueio
+
 **Requer INFRA-MIGRATIONS-001 executado primeiro.** O arquivo `migrations/<timestamp>-create-performance-indexes.js` deve existir no projeto antes de implementar este teste.
 
 ## Contexto
+
 - Padrão dos demais testes de migration: `DROP SCHEMA / CREATE SCHEMA` no `beforeEach` para isolamento total
 - `queryInterface.showIndex('tabela')` retorna array com objetos que têm `name` — usado para verificar presença/ausência dos índices
 - O `beforeEach` precisa rodar as migrations de tabelas pré-requisito antes da migration de índices:
@@ -19,6 +23,7 @@ Verificar que a migration de índices de performance (`up`) cria os 5 índices e
 - No `afterEach` (ou via `beforeEach` com DROP SCHEMA), o schema é reconstruído
 
 ## Arquivos envolvidos
+
 - `tests/migrations/performanceIndexes.migration.test.js` ← CRIAR
 
 ## Passos
@@ -86,7 +91,9 @@ describe('Migration: performance indexes', () => {
     expect(certNames).not.toContain('idx_certificados_status')
 
     const partIndexes = await queryInterface.showIndex('participantes')
-    expect(partIndexes.map((i) => i.name)).not.toContain('idx_participantes_email')
+    expect(partIndexes.map((i) => i.name)).not.toContain(
+      'idx_participantes_email',
+    )
 
     const userIndexes = await queryInterface.showIndex('usuarios')
     expect(userIndexes.map((i) => i.name)).not.toContain('idx_usuarios_email')
@@ -95,6 +102,7 @@ describe('Migration: performance indexes', () => {
 ```
 
 ## Critério de aceite
+
 - `up`: `showIndex` nas 3 tabelas contém os 5 nomes de índice esperados
 - `down`: `showIndex` nas 3 tabelas não contém nenhum dos 5 nomes
 - Teste isolado: `beforeEach` dropa e recria schema inteiro para não vazar estado

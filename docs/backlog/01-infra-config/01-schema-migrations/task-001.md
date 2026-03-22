@@ -1,14 +1,17 @@
 # TASK ID: INFRA-MIGRATIONS-001
 
 ## Título
+
 Criar migration de índices de performance
 
 ## Objetivo
+
 Criar o arquivo de migration Sequelize que adiciona 5 índices nas tabelas `certificados`, `participantes` e `usuarios`, acelerando queries por `evento_id`, `participante_id`, `status` e `email`.
 
 ## Contexto
 
 As migrações de tabelas já existem em `/migrations/`. O padrão adotado no projeto é:
+
 - Arquivo `up` usa `queryInterface.addIndex`
 - Arquivo `down` usa `queryInterface.removeIndex`
 - Nomeação: `YYYYMMDDHHMMSS-<descricao>.js`

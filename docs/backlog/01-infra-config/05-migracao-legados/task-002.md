@@ -1,9 +1,11 @@
 # TASK ID: INFRA-LEGADOS-002
 
 ## Título
+
 Atualizar imports de `auth` e `validate` em `participantes.js` e `eventos.js`
 
 ## Objetivo
+
 Substituir os imports legados `../../middleware/auth` e `../../middleware/validate` pelas versões novas em `src/middlewares/` nos arquivos de rota `participantes.js` e `eventos.js`.
 
 ## Contexto
@@ -11,6 +13,7 @@ Substituir os imports legados `../../middleware/auth` e `../../middleware/valida
 **Pré-requisito:** TASK-001 já executada (`src/middlewares/auth.js` e `src/middlewares/validate.js` existem).
 
 Estado atual dos dois arquivos:
+
 ```js
 // src/routes/participantes.js (linhas 4 e 6)
 const auth = require('../../middleware/auth')
@@ -22,6 +25,7 @@ const validate = require('../../middleware/validate')
 ```
 
 Path correto a partir de `src/routes/` para `src/middlewares/`:
+
 ```js
 const auth = require('../middlewares/auth')
 const validate = require('../middlewares/validate')

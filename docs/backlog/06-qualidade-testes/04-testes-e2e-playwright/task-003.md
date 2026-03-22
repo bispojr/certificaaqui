@@ -1,18 +1,22 @@
 # TASK ID: E2E-003
 
 ## Título
+
 Criar helpers `tests/e2e/helpers/auth.js` e `tests/e2e/helpers/api.js`
 
 ## Objetivo
+
 Extrair lógica repetitiva de login SSR e criação de fixtures via API em helpers reutilizáveis por todos os spec files.
 
 ## Contexto
+
 - `loginAs(page, email, senha)` navega para `/auth/login`, preenche o formulário e submete — após redirect, o cookie `token` estará armazenado no contexto do browser Playwright
 - `loginAsPerfil(page, perfil, dados)` é um atalho que usa os dados do seed E2E
 - `createViaApi(endpoint, payload, token)` usa `node-fetch` ou `http` nativo para POST à API REST — útil para criar fixture extra durante um teste sem abrir novo browser
 - Ambos helpers recebem `baseURL` de `process.env.BASE_URL || 'http://localhost:3000'`
 
 ## Arquivos envolvidos
+
 - `tests/e2e/helpers/auth.js` ← CRIAR
 - `tests/e2e/helpers/api.js` ← CRIAR
 
@@ -101,6 +105,7 @@ module.exports = { createViaApi }
 ```
 
 ## Critério de aceite
+
 - `loginAs(page, email, senha)` navega para `/auth/login`, preenche e submete o formulário
 - Após `loginAs`, `page.url()` contém `/admin/` (login bem-sucedido) ou `/auth/login` (falha)
 - `createViaApi('/api/participantes', { ... }, token)` retorna JSON com o registro criado

@@ -1,12 +1,15 @@
 # TASK ID: CERT-ADMIN-003
 
 ## Título
+
 Criar `views/admin/certificados/detalhe.hbs` com texto interpolado e link de PDF
 
 ## Objetivo
+
 View de detalhe de um certificado exibindo dados completos, texto do certificado com interpolação já processada pelo controller e link para download do PDF.
 
 ## Contexto
+
 - Layout: `layouts/admin`
 - Dados: `certificado` (JSON com includes), `textoInterpolado` (string processada pelo controller via `templateService.interpolate`)
 - `certificado.Participante.nomeCompleto`, `certificado.Evento.nome`, `certificado.TiposCertificado.descricao`
@@ -15,6 +18,7 @@ View de detalhe de um certificado exibindo dados completos, texto do certificado
 - Exibe `valores_dinamicos` como tabela chave→valor para facilitar inspeção
 
 ## Arquivos envolvidos
+
 - `views/admin/certificados/detalhe.hbs` ← CRIAR
 
 ## Passos
@@ -98,6 +102,7 @@ View de detalhe de um certificado exibindo dados completos, texto do certificado
 **Observação:** `{{#each certificado.valores_dinamicos}}` itera sobre as chaves de um objeto JSONB via Handlebars — funciona porque o objeto é serializado ao passar por `toJSON()` no controller.
 
 ## Critério de aceite
+
 - Link de PDF abre em nova aba (`target="_blank"`) via rota pública `/public/certificados/:id/pdf`
 - `textoInterpolado` exibido com `white-space: pre-wrap` para preservar quebras de linha
 - Tabela de `valores_dinamicos` só aparece se o campo não for nulo/vazio

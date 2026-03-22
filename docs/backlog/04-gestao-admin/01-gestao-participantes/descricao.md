@@ -1,6 +1,7 @@
 # Feature: Gestão de Participantes
 
 ## Descrição
+
 CRUD de participantes com paginação na listagem REST e painel SSR administrativo com busca por nome/email e contagem de certificados vinculados.
 
 ## Tasks (alto nível — apenas pendentes)
@@ -12,6 +13,7 @@ CRUD de participantes com paginação na listagem REST e painel SSR administrati
 - Adicionar rotas SSR de participantes em `src/routes/admin.js` protegidas por `authSSR`
 
 ## Arquivos base
+
 - `src/services/participanteService.js` (findAll sem paginação)
 - `src/controllers/participanteController.js` (findAll retorna array puro)
 - `src/models/participante.js` (campos: `nomeCompleto`, `email`, `instituicao`; `hasMany` Certificado as `certificados`)
@@ -20,9 +22,11 @@ CRUD de participantes com paginação na listagem REST e painel SSR administrati
 ## Dependências
 
 ### Externas (de outras features)
+
 - **`02-ssr-cookie` TASK-002** — `src/middlewares/authSSR.js` deve existir antes de ADMIN-PART-005 (usado nas rotas admin)
 - **`02-gestao-eventos` ADMIN-EVT-005** — `src/routes/admin.js` deve existir antes de ADMIN-PART-005 (as rotas de participantes são adicionadas a esse arquivo)
 
 ### Internas (ordem entre tasks desta feature)
+
 - ADMIN-PART-001, 002, 003, 004 → independentes entre si (podem ser executadas em qualquer ordem)
 - ADMIN-PART-005 → depende de ADMIN-PART-002 (controller SSR), 003 (index.hbs), 004 (form.hbs) e de `src/routes/admin.js` existir

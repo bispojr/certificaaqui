@@ -1,6 +1,7 @@
 # Feature: Gestão de Eventos
 
 ## Descrição
+
 Cadastro e gerenciamento de eventos com código base único e cascata de soft delete/restore nas associações `usuario_eventos`. Dois bugs de cascata críticos precisam ser corrigidos antes da interface SSR.
 
 ## Tasks (alto nível — apenas pendentes)
@@ -15,6 +16,7 @@ Cadastro e gerenciamento de eventos com código base único e cascata de soft de
 - Registrar `adminRouter` em `app.js`
 
 ## Arquivos base
+
 - `src/services/eventoService.js` (bugs confirmados nas linhas 31-35 e 38-41)
 - `tests/services/eventoService.test.js` (mock `UsuarioEvento: { update: jest.fn() }` desatualizado)
 - `src/models/evento.js` (campos: `nome`, `codigo_base`, `ano`; `paranoid: true`)
@@ -23,11 +25,13 @@ Cadastro e gerenciamento de eventos com código base único e cascata de soft de
 ## Dependências
 
 ### Externas (de outras features)
+
 - **`02-ssr-cookie` TASK-002** — `src/middlewares/authSSR.js` deve existir antes de ADMIN-EVT-005 (o router admin usa `authSSR` como middleware global)
 
 > Esta feature **cria** `src/routes/admin.js` em ADMIN-EVT-005, desbloqueando as features de participantes, tipos de certificados e usuários do Domínio 4.
 
 ### Internas (ordem entre tasks desta feature)
+
 - ADMIN-EVT-001 → ADMIN-EVT-002 — o teste (002) verifica o comportamento corrigido em 001
 - ADMIN-EVT-001 → deve ser executado antes de qualquer outra task (bug crítico de cascata)
 - ADMIN-EVT-003 → independente (paginação isolada do serviço)

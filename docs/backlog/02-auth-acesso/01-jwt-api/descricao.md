@@ -19,7 +19,9 @@ Login/logout via endpoint JSON com geração e validação de tokens JWT para co
 ## Dependências
 
 ### Externas (de outras features)
+
 Nenhuma — esta feature é base do sistema de autenticação.
 
 ### Internas (ordem entre tasks desta feature)
+
 Nenhuma — há apenas TASK-001.

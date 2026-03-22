@@ -1,12 +1,15 @@
 # TASK ID: DASH-002
 
 ## Título
+
 Criar `views/admin/dashboard.hbs`
 
 ## Objetivo
+
 View Handlebars do dashboard administrativo com cards Bootstrap condicionais: 4 cards para admin, 2 cards para gestor/monitor.
 
 ## Contexto
+
 - Layout: `layouts/admin`
 - admin.hbs popula `res.locals.usuario` com `{ isAdmin, isGestor, ... }`; a view usa `{{#if usuario.isAdmin}}`
 - Dados admin: `totalEventos`, `totalTipos`, `totalParticipantes`, `totalUsuarios`
@@ -15,6 +18,7 @@ View Handlebars do dashboard administrativo com cards Bootstrap condicionais: 4 
 - Links dos cards levam às respectivas listagens (`/admin/eventos`, `/admin/participantes`, etc.)
 
 ## Arquivos envolvidos
+
 - `views/admin/dashboard.hbs` ← CRIAR (incluindo diretório `views/admin/`)
 
 ## Passos
@@ -98,9 +102,11 @@ View Handlebars do dashboard administrativo com cards Bootstrap condicionais: 4 
 ```
 
 ## Resultado esperado
+
 Dashboard com 4 cards coloridos para admin e 2 cards para gestor/monitor, todos clicáveis.
 
 ## Critério de aceite
+
 - Admin vê 4 cards: Eventos (azul), Tipos (verde), Participantes (amarelo), Usuários (vermelho)
 - Gestor/monitor vê 2 cards escopados com subtítulo "(seus eventos)"
 - Cards são links para as respectivas listagens

@@ -1,12 +1,15 @@
 # TASK ID: E2E-006
 
 ## Título
+
 Criar `tests/e2e/admin.spec.js` — CRUD painel admin com RBAC visual
 
 ## Objetivo
+
 Cobrir os casos de uso do painel administrativo via browser: listagem, criação e cancelamento de certificados, acesso por perfil (admin vs gestor vs monitor) e verificação de restrições RBAC visíveis na interface.
 
 ## Contexto
+
 - Rotas cobertas: `GET /admin/dashboard`, `GET /admin/certificados`, `GET /admin/certificados/novo`, `POST /admin/certificados`, `POST /admin/certificados/:id/cancelar`, `POST /admin/certificados/:id/restaurar`
 - Restrições RBAC a verificar:
   - `GET /admin/usuarios` → 403 para gestor (página de erro ou redirect)
@@ -17,6 +20,7 @@ Cobrir os casos de uso do painel administrativo via browser: listagem, criação
 - Cada teste usa `page` isolado (contexto fresh do Playwright) para evitar vazamento de cookie entre perfis
 
 ## Arquivos envolvidos
+
 - `tests/e2e/admin.spec.js` ← CRIAR
 
 ## Passos
@@ -46,7 +50,9 @@ test('UC-AD01 — admin acessa dashboard com sucesso', async ({ page }) => {
   await expect(page.locator('text=/[Dd]ashboard/')).toBeVisible()
 })
 
-test('UC-AD02 — gestor acessa dashboard dentro do seu escopo', async ({ page }) => {
+test('UC-AD02 — gestor acessa dashboard dentro do seu escopo', async ({
+  page,
+}) => {
   await loginAs(page, 'gestor.e2e@test.com', 'senha123')
   await expect(page).toHaveURL(/\/admin\/dashboard/)
 })
@@ -67,7 +73,9 @@ test('UC-AD04 — gestor lista certificados do seu evento', async ({ page }) => 
 
 // ─── Formulário de novo certificado ──────────────────────────────────────────
 
-test('UC-AD05 — admin acessa formulário de novo certificado', async ({ page }) => {
+test('UC-AD05 — admin acessa formulário de novo certificado', async ({
+  page,
+}) => {
   await loginAs(page, 'admin.e2e@test.com', 'senha123')
   await page.goto('/admin/certificados/novo')
   await expect(page.locator('form')).toBeVisible()
@@ -79,9 +87,9 @@ test('UC-AD06 — gestor cancela certificado', async ({ page }) => {
   await loginAs(page, 'gestor.e2e@test.com', 'senha123')
   await page.goto('/admin/certificados')
   // Clica no botão/link de cancelar para o certificado E2E-2026-001
-  const cancelBtn = page.locator(
-    `form[action*="/cancelar"] button, a[href*="/cancelar"]`,
-  ).first()
+  const cancelBtn = page
+    .locator(`form[action*="/cancelar"] button, a[href*="/cancelar"]`)
+    .first()
   await expect(cancelBtn).toBeVisible()
   await cancelBtn.click()
   await expect(page).not.toHaveURL(/error|500/)
@@ -89,7 +97,9 @@ test('UC-AD06 — gestor cancela certificado', async ({ page }) => {
 
 // ─── Restaurar certificado — RBAC ────────────────────────────────────────────
 
-test('UC-AD07 — gestor não vê botão de restaurar (somente admin)', async ({ page }) => {
+test('UC-AD07 — gestor não vê botão de restaurar (somente admin)', async ({
+  page,
+}) => {
   await loginAs(page, 'gestor.e2e@test.com', 'senha123')
   await page.goto('/admin/certificados')
   // Botão de restaurar não deve existir para gestor
@@ -113,7 +123,9 @@ test('UC-AD09 — gestor não acessa /admin/usuarios (403)', async ({ page }) =>
   await page.goto('/admin/usuarios')
   // Deve receber 403 ou ser redirecionado — não chega na listagem
   const url = page.url()
-  const has403 = await page.locator('text=/403|[Ff]orbidden|[Aa]cesso negado/').isVisible()
+  const has403 = await page
+    .locator('text=/403|[Ff]orbidden|[Aa]cesso negado/')
+    .isVisible()
   expect(has403 || !url.includes('/admin/usuarios')).toBe(true)
 })
 
@@ -126,6 +138,7 @@ test('UC-AD10 — admin acessa /admin/usuarios com sucesso', async ({ page }) =>
 ```
 
 ## Critério de aceite
+
 - UC-AD01/02: login com admin e gestor aterrissa em `/admin/dashboard`
 - UC-AD03: certificado com código `E2E-2026-001` visível na listagem para admin
 - UC-AD05: formulário de novo certificado abre sem erro

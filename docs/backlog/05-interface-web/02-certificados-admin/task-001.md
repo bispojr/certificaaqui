@@ -1,12 +1,15 @@
 # TASK ID: CERT-ADMIN-001
 
 ## Título
+
 Criar `src/controllers/certificadoSSRController.js` com 7 métodos
 
 ## Objetivo
+
 Controller SSR para gestão de certificados no painel admin, com scoping por perfil (admin vê tudo; gestor/monitor filtrado por seus eventos), cancelamento e restauração.
 
 ## Contexto
+
 - `Certificado` includes: `Participante` (as padrão), `Evento` (as padrão), `TiposCertificados` (as padrão)
 - Escopo gestor/monitor: `req.usuario.getEventos()` retorna instâncias com `id` — extrair `eventoIds`
 - `cancel(id)`: `certificado.update({ status: 'cancelado' })` (não é soft delete)
@@ -15,6 +18,7 @@ Controller SSR para gestão de certificados no painel admin, com scoping por per
 - Formulário `criar`/`atualizar`: `valores_dinamicos` vem de `req.body.valores_dinamicos_json` (JSON serializado pelo form) ou diretamente de campos individuais `campo_*`
 
 ## Arquivos envolvidos
+
 - `src/controllers/certificadoSSRController.js` ← CRIAR
 
 ## Passos
@@ -32,7 +36,10 @@ const {
 const INCLUDES = [
   { model: Participante, attributes: ['id', 'nomeCompleto', 'email'] },
   { model: Evento, attributes: ['id', 'nome'] },
-  { model: TiposCertificados, attributes: ['id', 'descricao', 'texto_base', 'dados_dinamicos'] },
+  {
+    model: TiposCertificados,
+    attributes: ['id', 'descricao', 'texto_base', 'dados_dinamicos'],
+  },
 ]
 
 async function getEventoIds(req) {
@@ -61,7 +68,9 @@ async function index(req, res) {
     })
 
     const eventos = await Evento.findAll({ attributes: ['id', 'nome'] })
-    const tipos = await TiposCertificados.findAll({ attributes: ['id', 'descricao'] })
+    const tipos = await TiposCertificados.findAll({
+      attributes: ['id', 'descricao'],
+    })
 
     return res.render('admin/certificados/index', {
       certificados,
@@ -78,7 +87,9 @@ async function index(req, res) {
 
 async function detalhe(req, res) {
   try {
-    const certificado = await Certificado.findByPk(req.params.id, { include: INCLUDES })
+    const certificado = await Certificado.findByPk(req.params.id, {
+      include: INCLUDES,
+    })
     if (!certificado) {
       req.flash('error', 'Certificado não encontrado.')
       return res.redirect('/admin/certificados')
@@ -99,9 +110,13 @@ async function detalhe(req, res) {
 }
 
 async function novo(req, res) {
-  const participantes = await Participante.findAll({ attributes: ['id', 'nomeCompleto', 'email'] })
+  const participantes = await Participante.findAll({
+    attributes: ['id', 'nomeCompleto', 'email'],
+  })
   const eventos = await Evento.findAll({ attributes: ['id', 'nome'] })
-  const tipos = await TiposCertificados.findAll({ attributes: ['id', 'descricao', 'dados_dinamicos'] })
+  const tipos = await TiposCertificados.findAll({
+    attributes: ['id', 'descricao', 'dados_dinamicos'],
+  })
   return res.render('admin/certificados/form', {
     certificado: null,
     participantes,
@@ -112,14 +127,20 @@ async function novo(req, res) {
 
 async function editar(req, res) {
   try {
-    const certificado = await Certificado.findByPk(req.params.id, { include: INCLUDES })
+    const certificado = await Certificado.findByPk(req.params.id, {
+      include: INCLUDES,
+    })
     if (!certificado) {
       req.flash('error', 'Certificado não encontrado.')
       return res.redirect('/admin/certificados')
     }
-    const participantes = await Participante.findAll({ attributes: ['id', 'nomeCompleto', 'email'] })
+    const participantes = await Participante.findAll({
+      attributes: ['id', 'nomeCompleto', 'email'],
+    })
     const eventos = await Evento.findAll({ attributes: ['id', 'nome'] })
-    const tipos = await TiposCertificados.findAll({ attributes: ['id', 'descricao', 'dados_dinamicos'] })
+    const tipos = await TiposCertificados.findAll({
+      attributes: ['id', 'descricao', 'dados_dinamicos'],
+    })
     return res.render('admin/certificados/form', {
       certificado: certificado.toJSON(),
       participantes,
@@ -134,7 +155,9 @@ async function editar(req, res) {
 
 async function criar(req, res) {
   try {
-    const valores_dinamicos = JSON.parse(req.body.valores_dinamicos_json || '{}')
+    const valores_dinamicos = JSON.parse(
+      req.body.valores_dinamicos_json || '{}',
+    )
     await Certificado.create({
       nome: req.body.nome,
       status: req.body.status || 'emitido',
@@ -158,7 +181,9 @@ async function atualizar(req, res) {
       req.flash('error', 'Certificado não encontrado.')
       return res.redirect('/admin/certificados')
     }
-    const valores_dinamicos = JSON.parse(req.body.valores_dinamicos_json || '{}')
+    const valores_dinamicos = JSON.parse(
+      req.body.valores_dinamicos_json || '{}',
+    )
     await certificado.update({
       nome: req.body.nome,
       status: req.body.status,
@@ -193,7 +218,9 @@ async function cancelar(req, res) {
 
 async function restaurar(req, res) {
   try {
-    const certificado = await Certificado.findByPk(req.params.id, { paranoid: false })
+    const certificado = await Certificado.findByPk(req.params.id, {
+      paranoid: false,
+    })
     if (!certificado) {
       req.flash('error', 'Certificado não encontrado.')
       return res.redirect('/admin/certificados')
@@ -207,13 +234,24 @@ async function restaurar(req, res) {
   }
 }
 
-module.exports = { index, detalhe, novo, editar, criar, atualizar, cancelar, restaurar }
+module.exports = {
+  index,
+  detalhe,
+  novo,
+  editar,
+  criar,
+  atualizar,
+  cancelar,
+  restaurar,
+}
 ```
 
 ## Resultado esperado
+
 Controller com 8 métodos sem erros de importação.
 
 ## Critério de aceite
+
 - `index`: aceita filtros `?status`, `?evento_id`, `?tipo_id`; gestor/monitor restrito a seus eventos
 - `detalhe`: chama `templateService.interpolate` com `texto_base` e `valores_dinamicos`
 - `criar`/`atualizar`: `valores_dinamicos` via `JSON.parse(req.body.valores_dinamicos_json)`

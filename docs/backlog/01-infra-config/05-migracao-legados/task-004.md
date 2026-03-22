@@ -1,9 +1,11 @@
 # TASK ID: INFRA-LEGADOS-004
 
 ## Título
+
 Atualizar imports em `usuarios.js` e `auth.test.js`
 
 ## Objetivo
+
 Substituir os imports legados em `src/routes/usuarios.js` e `tests/middleware/auth.test.js`, completando a atualização de todos os arquivos que referenciam os middlewares legados.
 
 ## Contexto
@@ -11,6 +13,7 @@ Substituir os imports legados em `src/routes/usuarios.js` e `tests/middleware/au
 **Pré-requisito:** TASK-001 já executada.
 
 Estado atual:
+
 ```js
 // src/routes/usuarios.js (linhas 4 e 5)
 const auth = require('../../middleware/auth')
@@ -21,6 +24,7 @@ const auth = require('../../middleware/auth')
 ```
 
 Para `tests/middleware/auth.test.js`, o path correto a partir de `tests/middleware/` para `src/middlewares/` é:
+
 ```js
 const auth = require('../../src/middlewares/auth')
 ```

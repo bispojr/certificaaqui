@@ -1,12 +1,15 @@
 # TASK ID: CERT-SSR-004
 
 ## Título
+
 Adicionar rotas SSR POST em `src/routes/public.js` (buscar por e-mail e validar por código)
 
 ## Objetivo
+
 Adicionar `POST /public/pagina/buscar` e `POST /public/pagina/validar` que reutilizam os modelos já importados para buscar/validar e renderizam as views de resultado.
 
 ## Contexto
+
 - `src/routes/public.js` já importa `Certificado`, `Participante`, `Evento`, `TiposCertificados`
 - Executar APÓS CERT-SSR-001 e CERT-SSR-002 (as views de resultado já devem existir)
 - `POST /public/pagina/buscar`: lê `req.body.email`, busca `Participante` por email, depois `Certificado.findAll` do participante, renderiza `certificados/obter-lista`
@@ -15,6 +18,7 @@ Adicionar `POST /public/pagina/buscar` e `POST /public/pagina/validar` que reuti
 - Requer `express.urlencoded` já habilitado (está em `app.js`)
 
 ## Arquivos envolvidos
+
 - `src/routes/public.js`
 
 ## Passos
@@ -62,7 +66,10 @@ router.post('/pagina/validar', async (req, res) => {
     if (!certificado) {
       return res.render('certificados/validar-resultado', { valido: false })
     }
-    return res.render('certificados/validar-resultado', { valido: true, certificado })
+    return res.render('certificados/validar-resultado', {
+      valido: true,
+      certificado,
+    })
   } catch (_) {
     return res.render('certificados/form-validar', {
       mensagem: 'Erro ao validar certificado. Tente novamente.',
@@ -72,12 +79,14 @@ router.post('/pagina/validar', async (req, res) => {
 ```
 
 ## Resultado esperado
+
 - `POST /public/pagina/buscar` com email válido → renderiza `obter-lista.hbs` com certificados
 - `POST /public/pagina/buscar` sem email → re-renderiza `form-obter.hbs` com mensagem
 - `POST /public/pagina/validar` com código válido → renderiza `validar-resultado.hbs` com `valido: true`
 - `POST /public/pagina/validar` com código inválido → renderiza `validar-resultado.hbs` com `valido: false`
 
 ## Critério de aceite
+
 - Nenhuma rota JSON existente modificada
 - Re-renderiza o formulário com `mensagem` em caso de erro de validação ou busca vazia
 - Inclui `Participante` e `Evento` no resultado de validação (necessário para a view)
