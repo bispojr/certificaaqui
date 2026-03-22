@@ -1,3 +1,9 @@
+# ⚠️ Backlog original (OBSOLETO)
+
+Este arquivo foi decomposto em:
+
+/backlog/[domínios]/[features]/tasks
+
 # Backlog Técnico — Certifique-me
 
 > Gerado com base na auditoria arquitetural de 11/03/2026.  
