@@ -1150,7 +1150,7 @@ Sprint 10 (documentação e otimização)
 
 ---
 
-**[TASK-028-C] Atualizar `views/layout.hbs` com Bootstrap 5 e navbar pública**
+**[TASK-028-C] Atualizar `views/layout.hbs` com Bootstrap 5 e navbar pública** — concluído em 2026-03-21 17:11 (BRT)
 
 - Arquivo: `views/layout.hbs` (MODIFICAR)
 - Contexto: o layout atual é um esqueleto mínimo sem CSS. Deve incluir Bootstrap 5 via CDN, barra de navegação pública com link para `/certificados` e slot `{{{body}}}`

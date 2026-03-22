@@ -1,4 +1,7 @@
-// Garante que JWT_SECRET está definido para todos os testes
+// Carrega variáveis do .env explicitamente para garantir ambiente de testes
+require('dotenv').config({
+  path: require('path').resolve(__dirname, '../.env'),
+})
 if (!process.env.JWT_SECRET) {
   process.env.JWT_SECRET = 'jwt_secret_teste'
 }
