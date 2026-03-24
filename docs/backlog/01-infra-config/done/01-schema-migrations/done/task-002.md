@@ -111,3 +111,7 @@ Arquivo `tests/migrations/indexes.migration.test.js` criado com 2 testes que pas
 - Testa `up` (presença dos 5 índices) e `down` (ausência dos 5 índices)
 - `npm run check` passa sem erros
 - Nenhum índice de outra migration é verificado neste arquivo
+
+## Metadados
+
+- Completado em: 24/03/2026 19:20 ✅

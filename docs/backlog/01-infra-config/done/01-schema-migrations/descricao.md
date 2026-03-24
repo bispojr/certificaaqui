@@ -13,7 +13,7 @@ Todas as tabelas principais já foram criadas. Resta criar a migration de índic
 ## Tasks pendentes
 
 - ✅ [TASK-001] Criar migration de índices de performance nos campos mais consultados
-- ⬜ [TASK-002] Criar teste de migração para verificar criação e remoção dos índices
+- ✅ [TASK-002] Criar teste de migração para verificar criação e remoção dos índices
 
 ## Dependências
 
