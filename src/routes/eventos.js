@@ -1,10 +1,10 @@
 const express = require('express')
 const router = express.Router()
 const eventoController = require('../controllers/eventoController')
-const auth = require('../../middleware/auth')
+const auth = require('../middlewares/auth')
 const rbac = require('../middlewares/rbac')
 const scopedEvento = require('../middlewares/scopedEvento')
-const validate = require('../../middleware/validate')
+const validate = require('../middlewares/validate')
 const eventoSchema = require('../validators/evento')
 
 /**

@@ -57,3 +57,8 @@ const validate = require('../middlewares/validate')
 
 - Nenhuma ocorrência de `../../middleware/` em `participantes.js` ou `eventos.js`
 - `npm run check` passa sem erros
+
+## Metadados
+
+- Completado em: 2026-03-25 09:10 (BRT) ✅
+

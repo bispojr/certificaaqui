@@ -12,7 +12,7 @@
     "test:models": "jest tests/models",
     "test:routes": "jest tests/routes",
     "test:docker": "docker-compose -f docker-compose.test.yml up -d && sleep 5 && npm test",
-    "test:ci": "jest --runInBand --forceExit",
+    "test:ci": "jest --runInBand --detectOpenHandles",
     "lint": "eslint src/**",
     "format": "prettier --write .",
     "check": "npm run format && npm run lint && npm run test:ci"
