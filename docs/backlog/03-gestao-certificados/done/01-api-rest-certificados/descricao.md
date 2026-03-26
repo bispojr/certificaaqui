@@ -13,7 +13,7 @@ O service base já existe. Faltam paginação na listagem e validação de `valo
 ✅ Validar `valores_dinamicos` contra `dados_dinamicos` do `TiposCertificados` em `certificadoService.create`, lançando erro com `camposFaltantes` se houver campos faltando
 ✅ Propagar `statusCode` (422) e `camposFaltantes` no `certificadoController.create`
 
-- Criar testes de `certificadoService.create` cobrindo tipo inexistente, campos faltantes e criação com sucesso
+✅ Criar testes de `certificadoService.create` cobrindo tipo inexistente, campos faltantes e criação com sucesso
 
 ## Arquivos base
 

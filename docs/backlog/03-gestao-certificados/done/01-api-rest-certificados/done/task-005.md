@@ -115,3 +115,7 @@ describe('create com validação de valores_dinamicos', () => {
 - `TiposCertificados.findByPk` mocado corretamente
 - Teste de `camposFaltantes` usa `expect.arrayContaining` para ordem independente
 - Nenhum teste existente foi alterado ou removido
+
+## Metadados
+
+- Completado em: 26/03/2026 17:06 ✅
