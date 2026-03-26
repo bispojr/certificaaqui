@@ -1,0 +1,38 @@
+<div class='row justify-content-center mt-5'>
+  <div class='col-md-8'>
+    <h2>Seus certificados</h2>
+    <p class='text-muted'>E-mail: <strong>{{email}}</strong></p>
+
+    {{#if certificados.length}}
+      <div class='list-group mt-3'>
+        {{#each certificados}}
+          <div
+            class='list-group-item list-group-item-action d-flex justify-content-between align-items-center'
+          >
+            <div>
+              <strong>{{this.nome}}</strong>
+              {{#if (eq this.status 'emitido')}}
+                <span class='badge bg-success ms-2'>{{this.status}}</span>
+              {{else}}
+                <span class='badge bg-secondary ms-2'>{{this.status}}</span>
+              {{/if}}
+            </div>
+            <a
+              href='/public/certificados/{{this.id}}/pdf'
+              class='btn btn-sm btn-outline-primary'
+              target='_blank'
+            >
+              Baixar PDF
+            </a>
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class='alert alert-warning mt-3'>
+        Nenhum certificado encontrado para este e-mail.
+      </div>
+    {{/if}}
+
+    <a href='/public/pagina/obter' class='btn btn-link mt-3'>← Buscar novamente</a>
+  </div>
+</div>

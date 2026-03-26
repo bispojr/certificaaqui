@@ -67,3 +67,7 @@ Criar o arquivo com o conteúdo:
 - View renderiza sem erro quando `certificados` é array vazio
 - Link de PDF aponta para `/public/certificados/:id/pdf`
 - Link "Buscar novamente" aponta para `/public/pagina/obter`
+
+## Metadados
+
+- Completado em: 2026-03-26 20:23 (BRT) ✅
