@@ -72,3 +72,7 @@ async create(data) {
 - Erro lançado tem propriedades `statusCode` e `camposFaltantes`
 - Tipos com `dados_dinamicos: null` não bloqueiam a criação
 - `Certificado.create` só é chamado se a validação passar
+
+## Metadados
+
+- Completado em: 26/03/2026 16:11 ✅

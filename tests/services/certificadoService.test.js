@@ -11,7 +11,65 @@ jest.mock('../../src/models', () => ({
     destroy: jest.fn(),
     restore: jest.fn(),
   },
+  TiposCertificados: {
+    findByPk: jest.fn(),
+  },
 }))
+const { TiposCertificados } = require('../../src/models')
+describe('create', () => {
+  beforeEach(() => {
+    Certificado.create.mockReset()
+    TiposCertificados.findByPk.mockReset()
+  })
+
+  it('lança erro 404 se tipo não encontrado', async () => {
+    TiposCertificados.findByPk.mockResolvedValue(null)
+    await expect(
+      certificadoService.create({
+        tipo_certificado_id: 999,
+        valores_dinamicos: {},
+      }),
+    ).rejects.toMatchObject({ statusCode: 404 })
+    expect(Certificado.create).not.toHaveBeenCalled()
+  })
+
+  it('lança erro 422 se faltar campos dinâmicos', async () => {
+    TiposCertificados.findByPk.mockResolvedValue({
+      dados_dinamicos: { campo1: {}, campo2: {} },
+    })
+    await expect(
+      certificadoService.create({
+        tipo_certificado_id: 1,
+        valores_dinamicos: { campo1: 'ok' },
+      }),
+    ).rejects.toMatchObject({ statusCode: 422, camposFaltantes: ['campo2'] })
+    expect(Certificado.create).not.toHaveBeenCalled()
+  })
+
+  it('cria normalmente se todos os campos dinâmicos presentes', async () => {
+    TiposCertificados.findByPk.mockResolvedValue({
+      dados_dinamicos: { campo1: {}, campo2: {} },
+    })
+    Certificado.create.mockResolvedValue({ id: 1 })
+    const result = await certificadoService.create({
+      tipo_certificado_id: 1,
+      valores_dinamicos: { campo1: 'ok', campo2: 'ok' },
+    })
+    expect(Certificado.create).toHaveBeenCalled()
+    expect(result).toEqual({ id: 1 })
+  })
+
+  it('cria normalmente se dados_dinamicos for null', async () => {
+    TiposCertificados.findByPk.mockResolvedValue({ dados_dinamicos: null })
+    Certificado.create.mockResolvedValue({ id: 2 })
+    const result = await certificadoService.create({
+      tipo_certificado_id: 1,
+      valores_dinamicos: {},
+    })
+    expect(Certificado.create).toHaveBeenCalled()
+    expect(result).toEqual({ id: 2 })
+  })
+})
 
 describe('certificadoService', () => {
   describe('cancel', () => {

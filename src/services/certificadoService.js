@@ -1,5 +1,5 @@
 // Service para lógica de negócio de Certificado
-const { Certificado } = require('../../src/models')
+const { Certificado, TiposCertificados } = require('../../src/models')
 
 module.exports = {
   async cancel(id) {
@@ -28,6 +28,26 @@ module.exports = {
     return Certificado.findByPk(id)
   },
   async create(data) {
+    const tipo = await TiposCertificados.findByPk(data.tipo_certificado_id)
+    if (!tipo) {
+      const err = new Error('Tipo de certificado não encontrado')
+      err.statusCode = 404
+      throw err
+    }
+
+    const camposEsperados = Object.keys(tipo.dados_dinamicos || {})
+    const valoresRecebidos = data.valores_dinamicos || {}
+    const camposFaltantes = camposEsperados.filter(
+      (c) => !(c in valoresRecebidos),
+    )
+
+    if (camposFaltantes.length > 0) {
+      const err = new Error('Campos dinâmicos obrigatórios não informados')
+      err.statusCode = 422
+      err.camposFaltantes = camposFaltantes
+      throw err
+    }
+
     return Certificado.create(data)
   },
   async update(id, data) {
