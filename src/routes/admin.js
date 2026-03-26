@@ -4,20 +4,13 @@ const authSSR = require('../middlewares/authSSR')
 const rbac = require('../middlewares/rbac')
 const eventoSSRController = require('../controllers/eventoSSRController')
 
+const dashboardController = require('../controllers/dashboardController')
+
 // Todas as rotas admin exigem sessão SSR válida
 router.use(authSSR)
 
-// Dashboard admin
-router.get('/dashboard', (req, res) => {
-  if (!req.usuario) {
-    return res.redirect('/auth/login')
-  }
-  res.render('admin/dashboard', {
-    layout: 'layouts/admin',
-    title: 'Dashboard',
-    usuario: req.usuario,
-  })
-})
+// Dashboard
+router.get('/dashboard', dashboardController.dashboard)
 
 // Gestão de eventos (somente admin)
 router.get('/eventos', rbac('admin'), eventoSSRController.index)

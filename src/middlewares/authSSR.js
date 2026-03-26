@@ -29,6 +29,6 @@ module.exports = async function authSSR(req, res, next) {
   } catch {
     req.usuario = null
     res.locals.usuario = null
-    next()
+    return next()
   }
 }

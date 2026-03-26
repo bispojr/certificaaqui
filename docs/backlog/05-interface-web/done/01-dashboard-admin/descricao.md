@@ -32,7 +32,7 @@ Página inicial do painel admin com cards de contagens adaptados ao perfil do us
 ✅ task-001: Criar `src/controllers/dashboardController.js`
 ✅ task-002: Criar `views/admin/dashboard.hbs`
 
-- task-003: Adicionar rota `GET /admin/dashboard` em `src/routes/admin.js`
+✅ task-003: Adicionar rota `GET /admin/dashboard` em `src/routes/admin.js`
 
 ## Dependências
 

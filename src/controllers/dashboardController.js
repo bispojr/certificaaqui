@@ -8,6 +8,9 @@ const {
 
 async function dashboard(req, res) {
   try {
+    if (!req.usuario) {
+      return res.redirect('/auth/login')
+    }
     const { perfil } = req.usuario
 
     if (perfil === 'admin') {

@@ -48,3 +48,7 @@ router.get('/dashboard', dashboardController.dashboard)
 - Rota `/dashboard` declarada antes das rotas específicas de entidades
 - Nenhum `rbac()` adicional (todos os perfis autenticados acessam o dashboard)
 - Nenhuma rota existente (eventos, tipos-certificados, usuários) é alterada
+
+## Metadados
+
+- Completado em: 2026-03-26 08:26 (BRT) ✅
