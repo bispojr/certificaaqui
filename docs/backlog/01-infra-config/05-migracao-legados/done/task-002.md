@@ -61,4 +61,3 @@ const validate = require('../middlewares/validate')
 ## Metadados
 
 - Completado em: 2026-03-25 09:10 (BRT) ✅
-

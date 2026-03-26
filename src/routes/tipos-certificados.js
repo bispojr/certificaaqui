@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const tiposCertificadosController = require('../controllers/tiposCertificadosController')
-const auth = require('../../middleware/auth')
+const auth = require('../middlewares/auth')
 const rbac = require('../middlewares/rbac')
 const scopedEvento = require('../middlewares/scopedEvento')
 

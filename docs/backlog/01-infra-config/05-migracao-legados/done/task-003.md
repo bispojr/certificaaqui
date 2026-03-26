@@ -49,3 +49,7 @@ const auth = require('../../middleware/auth')
 
 - Nenhuma ocorrência de `../../middleware/` em `certificados.js` ou `tipos-certificados.js`
 - `npm run check` passa sem erros
+
+## Metadados
+
+- Completado em: 2026-03-25 22:12 (BRT) ✅
