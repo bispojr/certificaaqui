@@ -6,7 +6,10 @@ class CertificadoController {
       const certificado = await certificadoService.create(req.body)
       return res.status(201).json(certificado)
     } catch (error) {
-      return res.status(400).json({ error: error.message })
+      const status = error.statusCode || 400
+      const body = { error: error.message }
+      if (error.camposFaltantes) body.camposFaltantes = error.camposFaltantes
+      return res.status(status).json(body)
     }
   }
 

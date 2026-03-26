@@ -1,3 +1,68 @@
+it('deve retornar 422 e camposFaltantes se faltar campos dinâmicos', async () => {
+  certificadoService.create.mockRejectedValue({
+    message: 'Campos dinâmicos obrigatórios não informados',
+    statusCode: 422,
+    camposFaltantes: ['campo1', 'campo2'],
+  })
+  const payload = {
+    nome: 'Certificado Teste',
+    status: 'emitido',
+    participante_id: 10,
+    evento_id: 20,
+    tipo_certificado_id: 30,
+    valores_dinamicos: {},
+  }
+  const res = await request(app)
+    .post('/certificados')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send(payload)
+  expect(res.statusCode).toBe(422)
+  expect(res.body).toEqual({
+    error: 'Campos dinâmicos obrigatórios não informados',
+    camposFaltantes: ['campo1', 'campo2'],
+  })
+})
+
+it('deve retornar 404 se tipo de certificado não encontrado', async () => {
+  certificadoService.create.mockRejectedValue({
+    message: 'Tipo de certificado não encontrado',
+    statusCode: 404,
+  })
+  const payload = {
+    nome: 'Certificado Teste',
+    status: 'emitido',
+    participante_id: 10,
+    evento_id: 20,
+    tipo_certificado_id: 999,
+    valores_dinamicos: {},
+  }
+  const res = await request(app)
+    .post('/certificados')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send(payload)
+  expect(res.statusCode).toBe(404)
+  expect(res.body).toEqual({
+    error: 'Tipo de certificado não encontrado',
+  })
+})
+
+it('deve retornar 400 se erro sem statusCode', async () => {
+  certificadoService.create.mockRejectedValue(new Error('Erro genérico'))
+  const payload = {
+    nome: 'Certificado Teste',
+    status: 'emitido',
+    participante_id: 10,
+    evento_id: 20,
+    tipo_certificado_id: 30,
+    valores_dinamicos: {},
+  }
+  const res = await request(app)
+    .post('/certificados')
+    .set('Authorization', `Bearer ${adminToken}`)
+    .send(payload)
+  expect(res.statusCode).toBe(400)
+  expect(res.body).toEqual({ error: 'Erro genérico' })
+})
 const request = require('supertest')
 const app = require('../../app')
 const jwt = require('jsonwebtoken')

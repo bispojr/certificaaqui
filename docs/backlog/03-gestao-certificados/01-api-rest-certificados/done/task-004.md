@@ -69,3 +69,7 @@ HTTP 422
 - Status 404 quando service lança erro com `statusCode: 404`
 - Status 400 (fallback) quando erro sem `statusCode`
 - `camposFaltantes` incluído no body apenas quando presente no erro
+
+## Metadados
+
+- Completado em: 26/03/2026 16:30 ✅
