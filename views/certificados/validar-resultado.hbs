@@ -1,30 +1,3 @@
-# TASK ID: CERT-SSR-002
-
-## Título
-
-Criar `views/certificados/validar-resultado.hbs`
-
-## Objetivo
-
-Criar a view Handlebars que exibe o resultado da validação de um certificado — painel verde quando válido, painel vermelho quando inválido.
-
-## Contexto
-
-- A view será renderizada pelo `POST /public/pagina/validar` (criado em CERT-SSR-004)
-- Variáveis disponíveis no template: `valido` (boolean), `certificado` (objeto — presente apenas quando `valido: true`)
-- Quando `valido: true`, `certificado` tem: `nome`, `codigo`, `status`, `created_at`, `Participante.nome`, `Participante.email`, `Evento.nome`
-- Usar layout padrão `layout.hbs`
-- Bootstrap 5 disponível via CDN
-
-## Arquivos envolvidos
-
-- `views/certificados/validar-resultado.hbs` (CRIAR)
-
-## Passos
-
-Criar o arquivo com o conteúdo:
-
-```hbs
 <div class='row justify-content-center mt-5'>
   <div class='col-md-7'>
     {{#if valido}}
@@ -80,15 +53,3 @@ Criar o arquivo com o conteúdo:
       código</a>
   </div>
 </div>
-```
-
-## Resultado esperado
-
-- `valido: true` → painel verde com dados do certificado e link de PDF
-- `valido: false` → painel vermelho com mensagem de erro
-
-## Critério de aceite
-
-- View renderiza sem erro quando `valido: false` e `certificado` é `undefined`
-- Painel verde inclui link para `/public/certificados/:id/pdf`
-- Link "Validar outro código" aponta para `/public/pagina/validar`
