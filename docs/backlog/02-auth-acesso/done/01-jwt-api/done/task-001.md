@@ -94,3 +94,7 @@ router.post('/login', loginLimiter, usuarioController.login)
 - `src/routes/usuarios.js` importa `rateLimit` e aplica `loginLimiter` em `POST /login`
 - `loginLimiter` não está aplicado em nenhuma outra rota do arquivo
 - `npm run check` passa sem erros
+
+## Metadados
+
+- Completado em: 26/03/2026 14:05 ✅
