@@ -76,3 +76,7 @@ Verificar se o diretório `middleware/` ficará vazio após a remoção — se s
 - `ls middleware/` retorna erro "No such file or directory" (ou diretório vazio/removido)
 - `npm run check` passa sem erros
 - Nenhum `require` em `src/` ou `tests/` aponta para `middleware/`
+
+## Metadados
+
+- Completado em: 2026-03-25 22:20 (BRT) ✅
