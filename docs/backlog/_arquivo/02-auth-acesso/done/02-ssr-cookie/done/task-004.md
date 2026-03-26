@@ -64,4 +64,3 @@ O `authRouter` deve ser adicionado seguindo o mesmo padrão, preferencialmente j
 ## Metadados
 
 - Completado em: 26/03/2026 14:36 ✅
-

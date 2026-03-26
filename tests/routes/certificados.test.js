@@ -81,7 +81,14 @@ describe('Rotas de Certificados', () => {
       .get('/certificados')
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.status).toBe(200)
-    expect(Array.isArray(res.body)).toBe(true)
+    expect(res.body).toHaveProperty('data')
+    expect(Array.isArray(res.body.data)).toBe(true)
+    expect(res.body).toHaveProperty('meta')
+    expect(typeof res.body.meta).toBe('object')
+    expect(res.body.meta).toHaveProperty('total')
+    expect(res.body.meta).toHaveProperty('page')
+    expect(res.body.meta).toHaveProperty('perPage')
+    expect(res.body.meta).toHaveProperty('totalPages')
   })
 
   it('deve buscar certificado por id', async () => {

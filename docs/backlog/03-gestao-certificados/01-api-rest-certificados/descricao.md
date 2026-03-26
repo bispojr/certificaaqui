@@ -7,7 +7,7 @@ O service base já existe. Faltam paginação na listagem e validação de `valo
 
 ## Tasks (alto nível — apenas pendentes)
 
-- Adicionar paginação em `certificadoService.findAll` usando `findAndCountAll` com resposta `{ data, meta }` e propagar no controller via `req.query.page`/`perPage`
+✅ Adicionar paginação em `certificadoService.findAll` usando `findAndCountAll` com resposta `{ data, meta }` e propagar no controller via `req.query.page`/`perPage`
 - Atualizar teste unitário de `certificadoService.findAll` para o novo contrato paginado
 - Validar `valores_dinamicos` contra `dados_dinamicos` do `TiposCertificados` em `certificadoService.create`, lançando erro com `camposFaltantes` se houver campos faltando
 - Propagar `statusCode` (422) e `camposFaltantes` no `certificadoController.create`

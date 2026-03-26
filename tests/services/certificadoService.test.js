@@ -51,9 +51,38 @@ describe('certificadoService', () => {
     jest.clearAllMocks()
   })
 
-  it('findAll chama Certificado.findAll', async () => {
-    await certificadoService.findAll()
-    expect(Certificado.findAll).toHaveBeenCalled()
+  it('findAll chama findAndCountAll com offset/limit padrão', async () => {
+    Certificado.findAndCountAll = jest
+      .fn()
+      .mockResolvedValue({ count: 12, rows: [{ id: 1 }, { id: 2 }] })
+    const result = await certificadoService.findAll()
+    expect(Certificado.findAndCountAll).toHaveBeenCalledWith({
+      offset: 0,
+      limit: 10,
+    })
+    expect(result).toEqual({
+      data: [{ id: 1 }, { id: 2 }],
+      meta: { total: 12, page: 1, perPage: 10, totalPages: 2 },
+    })
+  })
+
+  it('findAll chama findAndCountAll com page/perPage customizados', async () => {
+    Certificado.findAndCountAll = jest
+      .fn()
+      .mockResolvedValue({ count: 42, rows: Array(5).fill({ id: 99 }) })
+    const result = await certificadoService.findAll({ page: 2, perPage: 5 })
+    expect(Certificado.findAndCountAll).toHaveBeenCalledWith({
+      offset: 5,
+      limit: 5,
+    })
+    expect(result.meta).toEqual({
+      total: 42,
+      page: 2,
+      perPage: 5,
+      totalPages: 9,
+    })
+    expect(Array.isArray(result.data)).toBe(true)
+    expect(result.data.length).toBe(5)
   })
 
   it('findById chama Certificado.findByPk', async () => {

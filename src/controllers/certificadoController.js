@@ -12,8 +12,10 @@ class CertificadoController {
 
   async findAll(req, res) {
     try {
-      const certificados = await certificadoService.findAll()
-      return res.status(200).json(certificados)
+      const page = parseInt(req.query.page, 10) || 1
+      const perPage = parseInt(req.query.perPage, 10) || 10
+      const result = await certificadoService.findAll({ page, perPage })
+      return res.status(200).json(result)
     } catch (error) {
       return res.status(400).json({ error: error.message })
     }

@@ -60,15 +60,30 @@ describe('CertificadoController', () => {
     })
   })
 
-  it('deve retornar todos os certificados', async () => {
-    certificadoService.findAll.mockResolvedValue([
-      { id: 1, nome: 'Certificado Teste' },
-    ])
+  it('deve retornar certificados paginados com padrão', async () => {
+    const paged = {
+      data: [{ id: 1, nome: 'Certificado Teste' }],
+      meta: { total: 1, page: 1, perPage: 10, totalPages: 1 },
+    }
+    certificadoService.findAll.mockResolvedValue(paged)
     const res = await request(app)
       .get('/certificados')
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.statusCode).toBe(200)
-    expect(res.body).toEqual([{ id: 1, nome: 'Certificado Teste' }])
+    expect(res.body).toEqual(paged)
+  })
+
+  it('deve retornar certificados paginados com page/perPage customizados', async () => {
+    const paged = {
+      data: [{ id: 2 }],
+      meta: { total: 42, page: 2, perPage: 5, totalPages: 9 },
+    }
+    certificadoService.findAll.mockResolvedValue(paged)
+    const res = await request(app)
+      .get('/certificados?page=2&perPage=5')
+      .set('Authorization', `Bearer ${adminToken}`)
+    expect(res.statusCode).toBe(200)
+    expect(res.body).toEqual(paged)
   })
 
   it('deve retornar certificado pelo id', async () => {

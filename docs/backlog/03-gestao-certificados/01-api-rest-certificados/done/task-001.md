@@ -99,3 +99,7 @@ async findAll(req, res) {
 - `certificadoService.findAll({ page: 2, perPage: 5 })` chama `findAndCountAll` com `{ offset: 5, limit: 5 }`
 - Resposta tem formato `{ data, meta }` com todas as 4 chaves em `meta`
 - `GET /certificados` sem query params usa `page=1, perPage=10`
+
+## Metadados
+
+- Completado em: 26/03/2026 15:52 ✅

@@ -8,8 +8,21 @@ module.exports = {
     // Supondo que existe um campo 'status' para marcar como cancelado
     return certificado.update({ status: 'cancelado' })
   },
-  async findAll() {
-    return Certificado.findAll()
+  async findAll({ page = 1, perPage = 10 } = {}) {
+    const offset = (page - 1) * perPage
+    const { count, rows } = await Certificado.findAndCountAll({
+      offset,
+      limit: perPage,
+    })
+    return {
+      data: rows,
+      meta: {
+        total: count,
+        page,
+        perPage,
+        totalPages: Math.ceil(count / perPage),
+      },
+    }
   },
   async findById(id) {
     return Certificado.findByPk(id)
