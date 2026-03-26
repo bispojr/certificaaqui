@@ -29,7 +29,7 @@ Arquivos que importam do caminho legado:
 - ✅ [TASK-001] Criar `src/middlewares/auth.js` e `src/middlewares/validate.js` (novos arquivos corrigidos)
 - ✅ [TASK-002] Atualizar imports de `auth` e `validate` em `participantes.js` e `eventos.js`
 - ✅ [TASK-003] Atualizar imports de `auth` e `validate` em `certificados.js` e `tipos-certificados.js`
-- ⬜ [TASK-004] Atualizar imports em `usuarios.js` e `auth.test.js`
+- ✅ [TASK-004] Atualizar imports em `usuarios.js` e `auth.test.js`
 - ⬜ [TASK-005] Remover `middleware/auth.js` e `middleware/validate.js` após validar `npm run check`
 
 ## Dependências
