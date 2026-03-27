@@ -4,7 +4,7 @@
     {{#if mensagem}}
       <div class='alert alert-danger'>{{mensagem}}</div>
     {{/if}}
-    <form method='GET' action='/public/certificados'>
+    <form method='POST' action='/public/pagina/buscar' id='form-obter'>
       <div class='mb-3'>
         <label for='email' class='form-label'>E-mail</label>
         <input

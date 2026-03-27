@@ -4,7 +4,7 @@
       <div class='alert alert-danger'>{{mensagem}}</div>
     {{/if}}
     <h2>Validar certificado</h2>
-    <form method='GET' action='/public/validar'>
+    <form method='POST' action='/public/pagina/validar' id='form-validar'>
       <div class='mb-3'>
         <label for='codigo' class='form-label'>Código do certificado</label>
         <input

@@ -109,3 +109,8 @@ Isso garante que `GET /certificados` redireciona para a página pública, enquan
 - Nenhuma rota da API REST (`POST /certificados`, `GET /certificados/:id`, etc.) é afetada
 - As 4 substituições de texto foram aplicadas corretamente
 - `GET /certificados` (sem sufixo) retorna 302 redirect
+
+## Metadados
+
+- Completado em: 2026-03-27 12:39 (BRT) ✅
+

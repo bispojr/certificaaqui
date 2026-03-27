@@ -156,6 +156,12 @@ const authRouter = require('./src/routes/auth')
 app.use('/auth', authRouter)
 app.use('/participantes', participantesRouter)
 app.use('/eventos', eventosRouter)
+// Redireciona GET /certificados para SSR apenas se não houver Bearer token (API)
+app.get('/certificados', (req, res, next) => {
+  const auth = req.headers['authorization']
+  if (auth && auth.startsWith('Bearer ')) return next()
+  return res.redirect('/public/pagina/opcoes')
+})
 app.use('/certificados', certificadosRouter)
 app.use('/tipos-certificados', tiposCertificadosRouter)
 app.use('/usuarios', usuariosRouter)
