@@ -7,6 +7,7 @@ CRUD de participantes com paginação na listagem REST e painel SSR administrati
 ## Tasks (alto nível — apenas pendentes)
 
 ✅ Adicionar paginação em `participanteService.findAll` usando `findAndCountAll` com resposta `{ data, meta }` e propagar no controller via `req.query.page`/`perPage`
+
 - Criar `src/controllers/participanteSSRController.js` com busca `?q=` (`Op.iLike`) e contagem de certificados por participante
 - Criar `views/admin/participantes/index.hbs` — tabela com busca, coluna `numCertificados` e seção colapsável de arquivados
 - Criar `views/admin/participantes/form.hbs` — formulário criar/editar compartilhado
