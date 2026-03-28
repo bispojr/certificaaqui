@@ -28,6 +28,7 @@ services:
       - DB_PORT_TEST=5432
       - JWT_SECRET=sua_chave_jwt_super_secreta
       - NODE_ENV=development
+      - SESSION_SECRET=sessao-teste-supersegura
     volumes:
       - .:/app
 

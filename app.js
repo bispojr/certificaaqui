@@ -35,9 +35,15 @@ app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 
 // Configuração de sessão e flash (TASK-028-B)
+const sessionSecret = process.env.SESSION_SECRET
+if (!sessionSecret) {
+  throw new Error(
+    'SESSION_SECRET não definido. Defina a variável de ambiente SESSION_SECRET para garantir a segurança da sessão.',
+  )
+}
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'sessao-certifique-me',
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
   }),

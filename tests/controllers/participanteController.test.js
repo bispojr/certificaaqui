@@ -47,15 +47,39 @@ describe('ParticipanteController', () => {
     })
   })
 
-  it('deve retornar todos os participantes', async () => {
-    participanteService.findAll.mockResolvedValue([{ id: 1, nome: 'Teste' }])
+  it('deve retornar participantes paginados com meta', async () => {
+    const pagedResult = {
+      data: [{ id: 1, nome: 'Teste' }],
+      meta: { total: 42, page: 2, perPage: 5, totalPages: 9 },
+    }
+    participanteService.findAll.mockResolvedValue(pagedResult)
+    const res = await request(app)
+      .get('/participantes?page=2&perPage=5')
+      .set('Authorization', `Bearer ${adminToken}`)
+    expect(res.statusCode).toBe(200)
+    expect(res.body).toEqual(pagedResult)
+    expect(participanteService.findAll).toHaveBeenCalledWith({
+      page: 2,
+      perPage: 5,
+    })
+  })
+
+  it('deve usar valores padrão se não passar query', async () => {
+    const pagedResult = {
+      data: [{ id: 1 }],
+      meta: { total: 1, page: 1, perPage: 20, totalPages: 1 },
+    }
+    participanteService.findAll.mockResolvedValue(pagedResult)
     const res = await request(app)
       .get('/participantes')
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.statusCode).toBe(200)
-    expect(res.body).toEqual([{ id: 1, nome: 'Teste' }])
+    expect(res.body).toEqual(pagedResult)
+    expect(participanteService.findAll).toHaveBeenCalledWith({
+      page: 1,
+      perPage: 20,
+    })
   })
-
   it('deve retornar participante pelo id', async () => {
     participanteService.findById.mockResolvedValue({ id: 1, nome: 'Teste' })
     const res = await request(app)

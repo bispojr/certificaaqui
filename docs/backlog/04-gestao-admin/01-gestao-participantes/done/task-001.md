@@ -99,3 +99,7 @@ async findAll(req, res) {
 - `participanteService.findAll({ page: 2, perPage: 5 })` chama `findAndCountAll` com `{ offset: 5, limit: 5 }`
 - Resposta tem formato `{ data, meta }` com `totalPages` calculado
 - `GET /participantes` sem query params usa `page=1, perPage=20`
+
+## Metadados
+
+- Completado em: 28/03/2026 17:48 ✅

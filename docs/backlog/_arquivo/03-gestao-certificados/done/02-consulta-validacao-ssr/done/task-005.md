@@ -113,4 +113,3 @@ Isso garante que `GET /certificados` redireciona para a página pública, enquan
 ## Metadados
 
 - Completado em: 2026-03-27 12:39 (BRT) ✅
-

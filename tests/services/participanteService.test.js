@@ -4,6 +4,7 @@ const { Participante } = require('../../src/models')
 jest.mock('../../src/models', () => ({
   Participante: {
     findAll: jest.fn(),
+    findAndCountAll: jest.fn(),
     findByPk: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
@@ -17,9 +18,22 @@ describe('participanteService', () => {
     jest.clearAllMocks()
   })
 
-  it('findAll chama Participante.findAll', async () => {
-    await participanteService.findAll()
-    expect(Participante.findAll).toHaveBeenCalled()
+  it('findAll chama findAndCountAll com paginação e retorna formato correto', async () => {
+    Participante.findAndCountAll.mockResolvedValue({
+      count: 42,
+      rows: [{ id: 1 }],
+    })
+    const page = 2
+    const perPage = 5
+    const result = await participanteService.findAll({ page, perPage })
+    expect(Participante.findAndCountAll).toHaveBeenCalledWith({
+      offset: 5,
+      limit: 5,
+    })
+    expect(result).toEqual({
+      data: [{ id: 1 }],
+      meta: { total: 42, page: 2, perPage: 5, totalPages: 9 },
+    })
   })
 
   it('findById chama Participante.findByPk', async () => {

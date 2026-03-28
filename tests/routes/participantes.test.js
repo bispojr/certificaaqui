@@ -40,7 +40,13 @@ describe('Rotas de Participantes', () => {
       .get('/participantes')
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.status).toBe(200)
-    expect(Array.isArray(res.body)).toBe(true)
+    expect(res.body).toHaveProperty('data')
+    expect(Array.isArray(res.body.data)).toBe(true)
+    expect(res.body).toHaveProperty('meta')
+    expect(res.body.meta).toHaveProperty('total')
+    expect(res.body.meta).toHaveProperty('page')
+    expect(res.body.meta).toHaveProperty('perPage')
+    expect(res.body.meta).toHaveProperty('totalPages')
   })
 
   it('deve buscar participante por id', async () => {
