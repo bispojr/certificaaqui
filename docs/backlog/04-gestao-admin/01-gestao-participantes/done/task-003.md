@@ -135,3 +135,7 @@ Criar o arquivo com o conteúdo:
 - Tabela principal tem coluna `Certificados` com `{{numCertificados}}`
 - `{{else}}` do `{{#each}}` exibe mensagem "Nenhum participante encontrado."
 - Seção arquivados usa `<details>` e form POST separado por registros
+
+## Metadados
+
+- Completado em: 30/03/2026 17:30 ✅

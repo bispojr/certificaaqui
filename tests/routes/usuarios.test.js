@@ -57,6 +57,13 @@ it('não permite criar usuário com eventos duplicados', async () => {
 })
 
 it('retorna eventos associados ao buscar usuário', async () => {
+  // Limpa eventos para evitar conflitos de código_base
+  await sequelize.models.Evento.destroy({
+    where: {},
+    truncate: true,
+    cascade: true,
+    restartIdentity: true,
+  })
   const evento1 = await sequelize.models.Evento.create({
     nome: 'Evento Consulta 1',
     codigo_base: 'ABC',

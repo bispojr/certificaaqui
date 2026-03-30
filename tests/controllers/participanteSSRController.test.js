@@ -79,9 +79,17 @@ describe('Admin SSR - Participante', () => {
       console.log('Erro resposta /admin/participantes:', res.text)
     }
     expect(res.status).toBe(200)
-    expect(res.text).toContain('João da Silva')
-    expect(res.text).not.toContain('Maria Souza')
-    expect(res.text).toContain('numCertificados')
+    // Participante ativo na tabela principal
+    expect(res.text).toMatch(/<td>João da Silva<\/td>/)
+    // Arquivado não na tabela principal
+    const mainTable = res.text
+      .split("<table class='table table-bordered'>")[1]
+      .split('</table>')[0]
+    expect(mainTable).not.toContain('Maria Souza')
+    // Arquivado na seção <details>
+    expect(res.text).toMatch(/<details[\s\S]*Maria Souza[\s\S]*<\/details>/)
+    // Verifica cabeçalho correto
+    expect(res.text).toContain('<th>Certificados</th>')
   })
 
   it('GET /admin/participantes?q=joao filtra por nome/email', async () => {
@@ -95,8 +103,15 @@ describe('Admin SSR - Participante', () => {
       console.log('Erro resposta /admin/participantes?q=joao:', res.text)
     }
     expect(res.status).toBe(200)
-    expect(res.text).toContain('João da Silva')
-    expect(res.text).not.toContain('Maria Souza')
+    // Participante ativo na tabela principal
+    expect(res.text).toMatch(/<td>João da Silva<\/td>/)
+    // Arquivado não na tabela principal
+    const mainTable = res.text
+      .split("<table class='table table-bordered'>")[1]
+      .split('</table>')[0]
+    expect(mainTable).not.toContain('Maria Souza')
+    // Arquivado na seção <details>
+    expect(res.text).toMatch(/<details[\s\S]*Maria Souza[\s\S]*<\/details>/)
   })
 
   // Testes para criar, editar, deletar, restaurar podem ser adicionados conforme necessário
