@@ -37,7 +37,7 @@ TASKS:
 - ✅ Corrigir `eventoService.delete` — substituir `UsuarioEvento.update({ deleted_at })` por `UsuarioEvento.destroy(...)` (respeita `paranoid`)
 - ✅ Corrigir `eventoService.restore` — adicionar `UsuarioEvento.restore({ where: { evento_id: id } })` após restaurar o evento
 - ✅ Adicionar paginação em `eventoService.findAll` (`findAndCountAll`, resposta `{ data, meta }`)
-- ⬜ Propagar paginação no `eventoController.findAll`
+- ✅ Propagar paginação no `eventoController.findAll`
 - ✅ Atualizar testes de `eventoService.delete` e `restore` para as correções de cascata
 - ✅ Criar `src/controllers/eventoSSRController.js` com listagem de ativos e arquivados separados
 - ✅ Criar `views/admin/eventos/index.hbs` — tabela com ações e seção `<details>` de arquivados

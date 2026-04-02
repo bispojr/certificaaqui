@@ -1,0 +1,14 @@
+{
+  "jest.jestCommandLine": "npx jest --runInBand --detectOpenHandles --verbose",
+  "jest.autoRun": {
+    "watch": false,
+    "onSave": "test-file"
+  },
+  "jest.outputConfig": {
+    "revealOn": "error",
+    "isStickyOnError": true
+  },
+  "jest.testExplorer": {
+    "showInlineError": true
+  }
+}

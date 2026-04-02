@@ -4,16 +4,17 @@ const { Evento } = require('../../src/models')
 module.exports = {
   async findAll({ page = 1, perPage = 20 } = {}) {
     const offset = (page - 1) * perPage
-    const limit = perPage
-    const { count, rows } = await Evento.findAndCountAll({ offset, limit })
-    const totalPages = Math.ceil(count / perPage) || 1
+    const { count, rows } = await Evento.findAndCountAll({
+      offset,
+      limit: perPage,
+    })
     return {
       data: rows,
       meta: {
         total: count,
         page,
         perPage,
-        totalPages,
+        totalPages: Math.ceil(count / perPage),
       },
     }
   },

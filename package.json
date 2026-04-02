@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "test": "jest --runInBand",
+    "test": "jest --runInBand --detectOpenHandles",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:models": "jest tests/models",
@@ -16,7 +16,7 @@
     "lint": "eslint src/** --fix",
     "format": "prettier --write .",
     "check": "npm run lint && npm run format && npm run test:ci",
-    "check:docker": "docker-compose -f docker-compose.test.yml exec -T app_test sh -c 'npm run lint && npm run format && npm test --runInBand --detectOpenHandles'"
+    "check:docker": "docker-compose -f docker-compose.test.yml exec -T app_test sh -c 'npm run lint && npm run format && npm test'"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

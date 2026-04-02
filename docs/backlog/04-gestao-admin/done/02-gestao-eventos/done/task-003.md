@@ -104,3 +104,7 @@ async findAll(req, res) {
 ## Observação
 
 O teste existente `'findAll chama Evento.findAll'` em `eventoService.test.js` vai falhar após esta task. Atualizar o mock adicionando `findAndCountAll: jest.fn()` e reescrever o teste para o novo contrato.
+
+## Metadados
+
+- Completado em: 02/04/2026 16:40 ✅

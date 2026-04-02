@@ -3,6 +3,11 @@ module.exports = {
   maxWorkers: 1, // força serial entre projetos
   projects: [
     {
+      displayName: 'config',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/tests/config/**/*.test.js'],
+    },
+    {
       displayName: 'middleware',
       testEnvironment: 'node',
       testMatch: ['<rootDir>/tests/middleware/**/*.test.js'],
