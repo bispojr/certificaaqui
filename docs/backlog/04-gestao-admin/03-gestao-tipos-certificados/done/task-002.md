@@ -159,3 +159,7 @@ Controller criado com 7 métodos sem erros de importação.
 - `numCertificados` é calculado via `t.certificados.length`
 - Arquivados: busca com `paranoid: false` + filtro `deleted_at != null`
 - Falhas redirecionam com `req.flash('error', ...)`
+
+## Metadados
+
+- Completado em: 03/04/2026 10:54 (BRT) ✅
