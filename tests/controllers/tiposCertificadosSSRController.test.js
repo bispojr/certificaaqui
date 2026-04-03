@@ -63,6 +63,7 @@ describe('tiposCertificadosSSRController', () => {
       await tiposCertificadosSSRController.novo(req, res)
       expect(res.render).toHaveBeenCalledWith('admin/tipos-certificados/form', {
         tipo: null,
+        actionUrl: '/admin/tipos-certificados',
       })
     })
   })
@@ -78,6 +79,7 @@ describe('tiposCertificadosSSRController', () => {
       await tiposCertificadosSSRController.editar(req, res)
       expect(res.render).toHaveBeenCalledWith('admin/tipos-certificados/form', {
         tipo: { id: 1 },
+        actionUrl: '/admin/tipos-certificados/1',
       })
     })
     it('deve redirecionar se tipo não encontrado', async () => {

@@ -49,7 +49,9 @@ describe('views/admin/tipos-certificados/index.hbs', () => {
 
   it('renderiza mensagem de nenhum tipo cadastrado', () => {
     const html = template({ tipos: [], arquivados: [], flash: {} })
-    expect(html).toContain('Nenhum tipo de certificado cadastrado.')
+    expect(html.replace(/\s+/g, ' ')).toContain(
+      'Nenhum tipo de certificado cadastrado.',
+    )
   })
 
   it('renderiza flash de sucesso e erro', () => {

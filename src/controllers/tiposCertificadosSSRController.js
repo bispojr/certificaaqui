@@ -27,7 +27,10 @@ async function index(req, res) {
 }
 
 async function novo(_req, res) {
-  return res.render('admin/tipos-certificados/form', { tipo: null })
+  return res.render('admin/tipos-certificados/form', {
+    tipo: null,
+    actionUrl: '/admin/tipos-certificados',
+  })
 }
 
 async function editar(req, res) {
@@ -37,7 +40,11 @@ async function editar(req, res) {
       req.flash('error', 'Tipo de certificado não encontrado.')
       return res.redirect('/admin/tipos-certificados')
     }
-    return res.render('admin/tipos-certificados/form', { tipo: tipo.toJSON() })
+    const t = tipo.toJSON()
+    return res.render('admin/tipos-certificados/form', {
+      tipo: t,
+      actionUrl: `/admin/tipos-certificados/${t.id}`,
+    })
   } catch (error) {
     req.flash('error', error.message)
     return res.redirect('/admin/tipos-certificados')
