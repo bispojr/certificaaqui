@@ -52,10 +52,7 @@ module.exports = {
       testMatch: ['<rootDir>/tests/views/**/*.test.js'],
     },
   ],
-  collectCoverageFrom: [
-    'src/**/*.js',
-    '!src/models/index.js',
-  ],
+  collectCoverageFrom: ['src/**/*.js', '!src/models/index.js'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
 }

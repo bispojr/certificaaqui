@@ -2,14 +2,17 @@ const fs = require('fs')
 const path = require('path')
 const Handlebars = require('handlebars')
 
-const templatePath = path.join(__dirname, '../../../../views/admin/tipos-certificados/index.hbs')
+const templatePath = path.join(
+  __dirname,
+  '../../../../views/admin/tipos-certificados/index.hbs',
+)
 const layoutPath = path.join(__dirname, '../../../../views/layouts/admin.hbs')
 
 // Mock layout wrapper
 const wrapWithLayout = (content) => `LAYOUT-START\n${content}\nLAYOUT-END`
 
 // Simula o helper de partial do handlebars
-Handlebars.registerHelper('> layouts/admin', function(options) {
+Handlebars.registerHelper('> layouts/admin', function (options) {
   return wrapWithLayout(options.fn(this))
 })
 
@@ -23,7 +26,13 @@ describe('views/admin/tipos-certificados/index.hbs', () => {
   it('renderiza tabela de tipos ativos', () => {
     const html = template({
       tipos: [
-        { id: 1, codigo: 'A', descricao: 'Desc', campo_destaque: 'nome', numCertificados: 2 },
+        {
+          id: 1,
+          codigo: 'A',
+          descricao: 'Desc',
+          campo_destaque: 'nome',
+          numCertificados: 2,
+        },
       ],
       arquivados: [],
       flash: {},
@@ -44,7 +53,11 @@ describe('views/admin/tipos-certificados/index.hbs', () => {
   })
 
   it('renderiza flash de sucesso e erro', () => {
-    const html = template({ tipos: [], arquivados: [], flash: { success: 'ok', error: 'fail' } })
+    const html = template({
+      tipos: [],
+      arquivados: [],
+      flash: { success: 'ok', error: 'fail' },
+    })
     expect(html).toContain('alert alert-success')
     expect(html).toContain('ok')
     expect(html).toContain('alert alert-danger')

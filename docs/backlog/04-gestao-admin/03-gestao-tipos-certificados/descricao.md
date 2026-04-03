@@ -10,6 +10,7 @@ Criação e edição de modelos de certificados com campos dinâmicos JSONB (`da
 ✅ Criar `src/controllers/tiposCertificadosSSRController.js` — `JSON.parse` de `dados_dinamicos` vindo do form hidden e contagem de certificados emitidos por tipo
 ✅ Criar `views/admin/tipos-certificados/index.hbs` — tabela com coluna de contagem e seção de arquivados
 ✅ Criar `views/admin/tipos-certificados/form.hbs` — editor dinâmico de campos JSONB via JS, `campo_destaque` atualizado via JS e preview ao vivo do `texto_base`
+
 - Adicionar rotas SSR de tipos em `src/routes/admin.js` protegidas por `rbac('gestor')`
 
 ## Arquivos base

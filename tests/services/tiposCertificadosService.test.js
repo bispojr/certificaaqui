@@ -34,11 +34,16 @@ describe('tiposCertificadosService', () => {
   })
 
   it('findAll chama TiposCertificados.findAndCountAll com offset e limit', async () => {
-    TiposCertificados.findAndCountAll = jest.fn().mockResolvedValue({ count: 10, rows: [{ id: 1 }] })
+    TiposCertificados.findAndCountAll = jest
+      .fn()
+      .mockResolvedValue({ count: 10, rows: [{ id: 1 }] })
     const page = 2
     const perPage = 5
     const result = await tiposCertificadosService.findAll({ page, perPage })
-    expect(TiposCertificados.findAndCountAll).toHaveBeenCalledWith({ offset: 5, limit: 5 })
+    expect(TiposCertificados.findAndCountAll).toHaveBeenCalledWith({
+      offset: 5,
+      limit: 5,
+    })
     expect(result).toEqual({
       data: [{ id: 1 }],
       meta: {
@@ -50,9 +55,14 @@ describe('tiposCertificadosService', () => {
     })
   })
   it('findAll usa valores padrão se não passar params', async () => {
-    TiposCertificados.findAndCountAll = jest.fn().mockResolvedValue({ count: 0, rows: [] })
+    TiposCertificados.findAndCountAll = jest
+      .fn()
+      .mockResolvedValue({ count: 0, rows: [] })
     await tiposCertificadosService.findAll()
-    expect(TiposCertificados.findAndCountAll).toHaveBeenCalledWith({ offset: 0, limit: 20 })
+    expect(TiposCertificados.findAndCountAll).toHaveBeenCalledWith({
+      offset: 0,
+      limit: 20,
+    })
   })
 
   it('findById chama TiposCertificados.findByPk', async () => {

@@ -1,74 +1,92 @@
 <!-- layout aplicado pelo mecanismo de views -->
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Tipos de Certificados</h2>
-    <a href="/admin/tipos-certificados/novo" class="btn btn-primary">+ Novo Tipo</a>
-  </div>
+<div class='d-flex justify-content-between align-items-center mb-3'>
+  <h2>Tipos de Certificados</h2>
+  <a href='/admin/tipos-certificados/novo' class='btn btn-primary'>+ Novo Tipo</a>
+</div>
 
-  {{#if flash.success}}
-    <div class="alert alert-success">{{flash.success}}</div>
-  {{/if}}
-  {{#if flash.error}}
-    <div class="alert alert-danger">{{flash.error}}</div>
-  {{/if}}
+{{#if flash.success}}
+  <div class='alert alert-success'>{{flash.success}}</div>
+{{/if}}
+{{#if flash.error}}
+  <div class='alert alert-danger'>{{flash.error}}</div>
+{{/if}}
 
-  <table class="table table-bordered">
-    <thead>
+<table class='table table-bordered'>
+  <thead>
+    <tr>
+      <th>Código</th>
+      <th>Descrição</th>
+      <th>Campo Destaque</th>
+      <th>Certificados</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each tipos}}
       <tr>
-        <th>Código</th>
-        <th>Descrição</th>
-        <th>Campo Destaque</th>
-        <th>Certificados</th>
-        <th>Ações</th>
+        <td>{{codigo}}</td>
+        <td>{{descricao}}</td>
+        <td><code>{{campo_destaque}}</code></td>
+        <td>{{numCertificados}}</td>
+        <td>
+          <a
+            href='/admin/tipos-certificados/{{id}}/editar'
+            class='btn btn-sm btn-secondary'
+          >Editar</a>
+          <form
+            method='POST'
+            action='/admin/tipos-certificados/{{id}}/deletar'
+            class='d-inline'
+            onsubmit="return confirm('Arquivar este tipo?')"
+          >
+            <button
+              type='submit'
+              class='btn btn-sm btn-warning'
+            >Arquivar</button>
+          </form>
+        </td>
       </tr>
-    </thead>
-    <tbody>
-      {{#each tipos}}
-        <tr>
-          <td>{{codigo}}</td>
-          <td>{{descricao}}</td>
-          <td><code>{{campo_destaque}}</code></td>
-          <td>{{numCertificados}}</td>
-          <td>
-            <a href="/admin/tipos-certificados/{{id}}/editar" class="btn btn-sm btn-secondary">Editar</a>
-            <form method="POST" action="/admin/tipos-certificados/{{id}}/deletar" class="d-inline"
-                  onsubmit="return confirm('Arquivar este tipo?')">
-              <button type="submit" class="btn btn-sm btn-warning">Arquivar</button>
-            </form>
-          </td>
-        </tr>
-      {{else}}
-        <tr><td colspan="5" class="text-center">Nenhum tipo de certificado cadastrado.</td></tr>
-      {{/each}}
-    </tbody>
-  </table>
+    {{else}}
+      <tr><td colspan='5' class='text-center'>Nenhum tipo de certificado
+          cadastrado.</td></tr>
+    {{/each}}
+  </tbody>
+</table>
 
-  {{#if arquivados.length}}
-    <details class="mt-4">
-      <summary class="fw-bold text-muted">Arquivados ({{arquivados.length}})</summary>
-      <table class="table table-sm mt-2">
-        <thead>
+{{#if arquivados.length}}
+  <details class='mt-4'>
+    <summary class='fw-bold text-muted'>Arquivados ({{arquivados.length}})</summary>
+    <table class='table table-sm mt-2'>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Descrição</th>
+          <th>Certificados</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each arquivados}}
           <tr>
-            <th>Código</th>
-            <th>Descrição</th>
-            <th>Certificados</th>
-            <th>Ações</th>
+            <td>{{codigo}}</td>
+            <td>{{descricao}}</td>
+            <td>{{numCertificados}}</td>
+            <td>
+              <form
+                method='POST'
+                action='/admin/tipos-certificados/{{id}}/restaurar'
+                class='d-inline'
+              >
+                <button
+                  type='submit'
+                  class='btn btn-sm btn-success'
+                >Restaurar</button>
+              </form>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          {{#each arquivados}}
-            <tr>
-              <td>{{codigo}}</td>
-              <td>{{descricao}}</td>
-              <td>{{numCertificados}}</td>
-              <td>
-                <form method="POST" action="/admin/tipos-certificados/{{id}}/restaurar" class="d-inline">
-                  <button type="submit" class="btn btn-sm btn-success">Restaurar</button>
-                </form>
-              </td>
-            </tr>
-          {{/each}}
-        </tbody>
-      </table>
-    </details>
-  {{/if}}
+        {{/each}}
+      </tbody>
+    </table>
+  </details>
+{{/if}}
 <!-- fim do conteúdo da listagem -->

@@ -171,4 +171,3 @@ Formulário funcional com editor JSONB dinâmico, select `campo_destaque` auto-p
 ## Metadados
 
 - Completado em: 03/04/2026 18:26 (BRT) ✅
-
