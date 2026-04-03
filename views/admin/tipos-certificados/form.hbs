@@ -1,34 +1,3 @@
-# TASK ID: ADMIN-TIPOS-004
-
-## Título
-
-Criar `views/admin/tipos-certificados/form.hbs` com editor JSONB dinâmico
-
-## Objetivo
-
-Formulário para criar/editar tipo de certificado, incluindo:
-
-- Editor dinâmico de campos (`dados_dinamicos`) via JS — adicionar/remover pares chave→rótulo
-- `<select id="campo_destaque">` populado dinamicamente via JS a partir dos campos da lista + opção fixa "nome"
-- `<input type="hidden" name="dados_dinamicos_json">` serializado antes do submit
-- Preview ao vivo de `texto_base` com substituição de `${chave}` pelos rótulos dos campos
-
-## Contexto
-
-- Layout: `layouts/admin`
-- Em modo edição: `tipo` tem `dados_dinamicos` (objeto JS) e demais campos preenchidos
-- `beforeValidate` hook valida `campo_destaque ∈ keys(dados_dinamicos) ∪ {nome}`
-- Bootstrap 5 disponível via layout admin
-
-## Arquivos envolvidos
-
-- `views/admin/tipos-certificados/form.hbs` ← CRIAR (incluindo diretório)
-
-## Passos
-
-### Criar `views/admin/tipos-certificados/form.hbs`
-
-```hbs
 {{#> layouts/admin}}
   <h2>{{#if tipo}}Editar{{else}}Novo{{/if}} Tipo de Certificado</h2>
 
@@ -63,6 +32,9 @@ Formulário para criar/editar tipo de certificado, incluindo:
       <label class="form-label">Campo Destaque</label>
       <select name="campo_destaque" id="campo_destaque" class="form-select" required>
         <option value="nome" {{#if (eq tipo.campo_destaque "nome")}}selected{{/if}}>nome (fixo)</option>
+        {{#each tipo.dados_dinamicos}}
+        <option value="{{@key}}" {{#if (eq ../tipo.campo_destaque @key)}}selected{{/if}}>{{@key}}</option>
+        {{/each}}
       </select>
     </div>
 
@@ -131,7 +103,7 @@ Formulário para criar/editar tipo de certificado, incluindo:
         if (chave) obj[chave] = `[${rotulo || chave}]`;
       });
       obj['nome'] = '[nome]';
-      const preview = texto.replace(/\$\{(\w+)\}/g, (_, k) => obj[k] || `\${${k}}`);
+      const preview = texto.replace(/\$\{(\w+)\}/g, (_, k) => obj[k] || `${k}`);
       document.getElementById('preview').textContent = preview;
     }
 
@@ -147,23 +119,3 @@ Formulário para criar/editar tipo de certificado, incluindo:
     });
   </script>
 {{/layouts/admin}}
-```
-
-**Observação:** O helper `{{json ...}}` precisa estar registrado no express-handlebars (serializa objeto para JSON inline). Se não existir, registrar em `app.js`:
-
-```js
-// em hbs helpers
-json: (obj) => JSON.stringify(obj ?? null)
-```
-
-## Resultado esperado
-
-Formulário funcional com editor JSONB dinâmico, select `campo_destaque` auto-populado e preview ao vivo.
-
-## Critério de aceite
-
-- "+ Adicionar campo" adiciona par chave/rótulo
-- `dados_dinamicos_json` é serializado antes do submit
-- `campo_destaque` sempre tem opção "nome" + opções dos campos dinâmicos
-- Em modo edição, campos preenchidos com dados do `tipo`
-- Preview atualiza ao digitar em `texto_base`
