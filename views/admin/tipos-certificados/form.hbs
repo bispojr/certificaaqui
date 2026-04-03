@@ -7,7 +7,11 @@
 
   <form id="tipoForm"
         method="POST"
-        action="{{#if tipo}}/admin/tipos-certificados/{{tipo.id}}{{else}}/admin/tipos-certificados{{/if}}">
+        {{#if tipo}}
+        action="/admin/tipos-certificados/{{tipo.id}}"
+        {{else}}
+        action="/admin/tipos-certificados"
+        {{/if}}>
 
     <div class="mb-3">
       <label class="form-label">Código</label>
