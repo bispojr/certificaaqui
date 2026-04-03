@@ -42,15 +42,17 @@ describe('TiposCertificadosController', () => {
     expect(res.body).toEqual({ id: 1, nome: 'Tipo Teste' })
   })
 
-  it('deve retornar todos os tipos de certificados', async () => {
-    tiposCertificadosService.findAll.mockResolvedValue([
-      { id: 1, nome: 'Tipo Teste' },
-    ])
+  it('deve retornar tipos de certificados paginados', async () => {
+    const paged = {
+      data: [{ id: 1, nome: 'Tipo Teste' }],
+      meta: { total: 1, page: 1, perPage: 20, totalPages: 1 },
+    }
+    tiposCertificadosService.findAll.mockResolvedValue(paged)
     const res = await request(app)
-      .get('/tipos-certificados')
+      .get('/tipos-certificados?page=1&perPage=20')
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.statusCode).toBe(200)
-    expect(res.body).toEqual([{ id: 1, nome: 'Tipo Teste' }])
+    expect(res.body).toEqual(paged)
   })
 
   it('deve retornar tipo de certificado pelo id', async () => {

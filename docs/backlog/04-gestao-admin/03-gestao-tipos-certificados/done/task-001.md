@@ -92,3 +92,7 @@ async findAll(req, res) {
 - `tiposCertificadosService.findAll({ page: 2, perPage: 5 })` chama `findAndCountAll` com `{ offset: 5, limit: 5 }`
 - Resposta tem `totalPages: Math.ceil(count / perPage)`
 - Sem query params usa `page=1, perPage=20`
+
+## Metadados
+
+- Completado em: 03/04/2026 08:26 (BRT) ✅

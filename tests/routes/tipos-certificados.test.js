@@ -47,7 +47,10 @@ describe('Rotas de TiposCertificados', () => {
       .get('/tipos-certificados')
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.status).toBe(200)
-    expect(Array.isArray(res.body)).toBe(true)
+    expect(res.body).toHaveProperty('data')
+    expect(Array.isArray(res.body.data)).toBe(true)
+    expect(res.body).toHaveProperty('meta')
+    expect(typeof res.body.meta).toBe('object')
   })
 
   it('deve buscar tipo de certificado por id', async () => {

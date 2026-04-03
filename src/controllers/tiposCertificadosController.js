@@ -12,8 +12,10 @@ class TiposCertificadosController {
 
   async findAll(req, res) {
     try {
-      const tipos = await tiposCertificadosService.findAll()
-      return res.status(200).json(tipos)
+      const page = parseInt(req.query.page, 10) || 1
+      const perPage = parseInt(req.query.perPage, 10) || 20
+      const result = await tiposCertificadosService.findAll({ page, perPage })
+      return res.status(200).json(result)
     } catch (error) {
       return res.status(400).json({ error: error.message })
     }

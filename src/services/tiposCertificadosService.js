@@ -2,8 +2,21 @@
 const { TiposCertificados } = require('../../src/models')
 
 module.exports = {
-  async findAll() {
-    return TiposCertificados.findAll()
+  async findAll({ page = 1, perPage = 20 } = {}) {
+    const offset = (page - 1) * perPage
+    const { count, rows } = await TiposCertificados.findAndCountAll({
+      offset,
+      limit: perPage,
+    })
+    return {
+      data: rows,
+      meta: {
+        total: count,
+        page,
+        perPage,
+        totalPages: Math.ceil(count / perPage),
+      },
+    }
   },
   async findById(id) {
     return TiposCertificados.findByPk(id)
