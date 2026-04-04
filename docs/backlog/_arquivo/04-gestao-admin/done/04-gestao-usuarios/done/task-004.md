@@ -61,3 +61,7 @@ router.post(
 - `GET /admin/usuarios/novo` não é capturado por `/:id/editar`
 - Gestor acessando `/admin/usuarios` recebe 403
 - Nenhuma rota existente (eventos, tipos-certificados) é alterada
+
+## Metadados
+
+- Completado em: 04/04/2026 17:50 ✅

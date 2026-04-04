@@ -28,7 +28,6 @@ async function index(req, res) {
 
 async function novo(_req, res) {
   try {
-    // eslint-disable-next-line no-console
     console.log(
       'DEBUG tiposCertificadosSSRController.novo: renderizando form',
       {
@@ -44,7 +43,7 @@ async function novo(_req, res) {
     })
   } catch (error) {
     // Log detalhado para debug
-    // eslint-disable-next-line no-console
+
     console.error(
       'ERRO tiposCertificadosSSRController.novo:',
       error,

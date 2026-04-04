@@ -6,6 +6,7 @@ const eventoSSRController = require('../controllers/eventoSSRController')
 const participanteSSRController = require('../controllers/participanteSSRController')
 const dashboardController = require('../controllers/dashboardController')
 const tiposCertificadosSSRController = require('../controllers/tiposCertificadosSSRController')
+const usuarioSSRController = require('../controllers/usuarioSSRController')
 
 // Todas as rotas admin exigem sessão SSR válida
 router.use(authSSR)
@@ -71,5 +72,22 @@ router.post('/participantes', participanteSSRController.criar)
 router.post('/participantes/:id', participanteSSRController.atualizar)
 router.post('/participantes/:id/deletar', participanteSSRController.deletar)
 router.post('/participantes/:id/restaurar', participanteSSRController.restaurar)
+
+// Usuários (apenas admin)
+router.get('/usuarios', rbac('admin'), usuarioSSRController.index)
+router.get('/usuarios/novo', rbac('admin'), usuarioSSRController.novo)
+router.post('/usuarios', rbac('admin'), usuarioSSRController.criar)
+router.get('/usuarios/:id/editar', rbac('admin'), usuarioSSRController.editar)
+router.post('/usuarios/:id', rbac('admin'), usuarioSSRController.atualizar)
+router.post(
+  '/usuarios/:id/deletar',
+  rbac('admin'),
+  usuarioSSRController.deletar,
+)
+router.post(
+  '/usuarios/:id/restaurar',
+  rbac('admin'),
+  usuarioSSRController.restaurar,
+)
 
 module.exports = router
