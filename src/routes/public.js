@@ -50,7 +50,7 @@ router.get('/certificados', async (req, res) => {
       where: { participante_id: participante.id },
     })
     return res.json({ certificados })
-  } catch (_) {
+  } catch {
     return res.status(500).json({ error: 'Erro ao buscar certificados' })
   }
 })
@@ -66,7 +66,7 @@ router.get('/validar/:codigo', async (req, res) => {
         .json({ valido: false, mensagem: 'Certificado não encontrado' })
     }
     return res.json({ valido: true, certificado })
-  } catch (_) {
+  } catch {
     return res.status(500).json({ error: 'Erro ao validar certificado' })
   }
 })
@@ -104,7 +104,7 @@ router.post('/pagina/buscar', async (req, res) => {
       where: { participante_id: participante.id },
     })
     return res.render('certificados/obter-lista', { email, certificados })
-  } catch (_) {
+  } catch {
     return res.render('certificados/form-obter', {
       mensagem: 'Erro ao buscar certificados. Tente novamente.',
     })
@@ -131,7 +131,7 @@ router.post('/pagina/validar', async (req, res) => {
       valido: true,
       certificado,
     })
-  } catch (_) {
+  } catch {
     return res.render('certificados/form-validar', {
       mensagem: 'Erro ao validar certificado. Tente novamente.',
     })

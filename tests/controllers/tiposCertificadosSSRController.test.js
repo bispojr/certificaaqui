@@ -64,6 +64,9 @@ describe('tiposCertificadosSSRController', () => {
       expect(res.render).toHaveBeenCalledWith('admin/tipos-certificados/form', {
         tipo: null,
         actionUrl: '/admin/tipos-certificados',
+        opcoesCampoDestaque: [
+          { value: 'nome', selected: true },
+        ],
       })
     })
   })
@@ -80,6 +83,9 @@ describe('tiposCertificadosSSRController', () => {
       expect(res.render).toHaveBeenCalledWith('admin/tipos-certificados/form', {
         tipo: { id: 1 },
         actionUrl: '/admin/tipos-certificados/1',
+        opcoesCampoDestaque: [
+          { value: 'nome', selected: true },
+        ],
       })
     })
     it('deve redirecionar se tipo não encontrado', async () => {

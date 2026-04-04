@@ -30,6 +30,7 @@ async function novo(_req, res) {
   return res.render('admin/tipos-certificados/form', {
     tipo: null,
     actionUrl: '/admin/tipos-certificados',
+    opcoesCampoDestaque: [{ value: 'nome', selected: true }],
   })
 }
 
@@ -41,9 +42,18 @@ async function editar(req, res) {
       return res.redirect('/admin/tipos-certificados')
     }
     const t = tipo.toJSON()
+    const campoDestaque = t.campo_destaque || 'nome'
+    const opcoes = Object.keys(t.dados_dinamicos || {}).map((key) => ({
+      value: key,
+      selected: key === campoDestaque,
+    }))
     return res.render('admin/tipos-certificados/form', {
       tipo: t,
       actionUrl: `/admin/tipos-certificados/${t.id}`,
+      opcoesCampoDestaque: [
+        { value: 'nome', selected: campoDestaque === 'nome' },
+        ...opcoes,
+      ],
     })
   } catch (error) {
     req.flash('error', error.message)

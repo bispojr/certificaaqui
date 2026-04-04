@@ -18,7 +18,7 @@ module.exports = async function auth(req, res, next) {
     }
     req.usuario = usuario
     next()
-  } catch (err) {
+  } catch {
     return res.status(401).json({ error: 'Token inválido' })
   }
 }
