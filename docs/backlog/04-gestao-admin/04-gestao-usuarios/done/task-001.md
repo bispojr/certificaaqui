@@ -157,3 +157,7 @@ Controller com 7 métodos sem dependência de serviço externo.
 - `criar`/`atualizar`: `eventoIds = [].concat(eventos || []).map(Number).filter(Boolean)` normaliza string única ou array
 - `editar`: inclui `eventoIds` no JSON enviado à view para pré-seleção
 - `restaurar` usa `{ paranoid: false }` no `findByPk`
+
+## Metadados
+
+- Completado em: 04/04/2026 13:39 ✅
