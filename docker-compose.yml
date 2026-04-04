@@ -19,6 +19,7 @@ services:
       - postgres
     environment:
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/certificados_db
+      - SESSION_SECRET=changeme-em-producao
     volumes:
       - .:/app
       - /app/node_modules
