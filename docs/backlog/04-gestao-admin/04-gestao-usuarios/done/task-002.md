@@ -126,3 +126,7 @@ Listagem com badge de perfil colorido, contagem de eventos e seção arquivados 
 - `eventos.length` exibe número de eventos do usuário
 - Seção arquivados só aparece quando `arquivados.length > 0`
 - Confirmar antes de arquivar via `confirm()`
+
+## Metadados
+
+- Completado em: 04/04/2026 13:49 ✅
