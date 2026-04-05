@@ -1,42 +1,32 @@
 const hbs = require('hbs')
 
-hbs.registerHelper('json', function (context) {
-  return JSON.stringify(context || {})
-})
-
-hbs.registerHelper('eq', function (a, b) {
-  return a === b
-})
-
-hbs.registerHelper('selected', function (value, expected) {
-  return value === expected ? 'selected' : ''
-})
-
-hbs.registerHelper('ifSelected', function (val) {
-  return val ? 'selected' : ''
-})
-
-hbs.registerHelper('toString', function (val) {
-  return String(val ?? '')
-})
-
-// Para testes unitários:
-if (process.env.NODE_ENV === 'test') {
-  const Handlebars = require('handlebars')
-  Handlebars.registerHelper('json', hbs.handlebars.helpers.json)
-  Handlebars.registerHelper('eq', hbs.handlebars.helpers.eq)
-  Handlebars.registerHelper('toString', hbs.handlebars.helpers.toString)
-  // Permitir acesso a propriedades herdadas (toString)
-  Handlebars.compile = (function (origCompile) {
-    return function (template, options) {
-      options = options || {}
-      options.allowProtoPropertiesByDefault = true
-      return origCompile.call(this, template, options)
-    }
-  })(Handlebars.compile)
-  Handlebars.registerHelper('lookup', function (obj, field) {
-    return obj && obj[field]
+function registerHelpers(handlebarsInstance) {
+  handlebarsInstance.registerHelper('json', function (context) {
+    return JSON.stringify(context || {})
   })
+  handlebarsInstance.registerHelper('eq', function (a, b) {
+    return a === b
+  })
+  handlebarsInstance.registerHelper('selected', function (value, expected) {
+    return value === expected ? 'selected' : ''
+  })
+  handlebarsInstance.registerHelper('ifSelected', function (val) {
+    return val ? 'selected' : ''
+  })
+  handlebarsInstance.registerHelper('toString', function (val) {
+    return String(val ?? '')
+  })
+}
+
+// Registra helpers no hbs (usado pela aplicação)
+registerHelpers(hbs.handlebars)
+
+// Se Handlebars puro estiver disponível (usado em testes), registra também
+try {
+  const Handlebars = require('handlebars')
+  registerHelpers(Handlebars)
+} catch (e) {
+  // Handlebars puro não está disponível, ignora
 }
 
 hbs.registerHelper('isSelected', function (a, b) {
