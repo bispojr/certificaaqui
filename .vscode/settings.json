@@ -10,5 +10,6 @@
   },
   "jest.testExplorer": {
     "showInlineError": true
-  }
+  },
+  "testing.automaticallyOpenTestResults": "neverOpen"
 }

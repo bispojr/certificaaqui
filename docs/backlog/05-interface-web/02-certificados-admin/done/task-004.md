@@ -161,3 +161,7 @@ eq: (a, b) => a === b,
 - Em modo edição, campos pré-preenchidos com `valoresExistentes[chave]`
 - `valores_dinamicos_json` serializado antes do submit via `sincronizarJson()`
 - Em modo edição, tipo inicial já carregado na montagem da página (`carregarCampos(tipoInicial)`)
+
+## Metadados
+
+- Completado em: 05/04/2026 10:53 ✅
