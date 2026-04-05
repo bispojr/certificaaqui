@@ -1,39 +1,8 @@
-# TASK ID: CERT-ADMIN-003
-
-## Título
-
-Criar `views/admin/certificados/detalhe.hbs` com texto interpolado e link de PDF
-
-## Objetivo
-
-View de detalhe de um certificado exibindo dados completos, texto do certificado com interpolação já processada pelo controller e link para download do PDF.
-
-## Contexto
-
-- Layout: `layouts/admin`
-- Dados: `certificado` (JSON com includes), `textoInterpolado` (string processada pelo controller via `templateService.interpolate`)
-- `certificado.Participante.nomeCompleto`, `certificado.Evento.nome`, `certificado.TiposCertificado.descricao`
-- Link PDF: `GET /public/certificados/:id/pdf` (rota pública existente)
-- Status badge segue mesmo padrão de `index.hbs`
-- Exibe `valores_dinamicos` como tabela chave→valor para facilitar inspeção
-
-## Arquivos envolvidos
-
-- `views/admin/certificados/detalhe.hbs` ← CRIAR
-
-## Passos
-
-### Criar `views/admin/certificados/detalhe.hbs`
-
-```hbs
 {{#> layouts/admin}}
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>Certificado <code>{{certificado.codigo}}</code></h2>
     <div>
-      <a href="/public/certificados/{{certificado.id}}/pdf"
-         class="btn btn-outline-primary" target="_blank">
-        Baixar PDF
-      </a>
+      <a href="/public/certificados/{{certificado.id}}/pdf" class="btn btn-outline-primary" target="_blank">Baixar PDF</a>
       <a href="/admin/certificados/{{certificado.id}}/editar" class="btn btn-secondary">Editar</a>
       <a href="/admin/certificados" class="btn btn-outline-secondary">Voltar</a>
     </div>
@@ -97,14 +66,3 @@ View de detalhe de um certificado exibindo dados completos, texto do certificado
     </div>
   {{/if}}
 {{/layouts/admin}}
-```
-
-**Observação:** `{{#each certificado.valores_dinamicos}}` itera sobre as chaves de um objeto JSONB via Handlebars — funciona porque o objeto é serializado ao passar por `toJSON()` no controller.
-
-## Critério de aceite
-
-- Link de PDF abre em nova aba (`target="_blank"`) via rota pública `/public/certificados/:id/pdf`
-- `textoInterpolado` exibido com `white-space: pre-wrap` para preservar quebras de linha
-- Tabela de `valores_dinamicos` só aparece se o campo não for nulo/vazio
-- Status badge usa mesmas cores de `index.hbs`
-- Botão "Voltar" leva para `/admin/certificados`
