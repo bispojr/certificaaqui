@@ -27,7 +27,7 @@ services:
       - DB_NAME_TEST=certificados_test
       - DB_PORT_TEST=5432
       - JWT_SECRET=sua_chave_jwt_super_secreta
-      - NODE_ENV=development
+      - NODE_ENV=test
       - SESSION_SECRET=sessao-teste-supersegura
     volumes:
       - .:/app
