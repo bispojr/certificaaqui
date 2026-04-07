@@ -18,7 +18,8 @@
     "format": "prettier --write .",
     "check": "npm run lint && npm run format && npm run test:ci",
     "check:docker": "docker-compose -f docker-compose.test.yml exec -T app_test sh -c 'npm run lint && npm run format && npm test'",
-    "check:docker:coverage": "docker-compose -f docker-compose.test.yml exec -T app_test sh -c 'npm run lint && npm run format && npm run test:coverage'"
+    "check:docker:coverage": "docker-compose -f docker-compose.test.yml exec -T app_test sh -c 'npm run lint && npm run format && npm run test:coverage'",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -42,6 +43,7 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "cheerio": "^1.2.0",
     "eslint": "^10.0.3",
     "eslint-config-prettier": "^10.1.8",

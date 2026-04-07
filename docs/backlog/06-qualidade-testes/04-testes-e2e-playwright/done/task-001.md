@@ -78,3 +78,7 @@ No objeto `scripts`, adicionar:
 - `npx playwright test --list` lista os spec files sem erros
 - `npm run test:e2e` executa sem interferir em `npm test` (Jest)
 - `BASE_URL` configurável via variável de ambiente
+
+## Metadados
+
+- Completado em: 07/04/2026 11:41 ✅
