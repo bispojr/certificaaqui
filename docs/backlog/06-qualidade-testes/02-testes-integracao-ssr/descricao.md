@@ -35,7 +35,7 @@ Criar testes de integração com supertest cobrindo as rotas SSR que ainda não 
 
 ✅ task-001: Criar `tests/routes/authSSR.test.js` — `GET /auth/login`, `POST /auth/login` (sucesso + credenciais inválidas), `POST /auth/logout`
 ✅ task-002: Criar `tests/routes/publicSSR.test.js` — `POST /public/pagina/buscar` e `POST /public/pagina/validar`
-- task-003: Criar `tests/routes/adminDashboard.test.js` — `GET /admin/dashboard` por perfil (redirect sem auth, 200 admin, 200 gestor)
+✅ task-003: Criar `tests/routes/adminDashboard.test.js` — `GET /admin/dashboard` por perfil (redirect sem auth, 200 admin, 200 gestor)
 - task-004: Criar `tests/routes/adminCertificados.test.js` — `GET /admin/certificados`, `GET /admin/certificados/novo`, `POST /admin/certificados`, `POST /:id/cancelar`
 - task-005: Criar `tests/routes/adminEntidades.test.js` — smoke tests para `/admin/participantes`, `/admin/eventos`, `/admin/tipos-certificados`, `/admin/usuarios`
 

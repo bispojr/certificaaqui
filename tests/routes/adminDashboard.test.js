@@ -1,43 +1,66 @@
 const request = require('supertest')
+const jwt = require('jsonwebtoken')
 const app = require('../../app')
 const { Usuario, sequelize } = require('../../src/models')
-const jwt = require('jsonwebtoken')
 
-process.env.JWT_SECRET = 'jwt_secret_teste'
-const JWT_SECRET = process.env.JWT_SECRET
+const JWT_SECRET = process.env.JWT_SECRET || 'jwt_secret_teste'
+let adminCookie
+let gestorCookie
 
-describe('Admin dashboard SSR', () => {
-  let agent
+const makeAuthCookie = (id, perfil) => {
+  const token = jwt.sign({ id, perfil }, JWT_SECRET, { expiresIn: '1h' })
+  return `token=${token}`
+}
+
+describe('GET /admin/dashboard', () => {
+  let admin, gestor
+
   beforeAll(async () => {
-    await sequelize.sync({ force: true })
-    agent = request.agent(app)
-    await Usuario.create({
+    await sequelize.query('TRUNCATE TABLE usuarios RESTART IDENTITY CASCADE')
+    admin = await Usuario.create({
       nome: 'Admin',
       email: 'admin@admin.com',
       senha: 'senha123',
       perfil: 'admin',
     })
+    gestor = await Usuario.create({
+      nome: 'Gestor',
+      email: 'gestor@admin.com',
+      senha: 'senha123',
+      perfil: 'gestor',
+    })
+    adminCookie = makeAuthCookie(admin.id, 'admin')
+    gestorCookie = makeAuthCookie(gestor.id, 'gestor')
+  })
+
+  afterAll(async () => {
+    await sequelize.query('TRUNCATE TABLE usuarios RESTART IDENTITY CASCADE')
   })
 
   it('redireciona para /auth/login se não autenticado', async () => {
-    const res = await agent.get('/admin/dashboard')
-    // Espera redirecionamento (302) para /auth/login
+    const res = await request(app).get('/admin/dashboard')
     expect(res.status).toBe(302)
     expect(res.headers.location).toBe('/auth/login')
   })
 
-  it('permite acesso autenticado ao dashboard', async () => {
-    // Cria usuário admin
-    const usuario = await Usuario.findOne({
-      where: { email: 'admin@admin.com' },
-    })
-    // Gera token JWT
-    const token = jwt.sign({ id: usuario.id }, JWT_SECRET)
-    // Faz requisição autenticada com cookie
-    const res = await agent
+  it('renderiza dashboard para admin', async () => {
+    const res = await request(app)
       .get('/admin/dashboard')
-      .set('Cookie', `token=${token}`)
+      .set('Cookie', adminCookie)
     expect(res.status).toBe(200)
     expect(res.text).toMatch(/Dashboard/i)
+  })
+
+  it('renderiza dashboard para gestor (escopo reduzido)', async () => {
+    const res = await request(app)
+      .get('/admin/dashboard')
+      .set('Cookie', gestorCookie)
+      expect(res.status).toBe(200)
+      expect(res.text).toMatch(/Dashboard/i)
+      expect(res.text).toMatch(/Certificados \(seus eventos\)/i)
+      expect(res.text).toMatch(/Participantes \(seus eventos\)/i)
+      expect(res.text).not.toMatch(/Eventos<\/div>/i)
+      expect(res.text).not.toMatch(/Tipos de Certificados<\/div>/i)
+      expect(res.text).not.toMatch(/Usuários<\/div>/i)
   })
 })

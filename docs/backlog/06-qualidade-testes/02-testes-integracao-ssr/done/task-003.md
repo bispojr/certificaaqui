@@ -97,3 +97,7 @@ describe('GET /admin/dashboard', () => {
 - `GET /admin/dashboard` com cookie `admin` → 200 + HTML contendo "Dashboard"
 - `GET /admin/dashboard` com cookie `gestor` → 200
 - `makeAuthCookie` reutilizável — mesmo padrão usado nas demais suítes admin
+
+## Metadados
+
+- Completado em: 07/04/2026 02:24 ✅
