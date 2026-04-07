@@ -5,11 +5,34 @@ const { Op } = require('sequelize')
 module.exports = {
   async index(req, res) {
     try {
-      const eventos = await Evento.findAll()
-      const arquivados = await Evento.findAll({
-        paranoid: false,
-        where: { deleted_at: { [Op.ne]: null } },
-      })
+      let eventos, arquivados
+      if (req.usuario.perfil === 'admin') {
+        eventos = await Evento.findAll()
+        arquivados = await Evento.findAll({
+          paranoid: false,
+          where: { deleted_at: { [Op.ne]: null } },
+        })
+      } else if (req.usuario.perfil === 'gestor') {
+        eventos = await Evento.findAll({
+          include: [{
+            association: 'usuarios',
+            where: { id: req.usuario.id },
+            through: { attributes: [] },
+          }],
+        })
+        arquivados = await Evento.findAll({
+          paranoid: false,
+          where: { deleted_at: { [Op.ne]: null } },
+          include: [{
+            association: 'usuarios',
+            where: { id: req.usuario.id },
+            through: { attributes: [] },
+          }],
+        })
+      } else {
+        eventos = []
+        arquivados = []
+      }
       return res.render('admin/eventos/index', {
         layout: 'layouts/admin',
         title: 'Eventos',

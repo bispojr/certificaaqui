@@ -53,7 +53,7 @@ router.post(
 router.get('/dashboard', dashboardController.dashboard)
 
 // Gestão de eventos (somente admin)
-router.get('/eventos', rbac('admin'), eventoSSRController.index)
+router.get('/eventos', rbac('gestor'), eventoSSRController.index)
 router.get('/eventos/novo', rbac('admin'), eventoSSRController.novo)
 router.get('/eventos/:id/editar', rbac('admin'), eventoSSRController.editar)
 router.post('/eventos', rbac('admin'), eventoSSRController.criar)

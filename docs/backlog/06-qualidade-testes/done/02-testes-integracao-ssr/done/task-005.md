@@ -122,3 +122,7 @@ describe('GET /admin/usuarios', () => {
 - `GET /admin/usuarios` sem cookie → 302
 - `GET /admin/usuarios` com admin → 200
 - `GET /admin/usuarios` com gestor → 403
+
+## Metadados
+
+- Completado em: 07/04/2026 03:30 ✅

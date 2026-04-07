@@ -16,8 +16,8 @@ describe('eventoSSRController', () => {
   })
 
   it('index renderiza eventos e arquivados', async () => {
-    const req = { flash: jest.fn() }
-    const res = { render: jest.fn() }
+    const req = { flash: jest.fn(), usuario: { perfil: 'admin' } }
+    const res = { render: jest.fn(), redirect: jest.fn(), flash: jest.fn(), locals: {} }
     const eventos = [{ toJSON: () => ({ id: 1, nome: 'Ativo' }) }]
     const arquivados = [{ toJSON: () => ({ id: 2, nome: 'Arq' }) }]
     Evento.findAll
@@ -31,6 +31,19 @@ describe('eventoSSRController', () => {
         arquivados: [{ id: 2, nome: 'Arq' }],
       }),
     )
+  })
+
+  it('index redireciona em erro', async () => {
+    const req = { flash: jest.fn(), usuario: { perfil: 'admin' } }
+    const res = {
+      render: jest.fn(),
+      redirect: jest.fn(),
+      flash: jest.fn(),
+      locals: {},
+    }
+    Evento.findAll.mockRejectedValueOnce(new Error('fail'))
+    await eventoSSRController.index(req, res)
+    expect(res.redirect).toHaveBeenCalledWith('/admin/dashboard')
   })
 
   it('novo renderiza form vazio', () => {
