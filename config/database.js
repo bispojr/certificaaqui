@@ -35,6 +35,15 @@ module.exports = {
     dialect: 'postgres',
     logging: false,
   },
+  e2e: {
+    username: requiredEnv('DB_USER'),
+    password: requiredEnv('DB_PASSWORD'),
+    database: requiredEnvTest('DB_NAME_E2E'),
+    host: requiredEnv('DB_HOST'),
+    port: parseInt(requiredEnvTest('DB_PORT_E2E')),
+    dialect: 'postgres',
+    logging: false,
+  },
   production: {
     username: requiredEnv('DB_USER'),
     password: requiredEnv('DB_PASSWORD'),

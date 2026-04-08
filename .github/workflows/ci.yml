@@ -47,14 +47,16 @@ jobs:
           DB_USER: postgres
           DB_PASSWORD: password
           DB_HOST: localhost
-          DB_NAME: certificados_test
-          DB_PORT: 5433
+          DB_NAME: certificados_e2e
+          DB_PORT: 5434
           DB_NAME_TEST: certificados_test
           DB_PORT_TEST: 5433
+          DB_NAME_E2E: certificados_e2e
+          DB_PORT_E2E: 5434
           JWT_SECRET: jwt_secret_teste
           SESSION_SECRET: sessao-teste-supersegura
           BASE_URL: http://localhost:3000
-          NODE_ENV: test
+          NODE_ENV: e2e
         run: npm run test:e2e
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5

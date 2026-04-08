@@ -17,7 +17,7 @@ async function seedE2E() {
   const admin = await Usuario.create({
     nome: 'Admin E2E',
     email: 'admin.e2e@test.com',
-    senha: await require('bcryptjs').hash('senha123', 10),
+    senha: 'senha123',
     perfil: 'admin',
   })
 
@@ -30,7 +30,7 @@ async function seedE2E() {
   const gestor = await Usuario.create({
     nome: 'Gestor E2E',
     email: 'gestor.e2e@test.com',
-    senha: await require('bcryptjs').hash('senha123', 10),
+    senha: 'senha123',
     perfil: 'gestor',
     evento_id: evento.id,
   })
@@ -38,7 +38,7 @@ async function seedE2E() {
   const monitor = await Usuario.create({
     nome: 'Monitor E2E',
     email: 'monitor.e2e@test.com',
-    senha: await require('bcryptjs').hash('senha123', 10),
+    senha: 'senha123',
     perfil: 'monitor',
     evento_id: evento.id,
   })

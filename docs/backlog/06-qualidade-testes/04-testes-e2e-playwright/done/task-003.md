@@ -110,3 +110,7 @@ module.exports = { createViaApi }
 - Após `loginAs`, `page.url()` contém `/admin/` (login bem-sucedido) ou `/auth/login` (falha)
 - `createViaApi('/api/participantes', { ... }, token)` retorna JSON com o registro criado
 - Helpers importáveis como `require('../helpers/auth')` em qualquer spec file
+
+## Metadados
+
+- Completado em: 07/04/2026 21:20 ✅

@@ -11,6 +11,17 @@ services:
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
 
+  postgres_e2e:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: certificados_e2e
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - '5434:5432'
+    volumes:
+      - postgres_e2e_data:/var/lib/postgresql/data
+
   app_test:
     build: .
     ports:
@@ -34,3 +45,4 @@ services:
 
 volumes:
   postgres_test_data:
+  postgres_e2e_data:
