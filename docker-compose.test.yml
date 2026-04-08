@@ -37,6 +37,8 @@ services:
       - DB_PORT=5432
       - DB_NAME_TEST=certificados_test
       - DB_PORT_TEST=5432
+      - DB_NAME_E2E=certificados_e2e
+      - DB_PORT_E2E=5432
       - JWT_SECRET=sua_chave_jwt_super_secreta
       - NODE_ENV=test
       - SESSION_SECRET=sessao-teste-supersegura
