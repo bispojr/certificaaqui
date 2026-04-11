@@ -124,10 +124,10 @@ describe('Admin SSR - certificados', () => {
         evento_id: evento.id,
         tipo_certificado_id: tipo.id,
         nome: 'Novo Certificado',
-        valores_dinamicos: JSON.stringify({ nome: 'Novo Certificado' }),
+        valores_dinamicos_json: JSON.stringify({ nome: 'Novo Certificado' }),
       })
     expect(res.status).toBe(302)
-    expect(res.headers.location).toMatch(/\/admin\/certificados/)
+    expect(res.headers.location).toBe('/admin/certificados')
     const cert = await Certificado.findOne({
       where: { nome: 'Novo Certificado' },
     })

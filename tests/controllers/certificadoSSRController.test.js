@@ -1,25 +1,3 @@
-  describe('deletar', () => {
-    it('deve remover (soft delete) certificado e redirecionar', async () => {
-      const destroy = jest.fn()
-      Certificado.findByPk = jest.fn().mockResolvedValue({ destroy })
-      const req = httpMocks.createRequest({ params: { id: 1 } })
-      req.flash = jest.fn()
-      const res = mockRes()
-      await certificadoSSRController.deletar(req, res)
-      expect(destroy).toHaveBeenCalled()
-      expect(res.redirect).toHaveBeenCalledWith('/admin/certificados')
-    })
-
-    it('deve exibir erro se certificado não encontrado', async () => {
-      Certificado.findByPk = jest.fn().mockResolvedValue(null)
-      const req = httpMocks.createRequest({ params: { id: 999 } })
-      req.flash = jest.fn()
-      const res = mockRes()
-      await certificadoSSRController.deletar(req, res)
-      expect(req.flash).toHaveBeenCalledWith('error', 'Certificado não encontrado.')
-      expect(res.redirect).toHaveBeenCalledWith('/admin/certificados')
-    })
-  })
 const certificadoSSRController = require('../../src/controllers/certificadoSSRController')
 const {
   Certificado,
@@ -27,9 +5,11 @@ const {
   Evento,
   TiposCertificados,
 } = require('../../src/models')
+const certificadoService = require('../../src/services/certificadoService')
 const httpMocks = require('node-mocks-http')
 
 jest.mock('../../src/models')
+jest.mock('../../src/services/certificadoService')
 
 function mockRes() {
   const res = httpMocks.createResponse()
@@ -128,7 +108,7 @@ describe('certificadoSSRController', () => {
 
   describe('criar', () => {
     it('deve criar certificado e redirecionar', async () => {
-      Certificado.create = jest.fn().mockResolvedValue({})
+      certificadoService.create = jest.fn().mockResolvedValue({})
       const req = httpMocks.createRequest({
         body: {
           nome: 'A',
@@ -141,7 +121,7 @@ describe('certificadoSSRController', () => {
       req.flash = jest.fn()
       const res = mockRes()
       await certificadoSSRController.criar(req, res)
-      expect(Certificado.create).toHaveBeenCalled()
+      expect(certificadoService.create).toHaveBeenCalled()
       expect(res.redirect).toHaveBeenCalledWith('/admin/certificados')
     })
   })
@@ -181,15 +161,25 @@ describe('certificadoSSRController', () => {
     })
   })
 
-  describe('restaurar', () => {
-    it('deve restaurar certificado', async () => {
-      const restore = jest.fn()
-      Certificado.findByPk = jest.fn().mockResolvedValue({ restore })
+  describe('deletar', () => {
+    it('deve remover (soft delete) certificado e redirecionar', async () => {
+      const destroy = jest.fn()
+      Certificado.findByPk = jest.fn().mockResolvedValue({ destroy })
       const req = httpMocks.createRequest({ params: { id: 1 } })
       req.flash = jest.fn()
       const res = mockRes()
-      await certificadoSSRController.restaurar(req, res)
-      expect(restore).toHaveBeenCalled()
+      await certificadoSSRController.deletar(req, res)
+      expect(destroy).toHaveBeenCalled()
+      expect(res.redirect).toHaveBeenCalledWith('/admin/certificados')
+    })
+
+    it('deve exibir erro se certificado não encontrado', async () => {
+      Certificado.findByPk = jest.fn().mockResolvedValue(null)
+      const req = httpMocks.createRequest({ params: { id: 999 } })
+      req.flash = jest.fn()
+      const res = mockRes()
+      await certificadoSSRController.deletar(req, res)
+      expect(req.flash).toHaveBeenCalledWith('error', 'Certificado não encontrado.')
       expect(res.redirect).toHaveBeenCalledWith('/admin/certificados')
     })
   })
