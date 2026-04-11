@@ -133,4 +133,26 @@ describe('Admin SSR Certificados - Ordem e RBAC', () => {
     const res = await agent.post('/admin/certificados/0/restaurar')
     expect(res.status).toBe(403)
   })
+
+  it('preenche nome automaticamente se tipo não tem campos dinâmicos', async () => {
+    // Cria participante e tipo de certificado sem campos dinâmicos
+    const participante = await Participante.create({ nomeCompleto: 'Fulano', email: 'fulano-auto@ex.com' })
+    const evento = await Evento.create({ nome: 'Festa Auto', ano: 2026, codigo_base: 'FST' })
+    const tipo = await TiposCertificados.create({ codigo: 'NP', descricao: 'Na pista', campo_destaque: 'nome', texto_base: 'Certificamos ${nome}', dados_dinamicos: {} })
+
+    await mockLogin(agent, 'gestor')
+    const res = await agent
+      .post('/admin/certificados')
+      .send({
+        participante_id: participante.id,
+        evento_id: evento.id,
+        tipo_certificado_id: tipo.id,
+        status: 'emitido'
+        // não envia nome!
+      })
+    expect(res.status).toBe(302)
+    const cert = await Certificado.findOne({ where: { participante_id: participante.id, tipo_certificado_id: tipo.id } })
+    expect(cert).toBeTruthy()
+    expect(cert.nome).toBe('Fulano')
+  })
 })

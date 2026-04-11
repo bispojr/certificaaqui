@@ -137,8 +137,19 @@ async function criar(req, res) {
     const valores_dinamicos = JSON.parse(
       req.body.valores_dinamicos_json || '{}',
     )
+    let nome = req.body.nome
+    // Se não houver campos dinâmicos, preenche nome com nomeCompleto do participante
+    if (!nome || nome.trim() === '') {
+      const tipo = await TiposCertificados.findByPk(Number(req.body.tipo_certificado_id))
+      if (tipo && (!tipo.dados_dinamicos || Object.keys(tipo.dados_dinamicos).length === 0)) {
+        const participante = await Participante.findByPk(Number(req.body.participante_id))
+        if (participante) {
+          nome = participante.nomeCompleto
+        }
+      }
+    }
     await Certificado.create({
-      nome: req.body.nome,
+      nome,
       status: req.body.status || 'emitido',
       participante_id: Number(req.body.participante_id),
       evento_id: Number(req.body.evento_id),
