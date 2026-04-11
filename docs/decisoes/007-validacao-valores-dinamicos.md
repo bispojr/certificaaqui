@@ -36,18 +36,20 @@ POST /api/certificados
 ## Consequências
 
 **Positivas:**
+
 - Testável unitariamente com mock de `TiposCertificados`
 - Separação clara: Zod valida estrutura; service valida semântica de negócio
 - Reutilizável em `certificadoService.update` sem duplicação
 
 **Negativas:**
+
 - Erro de `valores_dinamicos` chega como 422 (erro de negócio), não como 400 (erro de schema)
 - Necessita busca adicional ao banco mesmo quando `valores_dinamicos` estiver vazio
 
 ## Alternativas rejeitadas
 
-| Alternativa | Motivo da rejeição |
-|-------------|-------------------|
-| Validator Zod | Não tem acesso ao banco para buscar `dados_dinamicos` do tipo |
-| Hook `beforeCreate` | Torna model stateful; dificulta testes unitários do service |
-| Controller | Controllers não devem ter lógica de negócio (NFR-6) |
+| Alternativa         | Motivo da rejeição                                            |
+| ------------------- | ------------------------------------------------------------- |
+| Validator Zod       | Não tem acesso ao banco para buscar `dados_dinamicos` do tipo |
+| Hook `beforeCreate` | Torna model stateful; dificulta testes unitários do service   |
+| Controller          | Controllers não devem ter lógica de negócio (NFR-6)           |

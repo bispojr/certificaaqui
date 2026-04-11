@@ -10,7 +10,11 @@ async function index(req, res) {
       paranoid: false,
       where: { deleted_at: { [Op.ne]: null } },
     })
-    return res.render('admin/usuarios/index', { layout: 'layouts/admin', usuarios, arquivados })
+    return res.render('admin/usuarios/index', {
+      layout: 'layouts/admin',
+      usuarios,
+      arquivados,
+    })
   } catch (error) {
     console.error('ERRO editar usuarioSSRController:', error)
     req.flash('error', error.message)
@@ -20,7 +24,11 @@ async function index(req, res) {
 
 async function novo(req, res) {
   const eventos = await Evento.findAll({ attributes: ['id', 'nome'] })
-  return res.render('admin/usuarios/form', { layout: 'layouts/admin', usuario: null, eventos })
+  return res.render('admin/usuarios/form', {
+    layout: 'layouts/admin',
+    usuario: null,
+    eventos,
+  })
 }
 
 async function editar(req, res) {
@@ -40,7 +48,11 @@ async function editar(req, res) {
       ...e.toJSON(),
       selected: eventoIds.includes(e.id),
     }))
-    return res.render('admin/usuarios/form', { layout: 'layouts/admin', usuario: usuarioJson, eventos })
+    return res.render('admin/usuarios/form', {
+      layout: 'layouts/admin',
+      usuario: usuarioJson,
+      eventos,
+    })
   } catch (error) {
     req.flash('error', error.message)
     return res.redirect('/admin/usuarios')

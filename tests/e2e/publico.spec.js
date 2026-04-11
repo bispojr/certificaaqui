@@ -47,5 +47,7 @@ test('UC-P04 — exibe mensagem para certificado inválido', async ({ page }) =>
     page.waitForNavigation(),
     page.click('button[type="submit"]'),
   ])
-  await expect(page.locator('text=Nenhum certificado foi encontrado')).toBeVisible()
+  await expect(
+    page.locator('text=Nenhum certificado foi encontrado'),
+  ).toBeVisible()
 })

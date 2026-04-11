@@ -30,7 +30,9 @@ test.describe('Navbar do Admin usa layout correto', () => {
       // Verifica se o título contém "Admin"
       await expect(page).toHaveTitle(/Admin/)
       // Verifica se o link da navbar está presente
-      await expect(navbar.locator(`a.nav-link:text-is("${label}")`)).toBeVisible()
+      await expect(
+        navbar.locator(`a.nav-link:text-is("${label}")`),
+      ).toBeVisible()
     })
   }
 })

@@ -42,7 +42,7 @@ describe('tiposCertificadosSSRController', () => {
         expect.objectContaining({
           tipos: [expect.objectContaining({ id: 1, numCertificados: 2 })],
           arquivados: [expect.objectContaining({ id: 2, numCertificados: 1 })],
-        })
+        }),
       )
     })
     it('deve redirecionar e setar flash em caso de erro', async () => {
@@ -67,7 +67,7 @@ describe('tiposCertificadosSSRController', () => {
           tipo: null,
           actionUrl: '/admin/tipos-certificados',
           opcoesCampoDestaque: [{ value: 'nome', selected: true }],
-        })
+        }),
       )
     })
   })
@@ -87,7 +87,7 @@ describe('tiposCertificadosSSRController', () => {
           tipo: { id: 1 },
           actionUrl: '/admin/tipos-certificados/1',
           opcoesCampoDestaque: [{ value: 'nome', selected: true }],
-        })
+        }),
       )
     })
     it('deve redirecionar se tipo não encontrado', async () => {

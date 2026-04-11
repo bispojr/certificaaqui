@@ -33,7 +33,7 @@ describe('usuarioSSRController', () => {
         expect.objectContaining({
           usuarios: [{ id: 1 }],
           arquivados: [{ id: 2 }],
-        })
+        }),
       )
     })
     it('deve redirecionar e setar flash em caso de erro', async () => {
@@ -68,7 +68,7 @@ describe('usuarioSSRController', () => {
           eventos: expect.arrayContaining([
             expect.objectContaining({ id: 1, nome: 'E1' }),
           ]),
-        })
+        }),
       )
     })
   })
@@ -99,7 +99,7 @@ describe('usuarioSSRController', () => {
           eventos: expect.arrayContaining([
             expect.objectContaining({ id: 1, nome: 'E1' }),
           ]),
-        })
+        }),
       )
     })
     it('deve redirecionar se usuario não encontrado', async () => {

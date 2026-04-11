@@ -108,7 +108,10 @@ describe('views/admin/tipos-certificados/form.hbs — integridade do <script>', 
 
   beforeAll(() => {
     const source = fs.readFileSync(
-      path.join(__dirname, '../../../../views/admin/tipos-certificados/form.hbs'),
+      path.join(
+        __dirname,
+        '../../../../views/admin/tipos-certificados/form.hbs',
+      ),
       'utf8',
     )
     template = Handlebars.compile(source)
