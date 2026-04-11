@@ -1,507 +1,464 @@
-## DOMÍNIO 1: INFRAESTRUTURA E CONFIGURAÇÃO
+## DOMÍNIO 1: INTEGRIDADE DE DADOS
 
 **Descrição:**
-Fundação técnica do sistema — schema de banco, configurações de ambiente, containerização e tooling de qualidade de código.
+Garantias de consistência no banco de dados e na camada de serviço — constraints ausentes, race conditions, comportamento incorreto com soft delete e FKs com semântica inadequada.
 
 ---
 
-**FEATURE: Gerenciamento de Schema (Migrations)**
+**FEATURE: Prevenção de Certificados Duplicados**
 
 Descrição:
-Controle versionado do schema do banco de dados via Sequelize migrations, substituindo `sync({ force: true })`.
+O sistema permite criar múltiplos certificados ativos para o mesmo participante no mesmo evento e tipo. Não existe constraint composta no banco nem verificação prévia na camada de serviço.
+
+PRIORIDADE: **CRÍTICA**
 
 TASKS:
 
-- Criar migrations Sequelize para todos os modelos (`participantes`, `eventos`, `tipos_certificados`, `certificados`, `usuarios`)
-- Criar migration de tabela de associação `usuario_eventos` (N:N)
-- Criar migration de índices de performance (`certificados`, `participantes`, `usuarios`)
-- Atualizar setup.js para rodar `db:migrate` em vez de `sync`
+- Criar migration que adiciona índice único parcial `UNIQUE (participante_id, evento_id, tipo_certificado_id) WHERE deleted_at IS NULL` na tabela `certificados`
+- Adicionar verificação de duplicata em `certificadoService.create()` antes de calcular o código, lançando erro 409 com mensagem clara se já existir certificado ativo para a combinação
+- Substituir a geração de código via `COUNT + 1` por query que usa `MAX` sobre o campo `codigo` para o par (evento, tipo), tornando o incremento resistente a soft deletes e a `COUNT` concorrente
 
 ---
 
-**FEATURE: Configuração de Ambiente**
+**FEATURE: Limpeza de Dados Duplicados Existentes**
 
 Descrição:
-Padronização de variáveis de ambiente, remoção de credenciais hard-coded e documentação de setup.
+Certificados duplicados podem já existir no banco antes da constraint ser aplicada. É necessário identificá-los e normalizá-los antes de adicionar o índice único.
+
+PRIORIDADE: **CRÍTICA**
 
 TASKS:
 
-- Criar .env.example com todas as variáveis necessárias
-- Remover fallbacks inseguros em database.js e middlewares JWT
-- Garantir que variáveis obrigatórias lançam erro explícito se ausentes
-- Adicionar .env ao .gitignore
+- Criar script SQL de auditoria que identifica certificados com duplicatas em `(participante_id, evento_id, tipo_certificado_id)` onde `deleted_at IS NULL`
+- Criar script SQL de normalização que cancela (muda `status` para `'cancelado'`) todos os registros duplicados, mantendo apenas o mais recente por grupo
+- Documentar no docs o procedimento de execução dos scripts como pré-requisito da migration de constraint
 
 ---
 
-**FEATURE: Containerização e Isolamento de Ambientes**
+**FEATURE: Correção de FKs com `onDelete: CASCADE` em Entidades com Soft Delete**
 
 Descrição:
-Separação de infraestrutura Docker por ambiente (produção vs. testes).
+As FKs das tabelas `certificados`, `usuario_eventos` e derivadas definem `onDelete: 'CASCADE'`. Entidades com soft delete (paranoid) nunca são hard-deleted pelo Sequelize, mas um hard delete manual no banco eliminaria os registros filhos permanentemente sem possibilidade de restore.
+
+PRIORIDADE: **MÉDIA**
 
 TASKS:
 
-- Separar docker-compose.yml (produção) de docker-compose.test.yml (testes)
-- Garantir que o banco de testes é isolado do banco de desenvolvimento
+- Criar migration que altera `onDelete` das FKs `participante_id`, `evento_id` e `tipo_certificado_id` na tabela `certificados` de `CASCADE` para `RESTRICT`
+- Criar migration equivalente para a FK `evento_id` na tabela `usuario_eventos`
+- Atualizar os testes de integridade referencial para validar o comportamento `RESTRICT`
 
 ---
 
-**FEATURE: Tooling de Qualidade de Código**
+**FEATURE: Índice de Performance em `certificados.tipo_certificado_id`**
 
 Descrição:
-ESLint, Prettier e configuração de package.json para padronização e manutenibilidade.
+A migration de índices de performance cobre `evento_id` e `participante_id`, mas não `tipo_certificado_id`. Consultas filtradas por tipo (ex.: dashboard, relatórios) farão full scan conforme o volume crescer.
+
+PRIORIDADE: **MÉDIA**
 
 TASKS:
 
-- Configurar ESLint com `eslint:recommended`
-- Configurar Prettier (aspas simples, sem ponto-e-vírgula, 2 espaços)
-- Adicionar scripts `lint` e `format` ao package.json
-- Corrigir metadados do package.json (`name`, `description`, `author`)
+- Adicionar índice `idx_certificados_tipo_certificado_id` em nova migration ou complementar a migration 20260324083059-create-performance-indexes.js
+- Garantir que o `down` da migration remove o índice corretamente
 
 ---
 
 ---
 
-## DOMÍNIO 2: AUTENTICAÇÃO E CONTROLE DE ACESSO
+## DOMÍNIO 2: SEGURANÇA
 
 **Descrição:**
-Identidade e autorização no sistema — autenticação JWT para a API JSON, autenticação via cookie para SSR, RBAC por perfil e escopo por evento.
+Riscos identificados com impacto direto em segurança da aplicação e conformidade com OWASP e LGPD: vazamento de dados pessoais em logs, código de bypass de autenticação em produção e store de sessão volátil.
 
 ---
 
-**FEATURE: Autenticação JWT (API)**
+**FEATURE: Remoção de Log com Dados Pessoais (LGPD / OWASP A09)**
 
 Descrição:
-Login/logout via endpoint JSON com geração e validação de tokens JWT.
+pdfService.js emite `console.log('PDFService certificado:', certificado)` antes de gerar o PDF, expondo o objeto completo do certificado — incluindo nome, dados dinâmicos e associações — em stdout em produção.
+
+PRIORIDADE: **CRÍTICA**
 
 TASKS:
 
-- Criar model `Usuario` com campos `nome`, `email`, `senha` (bcrypt), `perfil`
-- Criar `src/middlewares/auth.js` validando JWT e populando `req.usuario`
-- Criar usuarioController.js com `login`, `logout`, `me`
-- Criar usuarios.js com endpoints de autenticação
-- Unificar `JWT_SECRET` sem fallbacks inseguros
-- Aplicar rate limiting em `POST /usuarios/login`
+- Remover o `console.log` da linha 14 de pdfService.js
+- Substituir por log estruturado mínimo (ex.: `console.info('Gerando PDF para certificado id:', certificado.id)`) que registre apenas o ID, sem dados pessoais
 
 ---
 
-**FEATURE: Autenticação SSR (Cookie-based)**
+**FEATURE: Isolamento do Código de Mock de Autenticação**
 
 Descrição:
-Login via formulário web, token armazenado em cookie httpOnly, redirecionamento após autenticação.
+authSSR.js contém dois blocos `if (process.env.NODE_ENV === 'test')` que permitem injetar usuários falsos via header HTTP e via sessão. Se `NODE_ENV` estiver incorretamente configurado em produção, esses bypasses ficam ativos, permitindo autenticação sem credenciais.
+
+PRIORIDADE: **ALTA**
 
 TASKS:
 
-- Criar `src/middlewares/authSSR.js` lendo cookie `token` e populando `res.locals.usuario`
-- Criar `src/routes/auth.js` com rotas `GET/POST /auth/login` e `POST /auth/logout`
-- Configurar `express-session` e `connect-flash` em app.js
-- Registrar rota `/auth` no app.js
+- Remover os dois blocos `if (process.env.NODE_ENV === 'test')` de authSSR.js, deixando apenas o fluxo real de autenticação via cookie/JWT
+- Criar arquivo `tests/middlewares/authSSR.mock.js` (ou equivalente) que exporte um middleware de mock carregado exclusivamente durante os testes
+- Atualizar o setup de testes (setup.js) para registrar o middleware de mock em substituição ao real apenas em `NODE_ENV=test`
+- Verificar e atualizar os testes existentes de authSSR para usar o novo mecanismo de mock
 
 ---
 
-**FEATURE: Controle de Acesso por Perfil (RBAC)**
+**FEATURE: Sessões Persistentes com `connect-pg-simple`**
 
 Descrição:
-Middleware de autorização que restringe acesso a rotas com base nos perfis `admin`, `gestor` e `monitor`.
+A configuração atual de sessão usa `MemoryStore` (padrão do `express-session`), que não persiste entre restarts do processo, não é compartilhável entre múltiplos workers e vaza memória com muitos usuários. O PostgreSQL já está disponível como dependência.
+
+PRIORIDADE: **ALTA**
 
 TASKS:
 
-- Criar rbac.js verificando `req.usuario.perfil`
-- Proteger todas as rotas administrativas com `auth` + `rbac`
-- Garantir que monitor não acessa rotas exclusivas de gestor/admin
-- Garantir que gestor não acessa rotas exclusivas de admin
-
----
-
-**FEATURE: Escopo de Evento (scopedEvento)**
-
-Descrição:
-Middleware que restringe gestores e monitores a operar exclusivamente dentro do(s) evento(s) vinculado(s).
-
-TASKS:
-
-- Corrigir `scopedEvento.js` para usar relação N:N via `req.usuario.getEventos()`
-- Garantir que admin passa sem restrição
-- Garantir que usuário sem evento vinculado recebe 403
-- Atualizar testes de `scopedEvento` para o modelo N:N
+- Instalar `connect-pg-simple` como dependência de produção
+- Configurar `express-session` em app.js para usar `connect-pg-simple` como store, com `conString` via `DATABASE_URL`, `tableName: 'user_sessions'` e `pruneSessionInterval: 900`
+- Definir `cookie.httpOnly: true`, `cookie.secure` condicional a `NODE_ENV === 'production'`, `cookie.sameSite: 'strict'` e `cookie.maxAge` apropriado (ex.: 8 horas)
+- Criar migration que cria a tabela `user_sessions` conforme schema exigido pelo `connect-pg-simple`
+- Adicionar `DATABASE_URL` ao .env.example se ainda não estiver presente
 
 ---
 
 ---
 
-## DOMÍNIO 3: GESTÃO DE CERTIFICADOS
+## DOMÍNIO 3: BACKEND — CAMADA DE SERVIÇO
 
 **Descrição:**
-Core do sistema — emissão, ciclo de vida, interpolação de template, geração de PDF e consulta/validação pública de certificados.
+Problemas de design interno na camada de services e controllers que geram comportamentos silenciosamente incorretos, dificultam testes e introduzem acoplamento entre camadas.
 
 ---
 
-**FEATURE: API REST de Certificados**
+**FEATURE: Correção de Semântica em `eventoService` — `destroy` vs `delete`**
 
 Descrição:
-Endpoints JSON para emissão, consulta, cancelamento, restauração e listagem paginada de certificados.
+eventoService.js expõe dois métodos com comportamentos diferentes para a mesma operação de soft delete: `destroy()` não remove associações `UsuarioEvento`; `delete()` remove com cascata. Se o controller invocar `destroy()` por engano, as associações ficam órfãs silenciosamente.
+
+PRIORIDADE: **ALTA**
 
 TASKS:
 
-- Criar certificadoService.js com operações de CRUD + cancel + restore
-- Criar certificadoController.js delegando ao service
-- Criar certificados.js com rotas REST completas
-- Adicionar paginação (`findAndCountAll`) com resposta `{ data, meta }`
-- Validar `valores_dinamicos` contra `dados_dinamicos` do tipo antes de criar
+- Renomear o método `delete()` de eventoService.js para `softDelete()` para explicitar a semântica com cascata em `UsuarioEvento`
+- Remover o método `destroy()` público de eventoService.js (ou torná-lo privado/interno sem exposição no módulo)
+- Mover o `require('../../src/models')` inline de dentro das funções para o topo do arquivo como import estático
+- Atualizar o controller SSR de eventos para chamar `softDelete()` em vez do método anterior
+- Atualizar os testes de `eventoService` para cobrir o comportamento de cascata em `UsuarioEvento`
 
 ---
 
-**FEATURE: Interpolação de Template**
+**FEATURE: Eliminação de `require()` Inline em Services**
 
 Descrição:
-Substituição de variáveis do `texto_base` com `valores_dinamicos` do certificado para gerar o texto final.
+eventoService.js executa `require('../../src/models')` dentro do corpo de funções assíncronas. Além de ser um anti-pattern de Node.js (dificulta mock em testes), o path relativo profundo é frágil.
+
+PRIORIDADE: **MÉDIA**
 
 TASKS:
 
-- Criar templateService.js com interpolação via regex `\$\{(\w+)\}`
-- Criar testes unitários do `templateService`
-- Integrar `templateService` ao `certificadoService` e ao controller de detalhe SSR
+- Mover todos os `require` de eventoService.js para o topo do arquivo
+- Verificar se outros services (`certificadoService`, `participanteService`, etc.) têm o mesmo padrão e corrigir onde encontrado
+- Verificar se certificadoSSRController.js contém `require()` inline (ex.: `templateService` dentro da função `detalhe`) e movê-lo para o escopo do módulo
 
 ---
 
-**FEATURE: Geração de PDF**
+**FEATURE: Consolidação das Queries de Listagem no Service Layer**
 
 Descrição:
-Geração on-the-fly de PDF do certificado via PDFKit, devolvido diretamente no corpo da resposta HTTP.
+certificadoSSRController.js acessa `Certificado.findAll()` diretamente em múltiplos pontos da função `index()`, contornando `certificadoService`. A lógica de filtragem por `eventoIds` do usuário está duplicada no controller em vez de estar centralizada no service.
+
+PRIORIDADE: **MÉDIA**
 
 TASKS:
 
-- Instalar `pdfkit`
-- Criar pdfService.js retornando `Promise<Buffer>`
-- Adicionar rota `GET /public/certificados/:id/pdf` retornando o buffer com `Content-Type: application/pdf`
-- Rejeitar geração para certificados sem `codigo` válido
-- Criar smoke tests do `pdfService`
+- Adicionar método `findAllSSR({ where, include, eventoIds })` em certificadoService.js que centralize a query de listagem com suporte a filtros e escopo por evento
+- Refatorar `certificadoSSRController.index()` para usar o novo método do service em vez de chamar `Certificado.findAll()` diretamente
+- Extrair a função `getEventoIds(req)` de certificadoSSRController.js para um helper reutilizável (ex.: `src/utils/getScopedEventoIds.js`) acessível por todos os controllers SSR que precisam de filtragem por escopo
 
 ---
 
-**FEATURE: Consulta e Validação Pública**
-
-Descrição:
-Rotas públicas (sem autenticação) para participantes buscarem e validarem certificados.
-
-TASKS:
-
-- Criar public.js com `GET /public/certificados?email=` e `GET /public/validar/:codigo`
-- Adicionar rotas SSR públicas (`/public/pagina/opcoes`, `/public/pagina/obter`, `/public/pagina/validar`)
-- Criar views Handlebars do fluxo público (`opcoes.hbs`, `form-obter.hbs`, `form-validar.hbs`, `obter-lista.hbs`, `validar-resultado.hbs`)
-
 ---
 
-## DOMÍNIO 4: GESTÃO DE ENTIDADES ADMINISTRATIVAS
+## DOMÍNIO 4: FRONTEND / UX ADMIN
 
 **Descrição:**
-CRUD das entidades principais do sistema — participantes, eventos, tipos de certificados e usuários — acessíveis via API REST e interface web administrativa.
+Bugs de interface, inconsistências visuais e problemas de usabilidade no painel administrativo que afetam diretamente a operação diária de admins, gestores e monitores.
 
 ---
 
-**FEATURE: Gestão de Participantes**
+**FEATURE: Correção de Bugs Estruturais nas Views**
 
 Descrição:
-Cadastro, consulta, atualização e remoção lógica de participantes, com busca por nome/email e contagem de certificados vinculados.
+Dois bugs confirmados com impacto imediato na usabilidade: mensagem de feedback aparece duplicada em múltiplas páginas, e o botão "Remover" da tabela de certificados está renderizado na coluna errada.
+
+PRIORIDADE: **CRÍTICA**
 
 TASKS:
 
-- Criar participanteService.js com CRUD + soft delete + restore
-- Criar participanteController.js com paginação
-- Criar participantes.js com rotas REST completas
-- Criar `src/controllers/participanteSSRController.js` com busca `?q=` e contagem de certificados
-- Criar views `admin/participantes/index.hbs` e `admin/participantes/form.hbs`
-- Adicionar rotas SSR de participantes em `src/routes/admin.js`
+- Remover os blocos `{{#if flash.success}}` e `{{#if flash.error}}` locais de index.hbs, index.hbs e index.hbs — o layout admin.hbs já renderiza flash globalmente
+- Mover o `<form method="POST" action="/admin/certificados/{{id}}/deletar">` de dentro do `<td>` de status para dentro do `<td>` de ações em index.hbs
 
 ---
 
-**FEATURE: Gestão de Eventos**
+**FEATURE: Padronização do Sistema de Ações nas Tabelas**
 
 Descrição:
-Cadastro e gerenciamento de eventos com código base único, incluindo cascata de soft delete/restore nas associações `usuario_eventos`.
+A mesma operação de soft delete usa labels e cores diferentes entre as páginas: `btn-danger` + "Remover" em certificados, participantes e eventos; `btn-warning` + "Arquivar" em usuários e tipos de certificados. O usuário não consegue prever o comportamento.
+
+PRIORIDADE: **ALTA**
 
 TASKS:
 
-- Criar eventoService.js com CRUD + soft delete + restore com cascata em `usuario_eventos`
-- Criar eventoController.js com paginação
-- Criar eventos.js com rotas REST completas
-- Corrigir `eventoService.delete` para usar `UsuarioEvento.destroy` (paranoid)
-- Corrigir `eventoService.restore` para restaurar associações `UsuarioEvento`
-- Criar `src/controllers/eventoSSRController.js` com listagem de arquivados
-- Criar views `admin/eventos/index.hbs` e `admin/eventos/form.hbs`
-- Adicionar rotas SSR de eventos em `src/routes/admin.js`
+- Definir e documentar o padrão visual de ações no projeto: `btn-outline-primary` (Ver), `btn-outline-secondary` (Editar), `btn-outline-warning` (Cancelar — reversível), `btn-outline-danger` (Arquivar — soft delete), `btn-outline-success` (Restaurar)
+- Aplicar o padrão unificado em index.hbs — ajustar cores e labels dos botões de ação
+- Aplicar o padrão unificado em index.hbs
+- Aplicar o padrão unificado em index.hbs
+- Aplicar o padrão unificado em index.hbs
+- Aplicar o padrão unificado em index.hbs
+- Unificar o label da ação de soft delete para "Arquivar" em todas as páginas (substituir "Remover" onde aplicável), mantendo o `title` descritivo no botão
 
 ---
 
-**FEATURE: Gestão de Tipos de Certificados**
+**FEATURE: Busca por Texto em Listagens sem Busca**
 
 Descrição:
-Criação e edição de modelos de certificados parametrizáveis com campos dinâmicos JSONB, template de texto e campo destaque.
+A listagem de participantes já possui busca `?q=`. As listagens de certificados, eventos e usuários não possuem campo de busca, obrigando o operador a rolar toda a tabela para localizar um registro.
+
+PRIORIDADE: **ALTA**
 
 TASKS:
 
-- Criar tiposCertificadosService.js com CRUD + soft delete + restore
-- Criar tiposCertificadosController.js com paginação
-- Criar tipos-certificados.js com rotas REST completas
-- Corrigir validação cross-field de `campo_destaque` via hook `beforeValidate`
-- Criar `src/controllers/tiposCertificadosSSRController.js` com parse de `dados_dinamicos` JSON
-- Criar views `admin/tipos-certificados/index.hbs` e `admin/tipos-certificados/form.hbs` (editor dinâmico com preview ao vivo)
-- Adicionar rotas SSR de tipos em `src/routes/admin.js`
+- Adicionar campo de busca `?q=` na listagem de certificados (index.hbs e `certificadoSSRController.index()`), filtrando por `nome` e `codigo` via `ILIKE`
+- Adicionar campo de busca `?q=` na listagem de eventos (index.hbs e `eventoSSRController.index()`), filtrando por `nome` e `codigo_base` via `ILIKE`
+- Adicionar campo de busca `?q=` na listagem de usuários (index.hbs e `usuarioSSRController.index()`), filtrando por `nome` e `email` via `ILIKE`
 
 ---
 
-**FEATURE: Gestão de Usuários (Admin)**
+**FEATURE: Melhoria da Navbar Administrativa**
 
 Descrição:
-CRUD de usuários com controle de perfil, hash de senha, vinculação a eventos via relação N:N e gestão de soft delete.
+A navbar admin é puramente textual, sem ícone, sem indicação de item ativo, com label "Tipos" truncado, e sem link para a área pública. A ausência de hierarquia visual dificulta a navegação.
+
+PRIORIDADE: **BAIXA**
 
 TASKS:
 
-- Criar `src/services/usuarioService.js` com CRUD + soft delete + restore
-- Criar usuarioController.js com `login`, `logout`, `me`, CRUD admin
-- Criar vinculação N:N usuário-evento via `UsuarioEvento` (migration + model)
-- Criar `src/controllers/usuarioSSRController.js` com `setEventos` e exibição de eventos vinculados
-- Criar views `admin/usuarios/index.hbs` e `admin/usuarios/form.hbs` (checkbox de eventos, campo senha opcional em edição)
-- Adicionar rotas SSR de usuários em `src/routes/admin.js`
+- Adicionar Font Awesome 6 via CDN no `<head>` do layout admin.hbs
+- Adicionar ícone a cada item de navegação da navbar: Dashboard (`fa-house`), Certificados (`fa-award`), Participantes (`fa-users`), Eventos (`fa-calendar-days`), Tipos de Certificados (`fa-tags`), Usuários (`fa-user-gear`)
+- Expandir o label "Tipos" para "Tipos de Certificados" na navbar para evitar ambiguidade
+- Implementar classe `active` no item de navegação correspondente à rota atual, usando comparação de `req.path` disponível via `res.locals` (registrar em middleware global) ou via helper Handlebars
+- Adicionar link "Área Pública" na navbar apontando para `/` (ou `/public/pagina/opcoes`), visível para todos os perfis
+- Adicionar separador visual (`<hr class="dropdown-divider">` ou `<li class="nav-item">|</li>`) entre os grupos de navegação e o bloco de conta do usuário
 
 ---
 
----
-
-## DOMÍNIO 5: INTERFACE WEB (SSR / Handlebars)
+## DOMÍNIO 5: PERFORMANCE E ESCALABILIDADE
 
 **Descrição:**
-Camada de apresentação server-side rendered — layouts, fluxo público de certificados, painel administrativo e dashboard com métricas por perfil.
+Gargalos de carregamento identificados nas listagens SSR que não usam limite de registros, gerando potencial spike de memória e timeout sob volume real de dados.
 
 ---
 
-**FEATURE: Layouts e Estrutura Base**
+**FEATURE: Paginação Server-Side nas Listagens do Painel Admin**
 
 Descrição:
-Layout público com Bootstrap 5 e navbar, layout administrativo com sidebar condicional por perfil, e página de erro estilizada.
+Todos os controllers SSR de listagem usam `findAll()` sem `limit`, carregando todos os registros do banco para renderizar a página. Com volume crescente, cada page load pode trazer milhares de linhas.
+
+PRIORIDADE: **ALTA**
 
 TASKS:
 
-- Atualizar layout.hbs com Bootstrap 5 via CDN, navbar pública e slot de flash messages
-- Criar admin.hbs com navbar administrativa, links condicionais por perfil e botão de logout
-- Atualizar error.hbs com Bootstrap e botão "Voltar ao início"
-- Registrar `express-session` e `connect-flash` no app.js
+- Implementar paginação em `certificadoSSRController.index()`: substituir `Certificado.findAll()` por `Certificado.findAndCountAll({ limit: 20, offset, order: [['created_at', 'DESC']] })`, extraindo `page` de `req.query.page`
+- Implementar paginação equivalente em `participanteSSRController.index()`
+- Implementar paginação equivalente em `eventoSSRController.index()`
+- Implementar paginação equivalente em `usuarioSSRController.index()`
+- Criar helper Handlebars `pagination` (ou equivalente) que renderize controles de navegação Anterior / Página X de Y / Próxima, preservando query params existentes (filtros, busca)
+- Atualizar as views de listagem (`certificados/index.hbs`, `participantes/index.hbs`, `eventos/index.hbs`, `usuarios/index.hbs`) para renderizar os controles de paginação abaixo da tabela
 
 ---
 
-**FEATURE: Dashboard Administrativo**
+**FEATURE: Redução do Número de Queries por Page Load na Listagem de Certificados**
 
 Descrição:
-Painel inicial pós-login exibindo métricas de contagem condicionais ao perfil do usuário autenticado.
+`certificadoSSRController.index()` executa 5–6 queries a cada request: escopo de evento, ativos, arquivados, eventos (filtro) e tipos (filtro). As queries de `Evento.findAll()` e `TiposCertificados.findAll()` para popular os selects de filtro não mudam com frequência e poderiam ser cacheadas.
+
+PRIORIDADE: **MÉDIA**
 
 TASKS:
 
-- Criar `src/controllers/dashboardController.js` com contagens por perfil (admin: 4 cards; gestor/monitor: 2 cards)
-- Criar `views/admin/dashboard.hbs` com cards Bootstrap condicionais
-- Criar `src/routes/admin.js` com rota `GET /admin/dashboard` protegida por `authSSR`
-- Registrar rota `/admin` no app.js
-
----
-
-**FEATURE: Fluxo Público de Certificados (SSR)**
-
-Descrição:
-Páginas web para o participante buscar certificados por e-mail e validar autenticidade por código, sem necessidade de login.
-
-TASKS:
-
-- Criar views estáticas do fluxo (`opcoes.hbs`, `form-obter.hbs`, `form-validar.hbs`)
-- Criar views de resultado (`obter-lista.hbs`, `validar-resultado.hbs`)
-- Adicionar rotas SSR em public.js (GET de páginas + POST de formulários)
-- Integrar formulário de busca com spinner de loading
-
----
-
-**FEATURE: Painel Administrativo — Views de Gestão**
-
-Descrição:
-Conjunto completo de views CRUD para todas as entidades no painel admin, com filtros, seções de arquivados, modais de confirmação e formulários dinâmicos.
-
-TASKS:
-
-- Criar views de gestão de eventos (`index.hbs`, `form.hbs`)
-- Criar views de gestão de participantes com busca `?q=` e coluna de contagem de certificados
-- Criar views de gestão de certificados com filtros por evento/status/tipo e modal de cancelamento Bootstrap
-- Criar view de detalhe de certificado com texto interpolado e link de PDF
-- Criar view de formulário de certificado com campos dinâmicos carregados via `fetch`
-- Criar views de gestão de tipos de certificados com editor JSONB e preview ao vivo
-- Criar views de gestão de usuários com checkboxes de eventos e campo senha opcional em edição
+- Identificar se as queries de `Evento.findAll()` e `TiposCertificados.findAll()` no controller de listagem de certificados têm necessidade de ser frescas a cada request ou podem ser cacheadas em memória por um TTL curto (ex.: 60 segundos)
+- Implementar cache simples em memória (objeto JS com `timestamp + data`) para as listas de eventos e tipos usadas nos selects de filtro, invalidado após TTL ou após create/update/delete de evento ou tipo
 
 ---
 
 ---
 
-## DOMÍNIO 6: QUALIDADE E TESTES
+## DOMÍNIO 6: DASHBOARD ADMINISTRATIVO
 
 **Descrição:**
-Cobertura de testes em todos os níveis — unitários de service, integração de controller/rota, migração de schema e E2E de interface com Playwright.
+O dashboard atual exibe apenas contadores estáticos sem valor operacional. Faltam métricas que permitam ao admin entender o estado real do sistema e ao gestor acompanhar o progresso do seu evento.
 
 ---
 
-**FEATURE: Testes Unitários (Services e Validators)**
+**FEATURE: Enriquecimento do Dashboard Admin**
 
 Descrição:
-Testes isolados da lógica de negócio sem acesso ao banco, usando mocks dos models Sequelize.
+O perfil admin vê 4 cards de contagem (eventos, tipos, participantes, usuários), mas não tem visibilidade sobre certificados — a entidade central do sistema — nem sobre atividade recente.
+
+PRIORIDADE: **ALTA**
 
 TASKS:
 
-- Criar testes para `templateService` (interpolação, campos ausentes, `valores_dinamicos` vazio)
-- Criar testes para `pdfService` (buffer não-vazio, assinatura `%PDF`, rejeição sem `codigo`)
-- Criar testes para `certificadoService.create` com validação de `valores_dinamicos` vs `dados_dinamicos`
-- Criar testes de paginação para todos os services (`findAndCountAll`, formato `{ data, meta }`)
-- Criar testes para `eventoService.delete` e `restore` com cascata de `UsuarioEvento`
+- Adicionar card "Total de Certificados" ao dashboard admin, com contagem via `Certificado.count()`
+- Adicionar card "Certificados com status pendente" para visibilidade operacional imediata
+- Adicionar seção "Últimos 5 certificados emitidos" como tabela resumida (nome, evento, tipo, data), com query `findAll({ limit: 5, order: [['created_at', 'DESC']] })`
+- Atualizar dashboardController.js para incluir as novas queries no bloco `Promise.all()` do perfil admin
+- Atualizar dashboard.hbs para renderizar o novo card de certificados e a tabela de últimos emitidos no bloco `{{#if usuario.isAdmin}}`
 
 ---
 
-**FEATURE: Testes de Integração (Controllers e Rotas)**
+**FEATURE: Enriquecimento do Dashboard Gestor/Monitor**
 
 Descrição:
-Testes de rotas HTTP com banco de testes dedicado, cobrindo casos de sucesso, validação (400/422) e not found (404).
+Gestores e monitores veem apenas total de certificados e total de participantes dentro do seu escopo. Falta granularidade por tipo de certificado para gestão efetiva do evento.
+
+PRIORIDADE: **MÉDIA**
 
 TASKS:
 
-- Criar testes de rota para todos os recursos REST (`participantes`, `eventos`, `certificados`, `tipos-certificados`, `usuarios`)
-- Criar testes de autenticação e RBAC (401, 403)
-- Criar testes de `scopedEvento` para modelo N:N
-- Criar testes de rotas públicas (`/public/certificados`, `/public/validar/:codigo`)
-- Criar testes de `auth.js` middleware (token válido, inválido, ausente)
+- Adicionar ao dashboard gestor/monitor uma listagem de certificados por tipo (ex.: Palestra: 42, Minicurso: 17), usando `Certificado.findAll({ where: eventoWhere, attributes: ['tipo_certificado_id', [fn('COUNT', ...), 'total']], group: ['tipo_certificado_id'], include: [TiposCertificados] })`
+- Adicionar seção "Últimos 5 certificados emitidos" escopada ao(s) evento(s) do gestor/monitor
+- Atualizar dashboardController.js para computar as novas métricas no bloco de gestor/monitor
+- Atualizar dashboard.hbs para renderizar a tabela por tipo e os últimos certificados no bloco `{{else}}` (gestor/monitor)
 
 ---
 
-**FEATURE: Testes de Migração**
-
-Descrição:
-Verificação de que todas as migrations `up`/`down` executam sem erros e produzem o schema esperado.
-
-TASKS:
-
-- Criar testes de migration para `certificados`, `participantes`, `eventos`, `tipos_certificados`, `usuarios`
-- Verificar que `down` desfaz corretamente cada migration
-- Verificar que índices são criados e removidos pela migration de performance
-
----
-
-**FEATURE: Testes E2E com Playwright**
-
-Descrição:
-Testes de interface browser automatizados cobrindo os três fluxos principais: público, autenticação/RBAC e administração.
-
-TASKS:
-
-- Instalar e configurar `@playwright/test` com `playwright.config.js`
-- Criar seed E2E (`tests/e2e/setup/seed.js`) com dados mínimos por perfil
-- Criar helpers `loginAs` e `createViaApi` para reutilização entre suites
-- Criar `publico.spec.js` — UC-P01 a UC-P10 (fluxo público de certificados)
-- Criar `auth.spec.js` — UC-A01 a UC-A11 (login, logout, RBAC por perfil)
-- Criar `admin.spec.js` — UC-AD01 a UC-AD10 (CRUD completo via painel admin)
-
----
-
----
-
-## DOMÍNIO 7: DOCUMENTAÇÃO E RASTREABILIDADE
+## DOMÍNIO 7: ARQUITETURA E ORGANIZAÇÃO DE CÓDIGO
 
 **Descrição:**
-Documentação técnica do sistema — especificações, ADRs, guias de desenvolvimento/deploy e documentação de API.
+Problemas de design transversal que afetam múltiplas camadas simultaneamente: lógica de escopo de evento duplicada entre controllers, falta de separação clara entre responsabilidades e acoplamento que dificulta evolução segura do sistema.
 
 ---
 
-**FEATURE: Documentação de Arquitetura (ADRs)**
+**FEATURE: Helper de Escopo de Evento Reutilizável**
 
 Descrição:
-Registros de decisões arquiteturais explicando o porquê das escolhas técnicas mais relevantes.
+A lógica de "obter IDs de eventos acessíveis pelo usuário autenticado" está duplicada de forma levemente diferente em certificadoSSRController.js (via `UsuarioEvento.findAll`) e em participanteSSRController.js (via `Usuario.findByPk` com include). Qualquer novo controller SSR terá que reimplementar a mesma lógica, acumulando divergências silenciosas.
+
+PRIORIDADE: **ALTA**
 
 TASKS:
 
-- Criar ADR-001: escolha do ORM Sequelize
-- Criar ADR-002: soft delete via `paranoid`
-- Criar ADR-003: uso de JSONB para `dados_dinamicos`
-- Criar ADR-004: engine de geração de PDF (PDFKit vs. Puppeteer)
-- Criar ADR-005: vínculo usuário-evento N:N via `usuario_eventos`
-- Criar ADR-006: estratégia de paginação offset-based
-- Criar ADR-007: onde validar `valores_dinamicos` (service vs. model vs. validator)
-- Criar ADR-008: armazenamento de PDFs (on-the-fly vs. S3/disco)
+- Criar utilitário `src/utils/getScopedEventoIds.js` que receba `req.usuario` e retorne `null` para admin ou um array de IDs de eventos para gestor/monitor, usando uma única estratégia de query consistente
+- Refatorar certificadoSSRController.js para usar `getScopedEventoIds` em substituição à função local `getEventoIds`
+- Refatorar participanteSSRController.js para usar `getScopedEventoIds` em substituição à query inline de escopo
+- Verificar demais controllers SSR (`eventoSSRController`, `tiposCertificadosSSRController`) e aplicar o mesmo utilitário onde aplicável
+- Cobrir `getScopedEventoIds` com testes unitários para os três casos: admin (retorna null), gestor com eventos vinculados e gestor sem eventos vinculados
 
 ---
 
-**FEATURE: Documentação Técnica Geral**
+**FEATURE: Remoção de Acoplamento de Path em Services**
 
 Descrição:
-Guias de referência para desenvolvedores e operadores do sistema.
+eventoService.js executa imports via `require('../../src/models')` dentro do corpo de funções. O path relativo `../../src/models` a partir de services está errado semanticamente (aponta para fora e volta), é frágil a reorganizações de diretório e impede mock eficaz em testes unitários.
+
+PRIORIDADE: **MÉDIA**
 
 TASKS:
 
-- Criar visao-geral.md — descrição, stakeholders, glossário
-- Criar arquitetura.md — diagramas C4 em Mermaid
-- Criar modulos.md — entidades, campos, regras
-- Criar desenvolvimento.md — setup local, variáveis, como rodar testes
-- Criar deploy.md — Docker, migrations em produção
+- Auditar todos os arquivos em services e controllers em busca de `require()` fora do topo do módulo
+- Mover todos os `require()` encontrados inline para o topo do respectivo arquivo
+- Corrigir o path `../../src/models` em eventoService.js para o caminho relativo correto a partir de services (`../models`)
+- Verificar se certificadoSSRController.js contém `require('../services/templateService')` dentro da função `detalhe` e movê-lo para o topo do arquivo
 
 ---
 
-**FEATURE: Documentação de API (Swagger/OpenAPI)**
+**FEATURE: Consolidação entre `destroy` e `delete` no `eventoService`**
 
 Descrição:
-Interface interativa de documentação dos endpoints REST disponível em `/api-docs`.
+eventoService.js expõe dois métodos públicos com semânticas divergentes para a mesma operação: `destroy()` faz apenas soft delete no evento; `delete()` faz soft delete e cascata em `UsuarioEvento`. Qualquer chamada ao método errado produz inconsistência silenciosa no banco.
+
+PRIORIDADE: **ALTA**
 
 TASKS:
 
-- Instalar `swagger-jsdoc` e `swagger-ui-express`
-- Adicionar anotações `@swagger` (JSDoc) em todas as rotas
-- Expor interface em `GET /api-docs`
+- Renomear `delete()` para `softDelete()` em eventoService.js para explicitar a cascata
+- Remover ou tornar privado (não exportado) o método `destroy()` em eventoService.js, prevenindo uso acidental
+- Atualizar `eventoSSRController.js` para chamar `softDelete()` no lugar do método anterior
+- Atualizar `eventoController.js` (API REST) para chamar `softDelete()` no lugar do método anterior
+- Atualizar todos os testes de `eventoService` para refletir a nova nomenclatura e validar que a cascata em `UsuarioEvento` ocorre corretamente
 
 ---
 
 ---
 
-## DOMÍNIO 8: MONITORAMENTO E OPERAÇÕES
+## DOMÍNIO 8: TESTES
 
 **Descrição:**
-Observabilidade e operações da aplicação em produção — health check, validação de entrada e migração de arquivos legados.
+Lacunas de cobertura identificadas na auditoria que comprometem a capacidade de refatorar o sistema com segurança: ausência de testes para controllers SSR, ausência de testes de constraint de integridade e ausência de testes para o novo utilitário de escopo.
 
 ---
 
-**FEATURE: Health Check**
+**FEATURE: Testes de Integração para Controllers SSR**
 
 Descrição:
-Endpoint de monitoramento que reporta status da aplicação e conectividade com o banco de dados.
+Os controllers SSR (`certificadoSSRController`, `participanteSSRController`, `eventoSSRController`, `usuarioSSRController`) não possuem testes. Qualquer refatoração ou adição de feature nesses controllers não tem cobertura de regressão, aumentando o risco de quebras silenciosas.
+
+PRIORIDADE: **ALTA**
 
 TASKS:
 
-- Criar `GET /health` retornando `{ status, db, uptime }`
-- Retornar HTTP 503 quando o banco estiver indisponível
-- Criar testes de rota para o health check
+- Criar testes de integração para `certificadoSSRController`: cobrir `index` (listagem com e sem filtros), `criar` (sucesso e duplicata), `cancelar` e `deletar`
+- Criar testes de integração para `participanteSSRController`: cobrir `index` (com e sem busca `?q=`), `criar` e `deletar`
+- Criar testes de integração para `eventoSSRController`: cobrir `index`, `criar` e `deletar` com validação da cascata em `UsuarioEvento`
+- Criar testes de integração para `usuarioSSRController`: cobrir `index`, `criar` e `deletar`
+- Garantir que os testes SSR usam o middleware de mock de autenticação separado (`tests/middlewares/authSSR.mock.js`) e não dependem de authSSR.js de produção
 
 ---
 
-**FEATURE: Validação de Entrada (Zod)**
+**FEATURE: Testes de Constraint de Integridade em Certificados**
 
 Descrição:
-Schemas de validação aplicados nas rotas `POST`/`PUT` para rejeitar payloads malformados antes de chegar ao controller.
+A nova constraint única parcial `UNIQUE (participante_id, evento_id, tipo_certificado_id) WHERE deleted_at IS NULL` e a verificação de duplicata em `certificadoService.create()` precisam de cobertura de teste específica para garantir que o comportamento se mantém após futuras migrações ou refatorações do service.
+
+PRIORIDADE: **ALTA**
 
 TASKS:
 
-- Criar schemas Zod em validators para cada recurso
-- Criar middleware de validação `src/middlewares/validate.js`
-- Aplicar middleware nas rotas de criação e atualização
-- Garantir que erros retornam 400 com lista de campos inválidos
+- Criar teste de unidade em `certificadoService` que verifica que `create()` lança erro 409 ao tentar criar certificado com `(participante_id, evento_id, tipo_certificado_id)` já existente e ativo
+- Criar teste de unidade que verifica que `create()` **não** lança erro quando o certificado existente com a mesma combinação está com `deleted_at` preenchido (soft-deleted)
+- Criar teste de integração que verifica que a constraint de banco rejeita inserção direta via SQL de certificado duplicado ativo
+- Criar teste que verifica que a geração de código via `MAX` não repete o incremento ao restaurar um certificado previamente deletado
 
 ---
 
-**FEATURE: Migração de Arquivos Legados**
+**FEATURE: Testes de Sessão com Store Persistente**
 
 Descrição:
-Reorganização de arquivos de middleware e rotas do diretório raiz para src, removendo código legado.
+Após a substituição do `MemoryStore` por `connect-pg-simple`, o comportamento da sessão em cenários de restart e de múltiplos requests precisa de cobertura de teste para garantir que a configuração está correta.
+
+PRIORIDADE: **MÉDIA**
 
 TASKS:
 
-- Criar `src/middlewares/auth.js` substituindo auth.js
-- Atualizar todos os imports de `auth` em rotas e testes
-- Remover auth.js após migração completa
-- Substituir carregamento dinâmico em `models/index.js` por registro explícito
+- Criar teste de integração que verifica que uma sessão autenticada permanece válida após simulação de reinicialização do store (recriação da conexão)
+- Criar teste que verifica que `cookie.httpOnly` está definido como `true` nos cabeçalhos de resposta do login
+- Criar teste que verifica que `cookie.secure` não está presente em ambiente de teste (`NODE_ENV=test`) e está presente em ambiente de produção
 
 ---
+
+---
+
+## Visão Consolidada dos Domínios
+
+| # | Domínio | Features | Prioridade Máxima |
+|---|---------|----------|-------------------|
+| 1 | Integridade de Dados | 4 | CRÍTICA |
+| 2 | Segurança | 3 | CRÍTICA |
+| 3 | Backend — Camada de Serviço | 3 | ALTA |
+| 4 | Frontend / UX Admin | 4 | CRÍTICA |
+| 5 | Performance e Escalabilidade | 2 | ALTA |
+| 6 | Dashboard Administrativo | 2 | ALTA |
+| 7 | Arquitetura e Organização | 3 | ALTA |
+| 8 | Testes | 3 | ALTA |
+
+**Total: 8 domínios · 24 features**
