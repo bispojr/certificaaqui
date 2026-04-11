@@ -1,5 +1,5 @@
 // Service para lógica de negócio de Certificado
-const { Certificado, TiposCertificados } = require('../../src/models')
+const { Certificado, TiposCertificados, Evento } = require('../../src/models')
 
 module.exports = {
   async cancel(id) {
@@ -35,6 +35,13 @@ module.exports = {
       throw err
     }
 
+    const evento = await Evento.findByPk(data.evento_id)
+    if (!evento) {
+      const err = new Error('Evento não encontrado')
+      err.statusCode = 404
+      throw err
+    }
+
     const camposEsperados = Object.keys(tipo.dados_dinamicos || {})
     const valoresRecebidos = data.valores_dinamicos || {}
     const camposFaltantes = camposEsperados.filter(
@@ -47,6 +54,21 @@ module.exports = {
       err.camposFaltantes = camposFaltantes
       throw err
     }
+
+    // Geração do código de validação
+    const eventCode = evento.codigo_base; // Ex: 'EDC'
+    const year = evento.ano.toString().slice(-2); // Ex: '25'
+    const tipoCode = tipo.codigo; // Ex: 'PT'
+    // Buscar o número incremental
+    const count = await Certificado.count({
+      where: {
+        evento_id: data.evento_id,
+        tipo_certificado_id: data.tipo_certificado_id,
+      },
+    });
+    const incremental = count + 1;
+    const validationCode = `${eventCode}-${year}-${tipoCode}-${incremental}`;
+    data.codigo = validationCode;
 
     return Certificado.create(data)
   },
