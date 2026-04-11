@@ -1,4 +1,4 @@
-# DASH-ADMIN-001 — Adicionar queries de certificados ao dashboardController (admin)
+# [x] DASH-ADMIN-001 — Adicionar queries de certificados ao dashboardController (admin) — concluída em 2026-04-11 19:16 (BRT)
 
 ## Identificador
 DASH-ADMIN-001

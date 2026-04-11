@@ -14,13 +14,32 @@ async function dashboard(req, res) {
     const { perfil } = req.usuario
 
     if (perfil === 'admin') {
-      const [totalEventos, totalTipos, totalParticipantes, totalUsuarios] =
-        await Promise.all([
-          Evento.count(),
-          TiposCertificados.count(),
-          Participante.count(),
-          Usuario.count(),
-        ])
+      const [
+        totalEventos,
+        totalTipos,
+        totalParticipantes,
+        totalUsuarios,
+        totalCertificados,
+        totalCertificadosPendentes,
+        ultimosCertificados,
+      ] = await Promise.all([
+        Evento.count(),
+        TiposCertificados.count(),
+        Participante.count(),
+        Usuario.count(),
+        Certificado.count(),
+        Certificado.count({ where: { status: 'pendente' } }),
+        Certificado.findAll({
+          limit: 5,
+          order: [['created_at', 'DESC']],
+          include: [
+            { model: Participante, attributes: ['nomeCompleto'] },
+            { model: Evento, attributes: ['nome'] },
+            { model: TiposCertificados, attributes: ['descricao'] },
+          ],
+          attributes: ['id', 'codigo', 'status', 'created_at'],
+        }),
+      ])
       return res.render('admin/dashboard', {
         layout: 'layouts/admin',
         title: 'Dashboard',
@@ -28,6 +47,9 @@ async function dashboard(req, res) {
         totalTipos,
         totalParticipantes,
         totalUsuarios,
+        totalCertificados,
+        totalCertificadosPendentes,
+        ultimosCertificados,
       })
     }
 
