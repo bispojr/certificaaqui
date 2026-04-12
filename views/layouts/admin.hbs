@@ -66,35 +66,52 @@
     <nav class='navbar navbar-expand-lg navbar-light bg-light'>
       <div class='container-fluid'>
         <a class='navbar-brand text-black' href='/admin/dashboard'>Certifique-me Admin</a>
-        <div class='navbar-nav me-auto'>
-          <a class='nav-link text-black' href='/admin/eventos'>
-            <i class="fa-solid fa-calendar-days me-1 text-primary"></i> Eventos
-          </a>
-          {{#if (or usuario.isAdmin usuario.isGestor)}}
-          <a class='nav-link text-black' href='/admin/tipos-certificados'>
-            <i class="fa-solid fa-certificate me-1 text-success"></i> Tipos
-          </a>
-          {{/if}}
-          <a class='nav-link text-black' href='/admin/participantes'>
-            <i class="fa-solid fa-users me-1 text-success"></i> Participantes
-          </a>
-          <a class='nav-link text-black' href='/admin/certificados'>
-            <i class="fa-solid fa-file-lines me-1 text-info"></i> Certificados
-          </a>
-          {{#if usuario.isAdmin}}
-            <a class='nav-link text-black' href='/admin/usuarios'>
-              <i class="fa-solid fa-user-shield me-1 text-danger"></i> Usuários
-            </a>
-          {{/if}}
-        </div>
-        <div class='navbar-nav'>
-          <span class='navbar-text text-black me-3'>{{usuario.nome}}
-            ({{usuario.perfil}})</span>
-          <form action='/auth/logout' method='POST' class='d-inline'>
-            <button type='submit' class='btn btn-sm btn-outline-dark'>
-              Sair
-            </button>
-          </form>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarAdmin" aria-controls="navbarAdmin" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarAdmin">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <!-- Certificação -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle text-black" href="#" id="navbarCertificacao" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fa-solid fa-certificate me-1 text-success"></i> Certificação
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarCertificacao">
+                <li><a class="dropdown-item" href="/admin/certificados"><i class="fa-solid fa-file-lines me-1 text-info"></i> Certificados</a></li>
+                {{#if (or usuario.isAdmin usuario.isGestor)}}
+                  <li><a class="dropdown-item" href="/admin/tipos-certificados"><i class="fa-solid fa-certificate me-1 text-success"></i> Tipos</a></li>
+                {{/if}}
+                <li><a class="dropdown-item" href="/admin/certificados?status=pendente"><i class="fa-solid fa-clock me-1 text-warning"></i> Pendentes</a></li>
+              </ul>
+            </li>
+            <!-- Gestão de eventos -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle text-black" href="#" id="navbarEventos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fa-solid fa-calendar-days me-1 text-primary"></i> Eventos
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarEventos">
+                <li><a class="dropdown-item" href="/admin/eventos"><i class="fa-solid fa-calendar-days me-1 text-primary"></i> Eventos</a></li>
+                <li><a class="dropdown-item" href="/admin/participantes"><i class="fa-solid fa-users me-1 text-success"></i> Participantes</a></li>
+              </ul>
+            </li>
+            <!-- Administração -->
+            {{#if usuario.isAdmin}}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle text-black" href="#" id="navbarAdminDrop" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fa-solid fa-user-shield me-1 text-danger"></i> Administração
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarAdminDrop">
+                <li><a class="dropdown-item" href="/admin/usuarios"><i class="fa-solid fa-user-shield me-1 text-danger"></i> Usuários</a></li>
+              </ul>
+            </li>
+            {{/if}}
+          </ul>
+          <div class='navbar-nav'>
+            <span class='navbar-text text-black me-3'>{{usuario.nome}} ({{usuario.perfil}})</span>
+            <form action='/auth/logout' method='POST' class='d-inline'>
+              <button type='submit' class='btn btn-sm btn-outline-dark'>Sair</button>
+            </form>
+          </div>
         </div>
       </div>
     </nav>

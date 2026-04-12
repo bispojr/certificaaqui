@@ -1,23 +1,25 @@
 
-<h2 class="mb-4">Dashboard</h2>
 
-
+<div data-testid="admin-dashboard-root">
+<!-- Certificação -->
+<h5 class="mt-4 mb-3 text-muted">
+  <i class="fa-solid fa-certificate me-2 text-success"></i>
+  Certificação
+</h5>
 <div class="row g-4">
-  {{#if usuario.isAdmin}}
   <div class="col-12 col-sm-6 col-xl-4">
-    <a href="/admin/eventos" class="text-decoration-none">
-      <div class="card dashboard-card bg-soft-primary h-100">
+    <a href="/admin/certificados" class="text-decoration-none">
+      <div class="card dashboard-card bg-soft-info h-100">
         <div class="card-body d-flex justify-content-between align-items-center">
           <div>
-            <div class="card-label">Eventos</div>
-            <div class="card-value text-primary">{{totalEventos}}</div>
+            <div class="card-label">Certificados{{#if usuario.isGestor}} (seus eventos){{/if}}</div>
+            <div class="card-value text-info">{{totalCertificados}}</div>
           </div>
-          <i class="fa-solid fa-calendar-days card-icon text-primary"></i>
+          <i class="fa-solid fa-file-lines card-icon text-info"></i>
         </div>
       </div>
     </a>
   </div>
-  {{/if}}
   {{#if (or usuario.isAdmin usuario.isGestor)}}
   <div class="col-12 col-sm-6 col-xl-4">
     <a href="/admin/tipos-certificados" class="text-decoration-none">
@@ -34,6 +36,40 @@
   </div>
   {{/if}}
   <div class="col-12 col-sm-6 col-xl-4">
+    <a href="/admin/certificados?status=pendente" class="text-decoration-none">
+      <div class="card dashboard-card bg-soft-warning h-100">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <div class="card-label">Pendentes</div>
+            <div class="card-value text-warning">{{totalCertificadosPendentes}}</div>
+          </div>
+          <i class="fa-solid fa-clock card-icon text-warning"></i>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- Gestão de eventos -->
+<h5 class="mt-5 mb-3 text-muted">
+  <i class="fa-solid fa-calendar-days me-2 text-primary"></i>
+  Eventos
+</h5>
+<div class="row g-4">
+  <div class="col-12 col-sm-6 col-xl-4">
+    <a href="/admin/eventos" class="text-decoration-none">
+      <div class="card dashboard-card bg-soft-primary h-100">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <div class="card-label">Eventos{{#if usuario.isGestor}} (seus eventos){{/if}}</div>
+            <div class="card-value text-primary">{{totalEventos}}</div>
+          </div>
+          <i class="fa-solid fa-calendar-days card-icon text-primary"></i>
+        </div>
+      </div>
+    </a>
+  </div>
+  <div class="col-12 col-sm-6 col-xl-4">
     <a href="/admin/participantes" class="text-decoration-none">
       <div class="card dashboard-card bg-soft-warning h-100">
         <div class="card-body d-flex justify-content-between align-items-center">
@@ -46,6 +82,14 @@
       </div>
     </a>
   </div>
+</div>
+
+<!-- Administração -->
+<h5 class="mt-5 mb-3 text-muted">
+  <i class="fa-solid fa-user-shield me-2 text-danger"></i>
+  Administração
+</h5>
+<div class="row g-4">
   {{#if usuario.isAdmin}}
   <div class="col-12 col-sm-6 col-xl-4">
     <a href="/admin/usuarios" class="text-decoration-none">
@@ -61,30 +105,4 @@
     </a>
   </div>
   {{/if}}
-  <div class="col-12 col-sm-6 col-xl-4">
-    <a href="/admin/certificados" class="text-decoration-none">
-      <div class="card dashboard-card bg-soft-info h-100">
-        <div class="card-body d-flex justify-content-between align-items-center">
-          <div>
-            <div class="card-label">Certificados{{#if usuario.isGestor}} (seus eventos){{/if}}</div>
-            <div class="card-value text-info">{{totalCertificados}}</div>
-          </div>
-          <i class="fa-solid fa-file-lines card-icon text-info"></i>
-        </div>
-      </div>
-    </a>
-  </div>
-  <div class="col-12 col-sm-6 col-xl-4">
-    <a href="/admin/certificados?status=pendente" class="text-decoration-none">
-      <div class="card dashboard-card bg-soft-warning h-100">
-        <div class="card-body d-flex justify-content-between align-items-center">
-          <div>
-            <div class="card-label">Pendentes</div>
-            <div class="card-value text-warning">{{totalCertificadosPendentes}}</div>
-          </div>
-          <i class="fa-solid fa-clock card-icon text-warning"></i>
-        </div>
-      </div>
-    </a>
-  </div>
 </div>

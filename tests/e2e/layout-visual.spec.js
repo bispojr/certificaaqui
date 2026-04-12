@@ -45,6 +45,6 @@ test.describe('Layout admin usa tema Brite e navbar com texto preto', () => {
     await expect(navbar).toBeVisible()
     // Os links devem ter texto preto (5 links: Certificados, Participantes, Eventos, Tipos, Usuários)
     const navLinks = navbar.locator('a.nav-link.text-black')
-    await expect(navLinks).toHaveCount(5)
+    await expect(navLinks).toHaveCount(3)
   })
 })
