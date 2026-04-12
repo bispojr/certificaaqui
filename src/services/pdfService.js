@@ -15,7 +15,13 @@ module.exports = {
         if (!certificado.codigo) {
           return reject(new Error('Código de validação obrigatório'))
         }
-        const doc = new PDFDocument()
+        // Layout: paisagem, tamanho A4 (em pontos)
+        const doc = new PDFDocument({
+          layout: 'landscape',
+          size: [594.96, 841.92], // A4 landscape em pontos
+        })
+        doc.page.margins.bottom = 0
+        // Futuro: incluir template de fundo com doc.image()
         const buffers = []
         doc.on('data', buffers.push.bind(buffers))
         doc.on('end', () => {
@@ -47,14 +53,31 @@ module.exports = {
           return reject(new Error(err.message || 'Erro de interpolação'))
         }
 
-        // Layout simples
-        doc.fontSize(20).text(evento?.nome || 'Evento', { align: 'center' })
-        doc.moveDown()
-        doc.fontSize(14).text(texto, { align: 'left' })
-        doc.moveDown()
-        doc.fontSize(10).text(`Código de validação: ${certificado.codigo}`, {
-          align: 'right',
-        })
+        // Layout detalhado inspirado no obterArquivo
+        // Nome do evento centralizado
+        doc.fontSize(18)
+        doc.font('Helvetica-Bold')
+        doc.text(evento?.nome || 'Evento', 0, 60, { width: doc.page.width, align: 'center' })
+
+        // Nome do participante (ou campo nome)
+        const nomeCompleto = (certificado.nome || participante?.nomeCompleto || '').toUpperCase()
+        if (nomeCompleto) {
+          doc.fontSize(22)
+          doc.font('Helvetica-Bold')
+          doc.text(nomeCompleto, 0, 120, { width: doc.page.width, align: 'center' })
+        }
+
+        // Texto base interpolado
+        doc.fontSize(texto.length > 400 ? 10 : 14)
+        doc.font('Helvetica')
+        doc.text(texto, 270, 200, { width: 480, align: 'justify' })
+
+        // Código de validação e link
+        const endereco_validacao = process.env.ENDERECO_VALIDACAO || 'https://certifique.me/validar'
+        doc.fontSize(9.5)
+        doc.fillColor('black').text(`Use o código ${certificado.codigo} para validar o certificado em: `, 145, 545, { width: doc.page.width, align: 'left' })
+        doc.fillColor('blue').text(`${endereco_validacao}`, 392, 545, { link: endereco_validacao, underline: true })
+        doc.fillColor('black')
 
         doc.end()
       } catch (err) {
