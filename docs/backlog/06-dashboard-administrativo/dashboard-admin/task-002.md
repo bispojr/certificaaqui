@@ -1,4 +1,4 @@
-# DASH-ADMIN-002 — Card "Total de Certificados" e card "Pendentes" no dashboard admin
+# [x] DASH-ADMIN-002 — Card "Total de Certificados" e card "Pendentes" no dashboard admin — concluída em 2026-04-11 21:30 (BRT)
 
 ## Identificador
 DASH-ADMIN-002

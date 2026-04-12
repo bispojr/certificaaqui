@@ -26,7 +26,7 @@ test('UC-P02 — busca de certificados por e-mail', async ({ page }) => {
     page.click('button[type="submit"]'),
   ])
   await expect(page.locator('text=Seus certificados')).toBeVisible()
-  await expect(page.locator('text=Participante E2E')).toBeVisible()
+  await expect(page.locator('text=Participante E2E').first()).toBeVisible()
 })
 
 test('UC-P03 — validação de certificado por código', async ({ page }) => {

@@ -2,7 +2,7 @@
 
 {{#if usuario.isAdmin}}
   <div class='row g-3'>
-    <div class='col-sm-6 col-lg-3'>
+    <div class='col-sm-6 col-lg'>
       <a href='/admin/eventos' class='text-decoration-none'>
         <div class='card text-center border-primary h-100'>
           <div class='card-body'>
@@ -12,7 +12,7 @@
         </div>
       </a>
     </div>
-    <div class='col-sm-6 col-lg-3'>
+    <div class='col-sm-6 col-lg'>
       <a href='/admin/tipos-certificados' class='text-decoration-none'>
         <div class='card text-center border-success h-100'>
           <div class='card-body'>
@@ -22,7 +22,7 @@
         </div>
       </a>
     </div>
-    <div class='col-sm-6 col-lg-3'>
+    <div class='col-sm-6 col-lg'>
       <a href='/admin/participantes' class='text-decoration-none'>
         <div class='card text-center border-warning h-100'>
           <div class='card-body'>
@@ -34,12 +34,32 @@
         </div>
       </a>
     </div>
-    <div class='col-sm-6 col-lg-3'>
+    <div class='col-sm-6 col-lg'>
       <a href='/admin/usuarios' class='text-decoration-none'>
         <div class='card text-center border-danger h-100'>
           <div class='card-body'>
             <div class='display-4 fw-bold text-danger'>{{totalUsuarios}}</div>
             <div class='card-title text-muted mt-2'>Usuários</div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class='col-sm-6 col-lg'>
+      <a href='/admin/certificados' class='text-decoration-none'>
+        <div class='card text-center border-info h-100'>
+          <div class='card-body'>
+            <div class='display-4 fw-bold text-info'>{{totalCertificados}}</div>
+            <div class='card-title text-muted mt-2'>Certificados</div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class='col-sm-6 col-lg'>
+      <a href='/admin/certificados?status=pendente' class='text-decoration-none'>
+        <div class='card text-center border-warning h-100'>
+          <div class='card-body'>
+            <div class='display-4 fw-bold text-warning'>{{totalCertificadosPendentes}}</div>
+            <div class='card-title text-muted mt-2'>Pendentes</div>
           </div>
         </div>
       </a>
