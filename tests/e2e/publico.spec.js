@@ -15,7 +15,7 @@ test.afterAll(async () => {
 test('UC-P01 — página inicial carrega sem erros', async ({ page }) => {
   await page.goto('/')
   await expect(page).toHaveURL('/')
-  await expect(page.locator('h1, h2, h3')).toBeVisible()
+  await expect(page.locator('.brand-name')).toBeVisible()
 })
 
 test('UC-P02 — busca de certificados por e-mail', async ({ page }) => {

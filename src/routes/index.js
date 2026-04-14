@@ -3,7 +3,7 @@ var router = express.Router()
 
 /* GET home page. */
 router.get('/', function (req, res) {
-  res.render('certificados/form-obter')
+  res.render('index', { layout: false })
 })
 
 module.exports = router

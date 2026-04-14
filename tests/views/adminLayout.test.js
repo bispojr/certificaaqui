@@ -18,15 +18,15 @@ describe('views/layouts/admin.hbs', () => {
     expect(html).toMatch(
       /https:\/\/cdn\.jsdelivr\.net\/npm\/bootswatch@5\.3\.8\/dist\/brite\/bootstrap\.min\.css/
     )
-    // Confirma navbar admin
-    expect(html).toMatch(/Certifique-me Admin/)
+    // Confirma navbar admin (novo padrão)
+    expect(html).toMatch(/CertificaAqui/)
+    expect(html).toMatch(/Admin/)
     expect(html).toMatch(/Certificados/)
     expect(html).toMatch(/Participantes/)
     expect(html).toMatch(/Eventos/)
     expect(html).toMatch(/Tipos/)
     expect(html).toMatch(/Usuários/)
     // Confirma usuário e perfil
-    // Aceita quebras de linha e espaços entre nome e perfil
     expect(html).toMatch(/Admin[\s\S]*\(admin\)/)
     // Confirma botão de logout (aceita atributos extras)
     expect(html).toMatch(

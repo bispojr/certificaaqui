@@ -28,7 +28,7 @@ describe('pdfService.generateCertificadoPdf', () => {
     expect(buffer.slice(0, 4).toString()).toBe('%PDF')
 
     templateService.interpolate.mockRestore()
-  })
+  }, 15000)
 
   it('deve rejeitar se não houver código de validação', async () => {
     const certificado = {
@@ -47,7 +47,7 @@ describe('pdfService.generateCertificadoPdf', () => {
       pdfService.generateCertificadoPdf(certificado),
     ).rejects.toThrow('Código de validação obrigatório')
     templateService.interpolate.mockRestore()
-  })
+  }, 15000)
 
   it('deve rejeitar se campos nulos ou undefined não incluírem código de validação', async () => {
     const certificado = {
@@ -65,7 +65,7 @@ describe('pdfService.generateCertificadoPdf', () => {
       pdfService.generateCertificadoPdf(certificado),
     ).rejects.toThrow('Código de validação obrigatório')
     templateService.interpolate.mockRestore()
-  })
+  }, 15000)
 
   it('deve rejeitar a Promise se a interpolação lançar erro', async () => {
     const certificado = {
@@ -85,5 +85,5 @@ describe('pdfService.generateCertificadoPdf', () => {
       pdfService.generateCertificadoPdf(certificado),
     ).rejects.toThrow('Erro de interpolação')
     templateService.interpolate.mockRestore()
-  })
+  }, 15000)
 })

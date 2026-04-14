@@ -1,2 +1,126 @@
-<h1>{{title}}</h1>
-<p>Welcome to {{title}}</p>
+<!DOCTYPE html>
+<html lang='pt-BR'>
+<head>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <meta charset='UTF-8' />
+  <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+  <title>CertificaAqui</title>
+
+  <link rel='stylesheet'
+    href='https://cdn.jsdelivr.net/npm/bootswatch@5.3.8/dist/brite/bootstrap.min.css'
+  />
+
+  <style>
+    body {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-color: #ffffff;
+    }
+
+    .top-links {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+    }
+
+    .top-links a {
+      margin-left: 15px;
+      text-decoration: none;
+      color: #444;
+      font-size: 14px;
+    }
+
+    .top-links a:hover {
+      text-decoration: underline;
+    }
+
+    .main-center {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      flex-direction: column;
+      padding-bottom: 20vh;
+    }
+
+    .logo {
+      height: 80px;
+      margin-bottom: 12px;
+    }
+
+    .brand-name {
+      font-size: 48px;
+      font-weight: 600;
+      margin-bottom: 30px;
+    }
+
+    .search-box {
+      width: 100%;
+      max-width: 500px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 14px 20px;
+      border-radius: 30px;
+      border: 1px solid #ddd;
+      outline: none;
+      font-size: 16px;
+      transition: 0.2s;
+    }
+
+    .search-input:focus {
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      border-color: #aaa;
+    }
+
+    .search-btn {
+      margin-top: 20px;
+      border-radius: 20px;
+      padding: 8px 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="top-links">
+    <a href="/public/pagina/validar">Validar</a>
+    <a href="/auth/login">Entrar</a>
+  </div>
+
+  <div class="main-center">
+
+    <img src="/images/logo.svg" class="logo" alt="Logo CertificaAqui">
+
+    <div class="brand-name">CertificaAqui</div>
+
+    {{#if mensagem}}
+      <div class="alert alert-danger mb-3" style="max-width:500px;border-radius:12px;">{{mensagem}}</div>
+    {{/if}}
+
+    <form method='POST' action='/public/pagina/buscar' id='form-obter' class="search-box">
+
+      <input
+        type='email'
+        class='search-input'
+        id='email'
+        name='email'
+        required
+        placeholder='Digite seu e-mail para buscar seus certificados'
+        autofocus
+      />
+
+      <button type='submit' class='btn btn-primary search-btn'>
+        Buscar certificados
+      </button>
+
+    </form>
+
+  </div>
+
+</body>
+</html>

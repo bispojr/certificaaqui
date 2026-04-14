@@ -1,21 +1,18 @@
 const { test, expect } = require('@playwright/test')
 
 // Teste para a página principal pública
-// Verifica se o tema Brite está aplicado e a navbar tem texto preto
+// Verifica se o tema Brite está aplicado e os links do topo existem
 
-test('Layout público usa tema Brite e navbar com texto preto', async ({ page }) => {
+test('Layout público usa tema Brite e links no topo', async ({ page }) => {
   await page.goto('/')
   // Verifica se o link do tema Brite está presente
   const bootswatchLink = page.locator('link[href*="bootswatch@5.3.8/dist/brite/bootstrap.min.css"]')
   await expect(bootswatchLink).toHaveCount(1)
   await expect(bootswatchLink).toHaveAttribute('href', /bootswatch@5.3.8\/dist\/brite\/bootstrap\.min\.css/)
 
-  // Verifica se a navbar tem fundo primário e texto preto
-  const navbar = page.locator('nav.navbar.bg-primary')
-  await expect(navbar).toBeVisible()
-  // Os links devem ter texto preto
-  const navLinks = navbar.locator('a.nav-link.text-black')
-  await expect(navLinks).toHaveCount(3)
+  // Verifica se os links do topo existem
+  await expect(page.locator('a', { hasText: 'Validar' })).toBeVisible()
+  await expect(page.locator('a', { hasText: 'Entrar' })).toBeVisible()
 })
 
 // Teste para a página principal do admin
