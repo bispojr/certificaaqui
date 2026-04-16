@@ -30,8 +30,8 @@ module.exports = {
         })
 
         // --- NOVO: Buscar e inserir imagem de fundo do R2 ---
-        // Caminho fixo ou dinâmico conforme necessidade
-        const backgroundKey = 'templates/educomp/2025/educomp.png';
+        const backgroundKey =
+          certificado.Evento?.url_template_base || 'template/padrao.jpg';
         try {
           const bgResult = await r2Service.getFile(backgroundKey);
           if (bgResult && bgResult.Body) {

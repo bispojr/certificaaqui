@@ -1,6 +1,12 @@
 const pdfService = require('../../src/services/pdfService')
 const templateService = require('../../src/services/templateService')
 
+jest.mock('../../src/services/r2Service', () => ({
+  getFile: jest.fn().mockResolvedValue(null),
+}))
+
+const r2Service = require('../../src/services/r2Service')
+
 describe('pdfService.generateCertificadoPdf', () => {
   it('deve gerar um Buffer PDF válido começando com %PDF', async () => {
     // Mock de dados mínimos
@@ -84,6 +90,58 @@ describe('pdfService.generateCertificadoPdf', () => {
     await expect(
       pdfService.generateCertificadoPdf(certificado),
     ).rejects.toThrow('Erro de interpolação')
+    templateService.interpolate.mockRestore()
+  }, 15000)
+})
+
+describe('pdfService - seleção de template de fundo (R2)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    r2Service.getFile.mockResolvedValue(null)
+  })
+
+  const baseCertificado = (urlTemplateBase) => ({
+    codigo: 'TST001',
+    nome: 'João da Silva',
+    valores_dinamicos: {},
+    Evento: { nome: 'Evento Teste', url_template_base: urlTemplateBase },
+    Participante: { nomeCompleto: 'João da Silva' },
+    TiposCertificados: { texto_base: 'Certificamos que ${nome} participou.' },
+  })
+
+  it('deve usar url_template_base do evento quando definida', async () => {
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
+    await pdfService.generateCertificadoPdf(
+      baseCertificado('https://cdn.example.com/templates/custom.jpg'),
+    )
+    expect(r2Service.getFile).toHaveBeenCalledWith(
+      'https://cdn.example.com/templates/custom.jpg',
+    )
+    templateService.interpolate.mockRestore()
+  }, 15000)
+
+  it('deve usar "template/padrao.jpg" quando url_template_base é nula', async () => {
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
+    await pdfService.generateCertificadoPdf(baseCertificado(null))
+    expect(r2Service.getFile).toHaveBeenCalledWith('template/padrao.jpg')
+    templateService.interpolate.mockRestore()
+  }, 15000)
+
+  it('deve usar "template/padrao.jpg" quando url_template_base é undefined', async () => {
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
+    await pdfService.generateCertificadoPdf(baseCertificado(undefined))
+    expect(r2Service.getFile).toHaveBeenCalledWith('template/padrao.jpg')
+    templateService.interpolate.mockRestore()
+  }, 15000)
+
+  it('deve usar "template/padrao.jpg" quando Evento é nulo', async () => {
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
+    const cert = {
+      ...baseCertificado(null),
+      Evento: null,
+    }
+    await pdfService.generateCertificadoPdf(cert)
+    expect(r2Service.getFile).toHaveBeenCalledWith('template/padrao.jpg')
     templateService.interpolate.mockRestore()
   }, 15000)
 })

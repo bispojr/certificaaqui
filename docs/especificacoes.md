@@ -53,7 +53,8 @@ FR-5: O sistema deve permitir criar, listar, atualizar e remover eventos (CRUD c
 FR-6: O campo `nome` do evento é obrigatório.  
 FR-7: O campo `ano` do evento é obrigatório.  
 FR-8: O campo `codigo_base` do evento é obrigatório, deve ser único e conter exatamente três letras alfabéticas (ex.: `EDU`, `CMP`, `OFC`).  
-FR-9: A remoção de eventos deve ser lógica (soft delete); os registros devem poder ser restaurados.
+FR-9: A remoção de eventos deve ser lógica (soft delete); os registros devem poder ser restaurados.  
+FR-44: O campo `url_template_base` do evento é opcional e, quando informado, deve conter uma URL válida. Esse campo armazena a localização do arquivo de template-base utilizado na geração dos certificados do evento.
 
 ## Gestão de Tipos de Certificados
 

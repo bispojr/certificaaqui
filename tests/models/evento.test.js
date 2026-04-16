@@ -131,4 +131,25 @@ describe('Evento Model', () => {
     const usuarios = await evento.getUsuarios()
     expect(usuarios.length).toBe(0)
   })
+
+  test('deve criar evento com url_template_base', async () => {
+    const evento = await Evento.create({
+      nome: 'Congresso com Template',
+      codigo_base: 'TPL',
+      ano: 2026,
+      url_template_base: 'https://storage.example.com/templates/cert.pdf',
+    })
+    expect(evento.url_template_base).toBe(
+      'https://storage.example.com/templates/cert.pdf',
+    )
+  })
+
+  test('deve criar evento sem url_template_base (campo opcional)', async () => {
+    const evento = await Evento.create({
+      nome: 'Congresso sem Template',
+      codigo_base: 'STM',
+      ano: 2026,
+    })
+    expect(evento.url_template_base).toBeNull()
+  })
 })
