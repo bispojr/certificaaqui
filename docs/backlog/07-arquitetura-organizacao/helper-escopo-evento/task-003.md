@@ -1,18 +1,23 @@
 # ARQ-ESC-003 — Refatorar `participanteSSRController.js` e `dashboardController.js`
 
 ## Identificador
+
 ARQ-ESC-003
 
 ## Feature
+
 helper-escopo-evento
 
 ## Domínio
+
 07 — Arquitetura e Organização de Código
 
 ## Prioridade
+
 ALTA
 
 ## Pré-requisitos
+
 - ARQ-ESC-001 implementado
 
 ## Descrição
@@ -26,6 +31,7 @@ Substituir as queries inline de escopo em `participanteSSRController.js` e `dash
 ### 1. `src/controllers/participanteSSRController.js`
 
 **Adicionar import no topo:**
+
 ```js
 const { getScopedEventoIds } = require('../utils/getScopedEventoIds')
 ```
@@ -44,6 +50,7 @@ if (req.usuario && req.usuario.perfil !== 'admin') {
 ```
 
 **Substituir por:**
+
 ```js
 const eventoIds = await getScopedEventoIds(req.usuario)
 ```
@@ -55,6 +62,7 @@ const eventoIds = await getScopedEventoIds(req.usuario)
 ### 2. `src/controllers/dashboardController.js`
 
 **Adicionar import no topo:**
+
 ```js
 const { getScopedEventoIds } = require('../utils/getScopedEventoIds')
 ```
@@ -70,11 +78,13 @@ const eventoIds = (dbUsuario.eventos || []).map((e) => e.id)
 ```
 
 **Substituir por:**
+
 ```js
 const eventoIds = await getScopedEventoIds(req.usuario)
 ```
 
 **Atualizar a linha seguinte** que cria `whereEvento`:
+
 - Não é necessária mudança — `eventoIds` continua sendo `null` para admin ou array para gestor, mesma semântica.
 
 **Verificar se `Evento` ainda é usado no imports do dashboardController** após remover o `include` manual — confirmar antes de remover do destructuring, pois `Evento` também pode ser usado em queries do admin.
@@ -89,4 +99,5 @@ const eventoIds = await getScopedEventoIds(req.usuario)
 - [ ] Nenhum teste existente quebra após as refatorações.
 
 ## Estimativa
+
 P (até 30min)

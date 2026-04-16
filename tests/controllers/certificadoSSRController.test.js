@@ -179,7 +179,10 @@ describe('certificadoSSRController', () => {
       req.flash = jest.fn()
       const res = mockRes()
       await certificadoSSRController.deletar(req, res)
-      expect(req.flash).toHaveBeenCalledWith('error', 'Certificado não encontrado.')
+      expect(req.flash).toHaveBeenCalledWith(
+        'error',
+        'Certificado não encontrado.',
+      )
       expect(res.redirect).toHaveBeenCalledWith('/admin/certificados')
     })
   })

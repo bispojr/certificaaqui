@@ -1,12 +1,15 @@
 # Task: TEST-INTEG-003 — Teste de integração: constraint de banco rejeita INSERT direto duplicado
 
 ## Identificador
+
 TEST-INTEG-003
 
 ## Feature
+
 testes-constraint-integridade
 
 ## Prioridade
+
 ALTA
 
 ## Contexto
@@ -26,6 +29,7 @@ Este teste valida que a constraint de banco funciona independentemente do servic
 ## O que implementar
 
 ### Localização
+
 Novo arquivo: `tests/migrations/certificados-unique-constraint.test.js`
 
 > Recomendado como arquivo separado pois usa `sequelize.query()` diretamente e precisa de setup/teardown específico de banco. Não misturar com testes de unidade de service.
@@ -85,28 +89,28 @@ describe('Constraint única parcial em certificados', () => {
 ### Cenário 2 — INSERT após soft delete do original deve funcionar
 
 ```javascript
-  it('deve permitir INSERT quando o certificado anterior foi soft-deleted', async () => {
-    // Arrange — soft delete do certificado existente
-    const existente = await Certificado.findOne({
-      where: { participante_id: 1, evento_id: 1, tipo_certificado_id: 1 },
-    })
-    await existente.destroy() // paranoid soft delete
-
-    // Act — criar novo com mesma tripla
-    const novo = await Certificado.create({
-      participante_id: 1,
-      evento_id: 1,
-      tipo_certificado_id: 1,
-      codigo: 'EVT-26-PT-3',
-      nome: 'Cert 3 após restore',
-      arquivo: 'cert3.pdf',
-    })
-
-    // Assert
-    expect(novo).toBeDefined()
-    expect(novo.id).toBeDefined()
-    expect(novo.deleted_at).toBeNull()
+it('deve permitir INSERT quando o certificado anterior foi soft-deleted', async () => {
+  // Arrange — soft delete do certificado existente
+  const existente = await Certificado.findOne({
+    where: { participante_id: 1, evento_id: 1, tipo_certificado_id: 1 },
   })
+  await existente.destroy() // paranoid soft delete
+
+  // Act — criar novo com mesma tripla
+  const novo = await Certificado.create({
+    participante_id: 1,
+    evento_id: 1,
+    tipo_certificado_id: 1,
+    codigo: 'EVT-26-PT-3',
+    nome: 'Cert 3 após restore',
+    arquivo: 'cert3.pdf',
+  })
+
+  // Assert
+  expect(novo).toBeDefined()
+  expect(novo.id).toBeDefined()
+  expect(novo.deleted_at).toBeNull()
+})
 ```
 
 ---
@@ -128,9 +132,11 @@ grep -n "migrate\|sync\|umzug" tests/setup.js
 Se não executar migrations, adicionar `sequelize.sync({ alter: true })` ou configurar o `umzug` para ambiente de teste.
 
 ## Arquivo alvo
+
 `tests/migrations/certificados-unique-constraint.test.js`
 
 ## Critério de conclusão
+
 - Teste **falha** antes de INTEG-PREV-001 ser aplicado ao banco de teste
 - Teste **passa** com o índice único parcial aplicado
 - O segundo cenário (soft delete + novo INSERT) passa sem erro

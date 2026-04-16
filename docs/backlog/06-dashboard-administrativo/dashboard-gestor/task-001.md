@@ -1,18 +1,23 @@
 # DASH-GEST-001 — Verificar exportação de `sequelize` em `src/models/index.js`
 
 ## Identificador
+
 DASH-GEST-001
 
 ## Feature
+
 dashboard-gestor
 
 ## Domínio
+
 06 — Dashboard Administrativo
 
 ## Prioridade
+
 MÉDIA
 
 ## Pré-requisitos
+
 - Nenhum (pré-requisito técnico para DASH-GEST-002)
 
 ## Descrição
@@ -86,4 +91,5 @@ const {
 - [ ] Nenhum teste existente quebra após as alterações.
 
 ## Estimativa
+
 PP (até 15min — verificação + ajuste pontual)

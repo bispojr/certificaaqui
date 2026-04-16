@@ -1,18 +1,23 @@
 # ARQ-DEL-002 — Atualizar callers: `eventoSSRController` e `eventoController`
 
 ## Identificador
+
 ARQ-DEL-002
 
 ## Feature
+
 consolidacao-destroy-delete
 
 ## Domínio
+
 07 — Arquitetura e Organização de Código
 
 ## Prioridade
+
 ALTA
 
 ## Pré-requisitos
+
 - ARQ-DEL-001 implementado (`eventoService.softDelete` existe e `delete` foi removido)
 
 ## Descrição
@@ -26,11 +31,13 @@ Atualizar as duas ocorrências de `eventoService.delete(...)` nos controllers pa
 ### 1. `src/controllers/eventoSSRController.js` — linha 108
 
 **Antes:**
+
 ```js
 await eventoService.delete(req.params.id)
 ```
 
 **Depois:**
+
 ```js
 await eventoService.softDelete(req.params.id)
 ```
@@ -38,11 +45,13 @@ await eventoService.softDelete(req.params.id)
 ### 2. `src/controllers/eventoController.js` — linha 47
 
 **Antes:**
+
 ```js
 await eventoService.delete(req.params.id)
 ```
 
 **Depois:**
+
 ```js
 await eventoService.softDelete(req.params.id)
 ```
@@ -69,4 +78,5 @@ Se encontrar ocorrências adicionais, substituir da mesma forma.
 - [ ] `eventoController.js` chama `eventoService.softDelete(req.params.id)`.
 
 ## Estimativa
+
 PP (até 10min)

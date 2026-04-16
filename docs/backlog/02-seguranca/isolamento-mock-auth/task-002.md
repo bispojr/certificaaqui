@@ -15,6 +15,7 @@ nenhuma (pode ser criado antes ou depois de SEG-AUTH-001)
 ## Objetivo
 
 Centralizar a lógica de mock de autenticação em um arquivo de utilitário de testes, exportando:
+
 - `mockAuthSSR`: middleware Express que injeta o usuário atual em `req.usuario` / `res.locals.usuario`
 - `setMockUser(user)`: setter para configurar o usuário por teste
 - `clearMockUser()`: limpa o usuário (para uso no `afterEach`)
@@ -24,8 +25,9 @@ Centralizar a lógica de mock de autenticação em um arquivo de utilitário de 
 Quando um arquivo de teste declara:
 
 ```js
-jest.mock('../../../src/middlewares/authSSR', () =>
-  require('../../utils/authSSR.mock').mockAuthSSR
+jest.mock(
+  '../../../src/middlewares/authSSR',
+  () => require('../../utils/authSSR.mock').mockAuthSSR,
 )
 ```
 
@@ -72,8 +74,8 @@ module.exports = { mockAuthSSR, setMockUser, clearMockUser }
 
 ## Notas de implementação
 
-- O `currentUser` é uma variável de módulo (singleton no processo Jest). Como Jest isola cada arquivo de teste em um `require` cache separado por padrão (*), o estado não vaza entre arquivos de teste.
-  - (*) A menos que se use `jest.resetModules()` ou `--runInBand`; não é o caso aqui.
+- O `currentUser` é uma variável de módulo (singleton no processo Jest). Como Jest isola cada arquivo de teste em um `require` cache separado por padrão (\*), o estado não vaza entre arquivos de teste.
+  - (\*) A menos que se use `jest.resetModules()` ou `--runInBand`; não é o caso aqui.
 - `clearMockUser()` deve ser chamado no `afterEach` de cada arquivo de rota para evitar estado residual entre testes dentro do mesmo arquivo.
 - O middleware **não** recria `getEventos` nem adiciona métodos especiais — os testes de rota que precisam dessas propriedades devem incluí-las diretamente no objeto passado a `setMockUser`.
 

@@ -25,6 +25,7 @@ Este projeto possui:
 - decisões arquiteturais iniciais
 
 IMPORTANTE:
+
 - O sistema base usa Google Sheets
 - O sistema atual usa banco de dados
 - A auditoria anterior já foi executada e suas tasks já foram implementadas
@@ -257,7 +258,9 @@ ETAPA 10 — Melhorias Concretas (AÇÃO)
 Liste melhorias com ALTO VALOR PRÁTICO:
 
 ### CRÍTICAS (fazer agora)
+
 ### IMPORTANTES
+
 ### OPCIONAIS
 
 Sempre que possível:

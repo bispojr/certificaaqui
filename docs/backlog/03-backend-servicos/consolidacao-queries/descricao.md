@@ -11,10 +11,12 @@ Domínio 3 — Backend / Camada de Serviço
 ## Problema
 
 `certificadoSSRController.js` contém em `index()`:
+
 1. **Duas chamadas diretas a `Certificado.findAll()`** — contornando `certificadoService`
 2. **A função local `getEventoIds(req)`** — duplicação da lógica de escopo que também existe em `participanteSSRController.js` (via `Usuario.findByPk` com include)
 
 As duas implementações de escopo são semanticamente equivalentes mas usam estratégias diferentes:
+
 - `certificadoSSRController`: `UsuarioEvento.findAll({ where: { usuario_id } })` → mapeia `.evento_id`
 - `participanteSSRController`: `Usuario.findByPk(id, { include: 'eventos' })` → mapeia `.id`
 

@@ -1,18 +1,23 @@
 # ARQ-ESC-004 — Testes unitários de `getScopedEventoIds`
 
 ## Identificador
+
 ARQ-ESC-004
 
 ## Feature
+
 helper-escopo-evento
 
 ## Domínio
+
 07 — Arquitetura e Organização de Código
 
 ## Prioridade
+
 ALTA
 
 ## Pré-requisitos
+
 - ARQ-ESC-001 implementado
 
 ## Descrição
@@ -98,4 +103,5 @@ describe('getScopedEventoIds', () => {
 - [ ] O arquivo é detectado pelo runner de testes existente (padrão `tests/**/*.test.js`).
 
 ## Estimativa
+
 P (até 30min)

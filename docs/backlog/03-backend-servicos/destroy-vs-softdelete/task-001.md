@@ -15,6 +15,7 @@ nenhuma
 ## Objetivo
 
 Aplicar as três alterações em `src/services/eventoService.js`:
+
 1. Renomear `delete()` para `softDelete()`
 2. Remover o método `destroy()` do módulo exportado
 3. Mover os `require()` inline de `delete()` e `restore()` para o topo do arquivo com path correto
@@ -24,20 +25,22 @@ Aplicar as três alterações em `src/services/eventoService.js`:
 `eventoService.js` atual (`src/services/eventoService.js` lido diretamente):
 
 ```js
-const { Evento } = require('../../src/models')   // ← path errado (deveria ser ../models)
+const { Evento } = require('../../src/models') // ← path errado (deveria ser ../models)
 
 module.exports = {
   // ... findAll, findById, create, update ...
-  async destroy(id) {                            // ← método a remover
+  async destroy(id) {
+    // ← método a remover
     const evento = await Evento.findByPk(id)
     if (!evento) return null
     return evento.destroy()
   },
-  async delete(id) {                             // ← renomear para softDelete
+  async delete(id) {
+    // ← renomear para softDelete
     const evento = await Evento.findByPk(id)
     if (!evento) return null
     await evento.destroy()
-    const { UsuarioEvento } = require('../../src/models')  // ← inline a mover
+    const { UsuarioEvento } = require('../../src/models') // ← inline a mover
     await UsuarioEvento.destroy({ where: { evento_id: id } })
     return evento
   },
@@ -45,7 +48,7 @@ module.exports = {
     const evento = await Evento.findByPk(id, { paranoid: false })
     if (!evento) return null
     await evento.restore()
-    const { UsuarioEvento } = require('../../src/models')  // ← inline a mover
+    const { UsuarioEvento } = require('../../src/models') // ← inline a mover
     await UsuarioEvento.restore({ where: { evento_id: id } })
     return evento
   },

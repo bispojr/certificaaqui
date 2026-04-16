@@ -11,6 +11,7 @@ Domínio 2 — Segurança
 ## Problema
 
 `app.js` configura `express-session` sem `store` explícito, resultando em **MemoryStore** (padrão do express-session). O MemoryStore:
+
 - Perde todas as sessões ao reiniciar o processo (deploy, crash)
 - Não é compartilhável entre múltiplos workers (ex.: PM2 cluster, Docker replicas)
 - Vaza memória proporcional ao número de sessões ativas

@@ -19,6 +19,7 @@ console.log('PDFService certificado:', certificado)
 O objeto `certificado` passado ao método `generateCertificadoPdf()` contém todas as associações carregadas (nome do participante, dados dinâmicos, evento, tipo de certificado), expondo dados pessoais em stdout em qualquer ambiente — incluindo produção.
 
 Violações:
+
 - **LGPD art. 46**: dado pessoal exposto sem finalidade legítima em log
 - **OWASP A09:2021 — Security Logging and Monitoring Failures**: log com dado sensível sem controle
 

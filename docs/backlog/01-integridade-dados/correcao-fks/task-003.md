@@ -30,7 +30,15 @@ Não existe nenhum teste de integridade referencial no projeto (confirmado via g
 1. Criar `tests/integration/integridade-referencial.test.js`:
 
 ```javascript
-const { sequelize, Participante, Evento, TipoCertificado, Certificado, Usuario, UsuarioEvento } = require('../../src/models')
+const {
+  sequelize,
+  Participante,
+  Evento,
+  TipoCertificado,
+  Certificado,
+  Usuario,
+  UsuarioEvento,
+} = require('../../src/models')
 
 describe('Integridade Referencial — FK RESTRICT', () => {
   let evento, participante, tipoCertificado
@@ -42,16 +50,21 @@ describe('Integridade Referencial — FK RESTRICT', () => {
   beforeEach(async () => {
     await sequelize.transaction(async (t) => {
       evento = await Evento.create(
-        { nome: 'Evento FK Test', codigo_base: 'FKTEST', data_inicio: new Date(), data_fim: new Date() },
-        { transaction: t }
+        {
+          nome: 'Evento FK Test',
+          codigo_base: 'FKTEST',
+          data_inicio: new Date(),
+          data_fim: new Date(),
+        },
+        { transaction: t },
       )
       tipoCertificado = await TipoCertificado.create(
         { nome: 'Tipo FK Test', template: 'template', campos_template: [] },
-        { transaction: t }
+        { transaction: t },
       )
       participante = await Participante.create(
         { nome: 'Part FK Test', email: `fktest+${Date.now()}@test.com` },
-        { transaction: t }
+        { transaction: t },
       )
     })
   })
@@ -76,7 +89,9 @@ describe('Integridade Referencial — FK RESTRICT', () => {
       })
 
       await expect(
-        sequelize.query(`DELETE FROM participantes WHERE id = ${participante.id}`)
+        sequelize.query(
+          `DELETE FROM participantes WHERE id = ${participante.id}`,
+        ),
       ).rejects.toThrow(/violates foreign key constraint/)
     })
 
@@ -91,13 +106,15 @@ describe('Integridade Referencial — FK RESTRICT', () => {
       })
 
       await expect(
-        sequelize.query(`DELETE FROM eventos WHERE id = ${evento.id}`)
+        sequelize.query(`DELETE FROM eventos WHERE id = ${evento.id}`),
       ).rejects.toThrow(/violates foreign key constraint/)
     })
 
     it('permite hard delete de participante sem certificados', async () => {
       await expect(
-        sequelize.query(`DELETE FROM participantes WHERE id = ${participante.id}`)
+        sequelize.query(
+          `DELETE FROM participantes WHERE id = ${participante.id}`,
+        ),
       ).resolves.not.toThrow()
     })
   })
@@ -115,16 +132,19 @@ describe('Integridade Referencial — FK RESTRICT', () => {
     })
 
     it('impede hard delete de usuario com vínculos em usuario_eventos', async () => {
-      await UsuarioEvento.create({ usuario_id: usuario.id, evento_id: evento.id })
+      await UsuarioEvento.create({
+        usuario_id: usuario.id,
+        evento_id: evento.id,
+      })
 
       await expect(
-        sequelize.query(`DELETE FROM usuarios WHERE id = ${usuario.id}`)
+        sequelize.query(`DELETE FROM usuarios WHERE id = ${usuario.id}`),
       ).rejects.toThrow(/violates foreign key constraint/)
     })
 
     it('permite hard delete de usuario sem vínculos', async () => {
       await expect(
-        sequelize.query(`DELETE FROM usuarios WHERE id = ${usuario.id}`)
+        sequelize.query(`DELETE FROM usuarios WHERE id = ${usuario.id}`),
       ).resolves.not.toThrow()
     })
   })

@@ -1,23 +1,29 @@
 # PERF-PAG-005 — Controles de paginação nas views de listagem
 
 ## Identificador
+
 PERF-PAG-005
 
 ## Feature
+
 paginacao-server-side
 
 ## Domínio
+
 05 — Performance e Escalabilidade
 
 ## Prioridade
+
 ALTA
 
 ## Pré-requisitos
+
 - PERF-PAG-004 implementado (`views/partials/pagination.hbs` criado e helpers `prev`/`next` registrados)
 
 ## Descrição
 
 Incluir o partial `{{> pagination}}` nas quatro views de listagem do painel admin. O partial deve ser posicionado:
+
 - **Após a tabela de registros ativos**, antes da seção de registros arquivados/cancelados (se existir).
 - **Após a tabela de arquivados**, caso a view tenha seção de arquivados com paginação separada (não obrigatório nesta task — cada tabela usa o mesmo objeto `pagination` da renderização principal).
 
@@ -90,4 +96,5 @@ Inserir após o fechamento `</table>` da tabela de usuários ativos:
 - [ ] Com `pagination.totalPages = 1`, nenhum controle de paginação é exibido (bloco oculto pelo `{{#if}}`).
 
 ## Estimativa
+
 P (até 30min)

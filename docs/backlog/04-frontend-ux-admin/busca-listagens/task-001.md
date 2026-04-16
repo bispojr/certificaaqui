@@ -63,6 +63,7 @@ async function index(req, res) {
 **Nota:** A busca por `Participante.nome` requer que o `include: [Participante]` já esteja presente no `findAll` / `findAllForSSR`. Verificar se a query existente já inclui a associação. Se BACK-LIST-002 ainda não estiver implementada, adicionar `include: [{ model: Participante, attributes: ['nome'] }]` diretamente.
 
 **Verificar imports:** `Op` já está importado em `certificadoSSRController.js`? Se não, adicionar:
+
 ```js
 const { Op } = require('sequelize')
 ```
@@ -72,20 +73,23 @@ const { Op } = require('sequelize')
 Adicionar campo de texto ao form de filtros existente (antes do botão "Filtrar"):
 
 ```hbs
-<form method="GET" action="/admin/certificados" class="row g-2 mb-3">
-  {{!-- Selects existentes (evento_id, status, tipo_id) permanecem inalterados --}}
-  <div class="col-auto">
+<form method='GET' action='/admin/certificados' class='row g-2 mb-3'>
+  {{! Selects existentes (evento_id, status, tipo_id) permanecem inalterados }}
+  <div class='col-auto'>
     <input
-      type="text"
-      class="form-control form-control-sm"
-      name="q"
-      value="{{filtros.q}}"
-      placeholder="Buscar por nome ou código"
+      type='text'
+      class='form-control form-control-sm'
+      name='q'
+      value='{{filtros.q}}'
+      placeholder='Buscar por nome ou código'
     />
   </div>
-  <div class="col-auto">
-    <button type="submit" class="btn btn-sm btn-secondary">Filtrar</button>
-    <a href="/admin/certificados" class="btn btn-sm btn-outline-secondary">Limpar</a>
+  <div class='col-auto'>
+    <button type='submit' class='btn btn-sm btn-secondary'>Filtrar</button>
+    <a
+      href='/admin/certificados'
+      class='btn btn-sm btn-outline-secondary'
+    >Limpar</a>
   </div>
 </form>
 ```

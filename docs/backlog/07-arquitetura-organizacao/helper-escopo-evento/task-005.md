@@ -1,18 +1,23 @@
 # ARQ-ESC-005 — Verificar `eventoSSRController` e `tiposCertificadosSSRController` quanto ao escopo
 
 ## Identificador
+
 ARQ-ESC-005
 
 ## Feature
+
 helper-escopo-evento
 
 ## Domínio
+
 07 — Arquitetura e Organização de Código
 
 ## Prioridade
+
 ALTA
 
 ## Pré-requisitos
+
 - ARQ-ESC-001 implementado
 
 ## Descrição
@@ -26,6 +31,7 @@ Verificar se `eventoSSRController.js` e `tiposCertificadosSSRController.js` poss
 ### `src/controllers/eventoSSRController.js`
 
 Confirmar via grep se o arquivo contém alguma das seguintes construções:
+
 - `Usuario.findByPk(req.usuario.id, { include: 'eventos' })`
 - `UsuarioEvento.findAll({ where: { usuario_id: ... } })`
 - Verificação de `req.usuario.perfil !== 'admin'` seguida de query de escopo
@@ -53,4 +59,5 @@ Tipos de certificados são globais (não têm escopo por evento), portanto este 
 - [ ] Conclusão documentada (aplicável ou N/A) para cada controller.
 
 ## Estimativa
+
 PP (até 15min — verificação + ação pontual se necessária)

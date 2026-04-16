@@ -90,7 +90,11 @@ describe('eventoSSRController', () => {
   })
 
   it('criar redireciona ao criar com sucesso', async () => {
-    const req = { body: { nome: 'Novo', ano: '2026' }, file: null, flash: jest.fn() }
+    const req = {
+      body: { nome: 'Novo', ano: '2026' },
+      file: null,
+      flash: jest.fn(),
+    }
     const res = { render: jest.fn(), redirect: jest.fn() }
     eventoService.create.mockResolvedValue({})
     await eventoSSRController.criar(req, res)
@@ -102,11 +106,18 @@ describe('eventoSSRController', () => {
   })
 
   it('criar sem arquivo não envia url_template_base', async () => {
-    const req = { body: { nome: 'Novo', ano: '2026' }, file: null, flash: jest.fn() }
+    const req = {
+      body: { nome: 'Novo', ano: '2026' },
+      file: null,
+      flash: jest.fn(),
+    }
     const res = { render: jest.fn(), redirect: jest.fn() }
     eventoService.create.mockResolvedValue({})
     await eventoSSRController.criar(req, res)
-    expect(eventoService.create).toHaveBeenCalledWith({ nome: 'Novo', ano: '2026' })
+    expect(eventoService.create).toHaveBeenCalledWith({
+      nome: 'Novo',
+      ano: '2026',
+    })
     expect(r2Service.uploadFile).not.toHaveBeenCalled()
   })
 
@@ -148,19 +159,31 @@ describe('eventoSSRController', () => {
   })
 
   it('criar renderiza form com erro', async () => {
-    const req = { body: { nome: 'Novo', ano: '2026' }, file: null, flash: jest.fn() }
+    const req = {
+      body: { nome: 'Novo', ano: '2026' },
+      file: null,
+      flash: jest.fn(),
+    }
     const res = { render: jest.fn(), redirect: jest.fn() }
     eventoService.create.mockRejectedValue(new Error('erro'))
     await eventoSSRController.criar(req, res)
-    expect(req.flash).toHaveBeenCalledWith('error', 'erro')
+    expect(req.flash).not.toHaveBeenCalled()
     expect(res.render).toHaveBeenCalledWith(
       'admin/eventos/form',
-      expect.objectContaining({ evento: req.body }),
+      expect.objectContaining({
+        evento: req.body,
+        flash: expect.objectContaining({ error: ['erro'] }),
+      }),
     )
   })
 
   it('atualizar redireciona ao atualizar com sucesso', async () => {
-    const req = { params: { id: 1 }, body: { nome: 'Edit', ano: '2026' }, file: null, flash: jest.fn() }
+    const req = {
+      params: { id: 1 },
+      body: { nome: 'Edit', ano: '2026' },
+      file: null,
+      flash: jest.fn(),
+    }
     const res = { render: jest.fn(), redirect: jest.fn() }
     eventoService.update.mockResolvedValue({})
     await eventoSSRController.atualizar(req, res)
@@ -195,7 +218,12 @@ describe('eventoSSRController', () => {
   })
 
   it('atualizar redireciona com erro', async () => {
-    const req = { params: { id: 1 }, body: { nome: 'Edit', ano: '2026' }, file: null, flash: jest.fn() }
+    const req = {
+      params: { id: 1 },
+      body: { nome: 'Edit', ano: '2026' },
+      file: null,
+      flash: jest.fn(),
+    }
     const res = { render: jest.fn(), redirect: jest.fn() }
     eventoService.update.mockRejectedValue(new Error('erro'))
     await eventoSSRController.atualizar(req, res)

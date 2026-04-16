@@ -31,19 +31,29 @@ A navbar do painel admin (`views/layouts/admin.hbs`) apresenta múltiplos proble
     <div class='navbar-nav me-auto'>
       <a class='nav-link text-white' href='/admin/dashboard'>Dashboard</a>
       <a class='nav-link text-white' href='/admin/certificados'>Certificados</a>
-      <a class='nav-link text-white' href='/admin/participantes'>Participantes</a>
+      <a
+        class='nav-link text-white'
+        href='/admin/participantes'
+      >Participantes</a>
       {{#if usuario.isAdmin}}
         <a class='nav-link text-white' href='/admin/eventos'>Eventos</a>
-        <a class='nav-link text-white' href='/admin/tipos-certificados'>Tipos</a>
+        <a
+          class='nav-link text-white'
+          href='/admin/tipos-certificados'
+        >Tipos</a>
         <a class='nav-link text-white' href='/admin/usuarios'>Usuários</a>
       {{/if}}
       {{#if usuario.isGestor}}
         <a class='nav-link text-white' href='/admin/eventos'>Eventos</a>
-        <a class='nav-link text-white' href='/admin/tipos-certificados'>Tipos</a>
+        <a
+          class='nav-link text-white'
+          href='/admin/tipos-certificados'
+        >Tipos</a>
       {{/if}}
     </div>
     <div class='navbar-nav'>
-      <span class='navbar-text text-white me-3'>{{usuario.nome}} ({{usuario.perfil}})</span>
+      <span class='navbar-text text-white me-3'>{{usuario.nome}}
+        ({{usuario.perfil}})</span>
       <form action='/auth/logout' method='POST' class='d-inline'>
         <button type='submit' class='btn btn-sm btn-outline-light'>Sair</button>
       </form>

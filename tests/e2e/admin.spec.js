@@ -18,7 +18,9 @@ test.afterAll(async () => {
 test('UC-AD01 — admin acessa dashboard com sucesso', async ({ page }) => {
   await loginAs(page, 'admin.e2e@test.com', 'senha123')
   await expect(page).toHaveURL(/\/admin\/dashboard/)
-  await expect(page.locator('[data-testid="admin-dashboard-root"]')).toBeVisible()
+  await expect(
+    page.locator('[data-testid="admin-dashboard-root"]'),
+  ).toBeVisible()
 })
 
 test('UC-AD02 — gestor acessa dashboard dentro do seu escopo', async ({

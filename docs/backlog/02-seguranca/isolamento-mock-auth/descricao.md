@@ -18,6 +18,7 @@ if (process.env.NODE_ENV === 'test' && req.session?.mockUser) { ... }
 ```
 
 Esses blocos permitem:
+
 1. Injetar um usuário arbitrário via header HTTP `x-mock-user` (objeto JSON sem autenticação)
 2. Reusar esse usuário de sessões anteriores
 
@@ -34,6 +35,7 @@ Remover os blocos de mock de `authSSR.js` (middleware de produção) e centraliz
 Os testes de rota que usam `supertest` importam `app.js`. Como o Jest é quem carrega os módulos, um `jest.mock('../../../src/middlewares/authSSR', factory)` declarado no topo do arquivo de teste **intercepta o `require` dentro de `app.js`**, substituindo o middleware real pela versão mock antes que o Express registre as rotas.
 
 O utilitário `tests/utils/authSSR.mock.js` exporta:
+
 - `mockAuthSSR`: função middleware que lê `currentUser` de um closure global
 - `setMockUser(user)`: define o usuário atual para as próximas requests
 

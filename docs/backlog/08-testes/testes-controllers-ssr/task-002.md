@@ -1,12 +1,15 @@
 # Task: TEST-CERT-SSR-002 — Teste de `criar` com erro 409 no `certificadoSSRController`
 
 ## Identificador
+
 TEST-CERT-SSR-002
 
 ## Feature
+
 testes-controllers-ssr
 
 ## Prioridade
+
 ALTA
 
 ## Contexto
@@ -20,6 +23,7 @@ it('deve criar certificado e redirecionar')
 O controller `certificadoSSRController.criar()` chama `certificadoService.create()`, que após a implementação de INTEG-PREV-002 lança um erro com `status: 409` quando já existe um certificado ativo para a mesma combinação `(participante_id, evento_id, tipo_certificado_id)`.
 
 O comportamento esperado do controller nesse caso:
+
 1. Captura o erro 409 no bloco `catch`
 2. Registra `req.flash('error', mensagem)`
 3. Redireciona para `/admin/certificados/novo` (ou de volta ao formulário)
@@ -53,7 +57,9 @@ it('deve exibir flash de erro e redirecionar quando certificado já existe (409)
 
   // Assert
   expect(res.status).toBe(302)
-  expect(res.headers.location).toMatch(/\/admin\/certificados\/novo|\/admin\/certificados/)
+  expect(res.headers.location).toMatch(
+    /\/admin\/certificados\/novo|\/admin\/certificados/,
+  )
 })
 ```
 
@@ -66,7 +72,9 @@ Adicionar também o caso de erro não-409 para garantir que o controller trata e
 ```javascript
 it('deve redirecionar com erro genérico quando o service lança exceção não-409', async () => {
   // Arrange
-  certificadoService.create.mockRejectedValueOnce(new Error('Erro inesperado do banco'))
+  certificadoService.create.mockRejectedValueOnce(
+    new Error('Erro inesperado do banco'),
+  )
 
   // Act
   const res = await request(app)
@@ -98,16 +106,20 @@ Se coberto no arquivo separado, dispensar os testes no arquivo principal e docum
 ---
 
 ## Arquivo alvo (primário)
+
 `tests/controllers/certificadoSSRController.test.js`
 
 ## Arquivo alvo (secundário — verificar antes)
+
 `tests/controllers/certificadoSSRController.create.test.js`
 
 ## Dependências
+
 - `certificadoService.create` precisa lançar `{ status: 409 }` — implementado em INTEG-PREV-002
 - O mock `jest.mock('../../src/services/certificadoService')` já está presente no arquivo de teste
 
 ## Critério de conclusão
+
 - `criar` com 409 resulta em redirect (não 500)
 - O erro não vaza stack trace na resposta
 - Todos os testes passam em `npm run check`

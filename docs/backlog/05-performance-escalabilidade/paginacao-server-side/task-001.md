@@ -45,12 +45,13 @@ const { certificados, arquivados } = await certificadoService.findAllForSSR({
 Se `findAllForSSR` já suporta paginação (aceita `limit` e `offset`):
 
 ```js
-const { certificados, count, arquivados } = await certificadoService.findAllForSSR({
-  where,
-  eventoIds,
-  limit: PAGE_SIZE,
-  offset,
-})
+const { certificados, count, arquivados } =
+  await certificadoService.findAllForSSR({
+    where,
+    eventoIds,
+    limit: PAGE_SIZE,
+    offset,
+  })
 const totalPages = Math.ceil(count / PAGE_SIZE)
 ```
 

@@ -21,10 +21,12 @@ Criar uma migration Sequelize que remove as três FK constraints da tabela `cert
 A migration original `20260311180841-create-certificados.js` criou as FKs com `onDelete: 'CASCADE'`. Migrations existentes não devem ser editadas retroativamente (violaria o histórico de versões do banco). A alteração deve ser feita por uma nova migration.
 
 No PostgreSQL, alterar uma FK constraint exige:
+
 1. Dropar a constraint existente (`ALTER TABLE ... DROP CONSTRAINT`)
 2. Recriar com o novo comportamento (`ALTER TABLE ... ADD CONSTRAINT ... FOREIGN KEY ... ON DELETE RESTRICT`)
 
 Os nomes das constraints gerados pelo Sequelize seguem o padrão `{tabela}_{coluna}_fkey` para FKs criadas com `references` no `createTable`. Os nomes esperados são:
+
 - `certificados_participante_id_fkey`
 - `certificados_evento_id_fkey`
 - `certificados_tipo_certificado_id_fkey`

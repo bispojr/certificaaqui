@@ -23,7 +23,9 @@ O `authMocks.js` atual (linhas 7–22):
 ```js
 async function mockLogin(agent, perfil = 'monitor') {
   const fakeUser = {
-    id: 999, nome: 'Usuário Teste', email: 'teste@certifique.me',
+    id: 999,
+    nome: 'Usuário Teste',
+    email: 'teste@certifique.me',
     perfil,
     getEventos: async () => [{ id: 1, nome: 'Evento Teste' }],
   }
@@ -34,6 +36,7 @@ async function mockLogin(agent, perfil = 'monitor') {
 ```
 
 Problemas do approach atual:
+
 1. Depende do header `x-mock-user` que existia em `authSSR.js` (será removido pela SEG-AUTH-001)
 2. Faz uma request extra a `/admin/dashboard` antes de cada teste (overhead desnecessário)
 3. A persistência em sessão significa que o estado de autenticação "vaza" entre requests do mesmo agent, mas dependia de session cookie (frágil)

@@ -20,10 +20,10 @@ Substituir todas as chamadas a `eventoService.delete()` por `eventoService.softD
 
 Callers confirmados via grep:
 
-| Arquivo | Linha | Chamada atual |
-|---------|-------|---------------|
-| `src/controllers/eventoSSRController.js` | ~108 | `await eventoService.delete(req.params.id)` |
-| `src/controllers/eventoController.js` | ~47 | `await eventoService.delete(req.params.id)` |
+| Arquivo                                  | Linha | Chamada atual                               |
+| ---------------------------------------- | ----- | ------------------------------------------- |
+| `src/controllers/eventoSSRController.js` | ~108  | `await eventoService.delete(req.params.id)` |
+| `src/controllers/eventoController.js`    | ~47   | `await eventoService.delete(req.params.id)` |
 
 ## Arquivos envolvidos
 
@@ -35,12 +35,15 @@ Callers confirmados via grep:
 ### `eventoSSRController.js`
 
 Localizar o método `deletar`:
+
 ```js
 async deletar(req, res) {
   try {
     await eventoService.delete(req.params.id)
 ```
+
 Substituir por:
+
 ```js
 async deletar(req, res) {
   try {
@@ -50,10 +53,13 @@ async deletar(req, res) {
 ### `eventoController.js`
 
 Localizar a chamada equivalente:
+
 ```js
 await eventoService.delete(req.params.id)
 ```
+
 Substituir por:
+
 ```js
 await eventoService.softDelete(req.params.id)
 ```

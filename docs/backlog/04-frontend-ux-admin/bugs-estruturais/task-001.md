@@ -18,15 +18,15 @@ O layout `views/layouts/admin.hbs` já exibe `flash.success` e `flash.error` glo
 
 ## Arquivos envolvidos
 
-| Arquivo | Linhas a remover |
-|---------|-----------------|
-| `views/admin/certificados/index.hbs` | linhas 6–7 |
-| `views/admin/certificados/detalhe.hbs` | linhas 11–12 |
-| `views/admin/certificados/form.hbs` | linha 4 |
-| `views/admin/usuarios/index.hbs` | linhas 6–11 |
-| `views/admin/usuarios/form.hbs` | linhas 3–5 |
-| `views/admin/tipos-certificados/index.hbs` | linhas 7–11 |
-| `views/admin/tipos-certificados/form.hbs` | linhas 4–6 |
+| Arquivo                                    | Linhas a remover |
+| ------------------------------------------ | ---------------- |
+| `views/admin/certificados/index.hbs`       | linhas 6–7       |
+| `views/admin/certificados/detalhe.hbs`     | linhas 11–12     |
+| `views/admin/certificados/form.hbs`        | linha 4          |
+| `views/admin/usuarios/index.hbs`           | linhas 6–11      |
+| `views/admin/usuarios/form.hbs`            | linhas 3–5       |
+| `views/admin/tipos-certificados/index.hbs` | linhas 7–11      |
+| `views/admin/tipos-certificados/form.hbs`  | linhas 4–6       |
 
 ## Passos
 
@@ -35,12 +35,16 @@ Para cada arquivo da lista acima, remover o bloco completo de flash local.
 ### Padrão a remover (variações de formatação):
 
 **Bloco completo (success + error) — formato inline:**
+
 ```hbs
-  {{#if flash.success}}<div class="alert alert-success">{{flash.success}}</div>{{/if}}
-  {{#if flash.error}}<div class="alert alert-danger">{{flash.error}}</div>{{/if}}
+{{#if flash.success}}<div
+    class='alert alert-success'
+  >{{flash.success}}</div>{{/if}}
+{{#if flash.error}}<div class='alert alert-danger'>{{flash.error}}</div>{{/if}}
 ```
 
 **Bloco completo (success + error) — formato multiline:**
+
 ```hbs
 {{#if flash.success}}
   <div class='alert alert-success'>{{flash.success}}</div>
@@ -51,6 +55,7 @@ Para cada arquivo da lista acima, remover o bloco completo de flash local.
 ```
 
 **Apenas error:**
+
 ```hbs
 {{#if flash.error}}
   <div class='alert alert-danger'>{{flash.error}}</div>

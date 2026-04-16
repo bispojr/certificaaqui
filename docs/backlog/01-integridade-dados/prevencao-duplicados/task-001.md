@@ -21,6 +21,7 @@ Adicionar uma migration Sequelize que cria um índice único parcial no PostgreS
 A tabela `certificados` já possui `UNIQUE` simples no campo `codigo`. O que falta é uma constraint que garanta unicidade semântica: um participante não pode ter dois certificados ativos do mesmo tipo no mesmo evento.
 
 O índice deve ser **parcial** (`WHERE deleted_at IS NULL`) para que:
+
 - Certificados soft-deleted (incluindo os cancelados via `INTEG-LIMP-002`) não sejam contados
 - Um participante possa ter um certificado cancelado/soft-deleted e depois receber um novo certificado do mesmo tipo
 
@@ -35,6 +36,7 @@ O Sequelize CLI não suporta índices parciais via `addIndex` com cláusula `WHE
 1. Criar arquivo de migration com nome no formato `YYYYMMDDHHMMSS-add-unique-certificados-participante-evento-tipo.js`. O timestamp deve refletir o momento real de criação.
 
 2. Implementar o método `up` usando SQL raw via `queryInterface.sequelize.query()`:
+
    ```javascript
    await queryInterface.sequelize.query(`
      CREATE UNIQUE INDEX uq_certificados_participante_evento_tipo
@@ -44,6 +46,7 @@ O Sequelize CLI não suporta índices parciais via `addIndex` com cláusula `WHE
    ```
 
 3. Implementar o método `down` para remover o índice:
+
    ```javascript
    await queryInterface.sequelize.query(`
      DROP INDEX IF EXISTS uq_certificados_participante_evento_tipo

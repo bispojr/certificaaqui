@@ -37,7 +37,8 @@ grep -rn "confirm.*Remover\|confirm.*remover" views/admin/
 Resultado esperado: **zero resultados** — todas as mensagens de confirmação de soft delete devem usar "Arquivar".
 
 Se houver resultados, atualizar para o padrão:
-- `"Arquivar este [entidade]? Esta ação pode ser desfeita."` 
+
+- `"Arquivar este [entidade]? Esta ação pode ser desfeita."`
 - Para eventos: `"Arquivar este evento? Participantes associados serão desvinculados."`
 
 ### 3. Verificar `btn-outline-danger` usado em botões que não são soft delete

@@ -62,12 +62,12 @@ app.use(
 
 ## Notas de implementação
 
-| Opção | Valor | Justificativa |
-|-------|-------|---------------|
-| `httpOnly: true` | sempre | Impede acesso via JavaScript no browser (XSS mitigation) |
-| `secure` | `NODE_ENV === 'production'` | HTTPS obrigatório em produção; desabilita em dev/test para funcionar sem TLS |
-| `sameSite: 'strict'` | sempre | Bloqueia envio do cookie em requests cross-site (CSRF mitigation) |
-| `maxAge` | `28800000` (8h) | Sessão expira após 8 horas de inatividade; evita sessões eternas |
+| Opção                | Valor                       | Justificativa                                                                |
+| -------------------- | --------------------------- | ---------------------------------------------------------------------------- |
+| `httpOnly: true`     | sempre                      | Impede acesso via JavaScript no browser (XSS mitigation)                     |
+| `secure`             | `NODE_ENV === 'production'` | HTTPS obrigatório em produção; desabilita em dev/test para funcionar sem TLS |
+| `sameSite: 'strict'` | sempre                      | Bloqueia envio do cookie em requests cross-site (CSRF mitigation)            |
+| `maxAge`             | `28800000` (8h)             | Sessão expira após 8 horas de inatividade; evita sessões eternas             |
 
 - `secure: false` em desenvolvimento é intencional — testar com HTTPS local é complexo desnecessariamente
 - `sameSite: 'strict'` pode causar problemas se o sistema for acessado via redirect de outro domínio (ex.: OAuth, pagamentos). Para este projeto não há esse caso de uso.

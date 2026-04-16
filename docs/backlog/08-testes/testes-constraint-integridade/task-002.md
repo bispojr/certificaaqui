@@ -1,12 +1,15 @@
 # Task: TEST-INTEG-002 — Teste de unidade: `create()` prossegue quando duplicata está soft-deleted
 
 ## Identificador
+
 TEST-INTEG-002
 
 ## Feature
+
 testes-constraint-integridade
 
 ## Prioridade
+
 ALTA
 
 ## Contexto
@@ -25,6 +28,7 @@ O teste complementa o TEST-INTEG-001 e valida que a verificação **não é exce
 ## O que implementar
 
 ### Localização
+
 `tests/services/certificadoService.test.js` — dentro do `describe('create', ...)` existente (linha 64), logo após o teste de 409 (TEST-INTEG-001).
 
 ### Cenário
@@ -45,7 +49,9 @@ it('deve criar normalmente quando certificado com mesma combinação está soft-
     ano: 2026,
   })
   Certificado.count = jest.fn().mockResolvedValueOnce(1) // já existe 1 (soft-deleted conta por MAX)
-  Certificado.create = jest.fn().mockResolvedValueOnce({ id: 100, codigo: 'EVT-26-PT-2' })
+  Certificado.create = jest
+    .fn()
+    .mockResolvedValueOnce({ id: 100, codigo: 'EVT-26-PT-2' })
 
   // Act
   const resultado = await certificadoService.create({
@@ -68,7 +74,7 @@ Com `paranoid: true` (padrão do modelo `Certificado`), a query:
 
 ```javascript
 Certificado.findOne({
-  where: { participante_id: 1, evento_id: 1, tipo_certificado_id: 1 }
+  where: { participante_id: 1, evento_id: 1, tipo_certificado_id: 1 },
 })
 ```
 
@@ -80,22 +86,25 @@ Este teste confirma que **o mock correto para esse cenário é `findOne` retorna
 
 ## Relação com TEST-INTEG-001
 
-| Cenário | `findOne` retorna | Esperado |
-|---|---|---|
-| Duplicata ativa | objeto com `deleted_at: null` | lança 409 |
-| Duplicata soft-deleted | `null` (paranoid filtra) | cria normalmente |
-| Sem duplicata | `null` | cria normalmente |
+| Cenário                | `findOne` retorna             | Esperado         |
+| ---------------------- | ----------------------------- | ---------------- |
+| Duplicata ativa        | objeto com `deleted_at: null` | lança 409        |
+| Duplicata soft-deleted | `null` (paranoid filtra)      | cria normalmente |
+| Sem duplicata          | `null`                        | cria normalmente |
 
 ---
 
 ## Arquivo alvo
+
 `tests/services/certificadoService.test.js`
 
 ## Dependências
+
 - INTEG-PREV-002 implementado (verificação de duplicata na `create()`)
 - O modelo `Certificado` deve ter `paranoid: true` (já confirmado)
 
 ## Critério de conclusão
+
 - Teste passa com a implementação de INTEG-PREV-002
 - `Certificado.create` é chamado exatamente 1 vez
 - Nenhum erro é lançado quando `findOne` retorna `null`

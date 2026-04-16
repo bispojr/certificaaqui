@@ -1,12 +1,15 @@
 # Feature: Testes de Sessão com Store Persistente
 
 ## Identificador da feature
+
 testes-sessao-persistente
 
 ## Domínio
+
 08 — Testes
 
 ## Prioridade
+
 MÉDIA
 
 ## Situação real
@@ -25,13 +28,13 @@ app.use(
 
 **Problemas identificados na configuração atual:**
 
-| Parâmetro | Estado atual | Estado esperado (após SEG-SES-002) |
-|---|---|---|
-| `store` | `MemoryStore` (padrão) | `connect-pg-simple` |
-| `cookie.httpOnly` | não declarado (Express default: `true`) | `true` explícito e testado |
-| `cookie.secure` | não declarado | `true` em produção, `false` em teste |
-| `cookie.sameSite` | não declarado | `'strict'` |
-| `cookie.maxAge` | não declarado (sessão expira ao fechar browser) | `28800000` (8h) |
+| Parâmetro         | Estado atual                                    | Estado esperado (após SEG-SES-002)   |
+| ----------------- | ----------------------------------------------- | ------------------------------------ |
+| `store`           | `MemoryStore` (padrão)                          | `connect-pg-simple`                  |
+| `cookie.httpOnly` | não declarado (Express default: `true`)         | `true` explícito e testado           |
+| `cookie.secure`   | não declarado                                   | `true` em produção, `false` em teste |
+| `cookie.sameSite` | não declarado                                   | `'strict'`                           |
+| `cookie.maxAge`   | não declarado (sessão expira ao fechar browser) | `28800000` (8h)                      |
 
 **Cobertura existente em `tests/routes/authSSR.test.js`:**
 
@@ -52,5 +55,6 @@ app.use(
 ## Dependência principal
 
 Os testes desta feature só passam após implementação de **SEG-SES-001/002/003** (feature `sessoes-persistentes` do Domínio 2), que:
+
 - Substitui `MemoryStore` por `connect-pg-simple`
 - Adiciona os atributos `httpOnly`, `secure`, `sameSite`, `maxAge` ao cookie

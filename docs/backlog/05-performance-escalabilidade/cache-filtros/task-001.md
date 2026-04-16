@@ -1,19 +1,24 @@
 # PERF-CACHE-001 — Módulo `simpleCache` e cache das queries de filtro em certificados
 
 ## Identificador
+
 PERF-CACHE-001
 
 ## Feature
+
 cache-filtros
 
 ## Domínio
+
 05 — Performance e Escalabilidade
 
 ## Prioridade
+
 MÉDIA
 
 ## Pré-requisitos
-- Nenhum (pode ser implementado independentemente de PERF-PAG-*)
+
+- Nenhum (pode ser implementado independentemente de PERF-PAG-\*)
 
 ## Descrição
 
@@ -57,6 +62,7 @@ module.exports = { get, set, invalidate, _clear }
 ```
 
 **Notas:**
+
 - `_clear()` é exportado exclusivamente para uso em `beforeEach` de testes — prefixo `_` sinaliza uso interno.
 - O módulo é singleton (o `Map` vive no escopo do módulo); comportamento correto para cache em processo único.
 
@@ -80,7 +86,7 @@ async function getEventosParaFiltro() {
   if (cached) return cached
   const data = await Evento.findAll({
     attributes: ['id', 'nome'],
-    order: [['nome', 'ASC']]
+    order: [['nome', 'ASC']],
   })
   simpleCache.set(key, data, FILTRO_TTL)
   return data
@@ -92,7 +98,7 @@ async function getTiposParaFiltro() {
   if (cached) return cached
   const data = await TiposCertificados.findAll({
     attributes: ['id', 'nome'],
-    order: [['nome', 'ASC']]
+    order: [['nome', 'ASC']],
   })
   simpleCache.set(key, data, FILTRO_TTL)
   return data
@@ -114,4 +120,5 @@ Dentro de `index()`, substituir as chamadas existentes a `Evento.findAll` e `Tip
 - [ ] O comportamento da listagem de certificados permanece idêntico após a introdução do cache.
 
 ## Estimativa
+
 P (até 1h)

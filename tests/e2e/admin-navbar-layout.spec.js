@@ -30,16 +30,18 @@ test.describe('Navbar do Admin usa layout correto', () => {
       // Verifica se o título contém "Admin"
       await expect(page).toHaveTitle(/Admin/)
       // Descobre e abre o dropdown correto antes de verificar o item
-      let dropdownToggleSelector = null;
-      if (["Certificados", "Tipos", "Pendentes"].includes(label)) {
-        dropdownToggleSelector = 'a.nav-link.dropdown-toggle:text-is("Certificação")';
-      } else if (["Eventos", "Participantes"].includes(label)) {
-        dropdownToggleSelector = 'a.nav-link.dropdown-toggle:text-is("Eventos")';
-      } else if (label === "Usuários") {
-        dropdownToggleSelector = 'a.nav-link.dropdown-toggle:text-is("Administração")';
+      let dropdownToggleSelector = null
+      if (['Certificados', 'Tipos', 'Pendentes'].includes(label)) {
+        dropdownToggleSelector =
+          'a.nav-link.dropdown-toggle:text-is("Certificação")'
+      } else if (['Eventos', 'Participantes'].includes(label)) {
+        dropdownToggleSelector = 'a.nav-link.dropdown-toggle:text-is("Eventos")'
+      } else if (label === 'Usuários') {
+        dropdownToggleSelector =
+          'a.nav-link.dropdown-toggle:text-is("Administração")'
       }
       if (dropdownToggleSelector) {
-        await navbar.locator(dropdownToggleSelector).click();
+        await navbar.locator(dropdownToggleSelector).click()
       }
       await expect(
         navbar.locator(`a.dropdown-item:text-is("${label}")`),

@@ -1,23 +1,29 @@
 # DASH-GEST-002 — Adicionar queries de breakdown e últimos certificados ao controller (gestor)
 
 ## Identificador
+
 DASH-GEST-002
 
 ## Feature
+
 dashboard-gestor
 
 ## Domínio
+
 06 — Dashboard Administrativo
 
 ## Prioridade
+
 MÉDIA
 
 ## Pré-requisitos
+
 - DASH-GEST-001 implementado (`sequelize` importado em `dashboardController.js`)
 
 ## Descrição
 
 Expandir o bloco gestor/monitor em `dashboardController.js` para incluir:
+
 1. `porTipo` — agrupamento de certificados por tipo de certificado (count por tipo)
 2. `ultimosCertificadosGestor` — 5 certificados mais recentes dentro do escopo do gestor
 
@@ -45,36 +51,43 @@ const [totalCertificados, totalParticipantes] = whereEvento
 **Depois:**
 
 ```js
-const [totalCertificados, totalParticipantes, porTipo, ultimosCertificadosGestor] =
-  whereEvento
-    ? await Promise.all([
-        Certificado.count({ where: whereEvento }),
-        Certificado.count({
-          where: whereEvento,
-          distinct: true,
-          col: 'participante_id',
-        }),
-        Certificado.findAll({
-          where: whereEvento,
-          attributes: [
-            'tipo_certificado_id',
-            [sequelize.fn('COUNT', sequelize.col('tipo_certificado_id')), 'total'],
+const [
+  totalCertificados,
+  totalParticipantes,
+  porTipo,
+  ultimosCertificadosGestor,
+] = whereEvento
+  ? await Promise.all([
+      Certificado.count({ where: whereEvento }),
+      Certificado.count({
+        where: whereEvento,
+        distinct: true,
+        col: 'participante_id',
+      }),
+      Certificado.findAll({
+        where: whereEvento,
+        attributes: [
+          'tipo_certificado_id',
+          [
+            sequelize.fn('COUNT', sequelize.col('tipo_certificado_id')),
+            'total',
           ],
-          group: ['tipo_certificado_id', 'TiposCertificado.id'],
-          include: [{ model: TiposCertificados, attributes: ['nome'] }],
-        }),
-        Certificado.findAll({
-          where: whereEvento,
-          limit: 5,
-          order: [['created_at', 'DESC']],
-          include: [
-            { model: Participante, attributes: ['nome'] },
-            { model: TiposCertificados, attributes: ['nome'] },
-          ],
-          attributes: ['id', 'codigo', 'status', 'created_at'],
-        }),
-      ])
-    : [0, 0, [], []]
+        ],
+        group: ['tipo_certificado_id', 'TiposCertificado.id'],
+        include: [{ model: TiposCertificados, attributes: ['nome'] }],
+      }),
+      Certificado.findAll({
+        where: whereEvento,
+        limit: 5,
+        order: [['created_at', 'DESC']],
+        include: [
+          { model: Participante, attributes: ['nome'] },
+          { model: TiposCertificados, attributes: ['nome'] },
+        ],
+        attributes: ['id', 'codigo', 'status', 'created_at'],
+      }),
+    ])
+  : [0, 0, [], []]
 ```
 
 **Atualizar `res.render` do gestor para incluir as novas variáveis:**
@@ -103,4 +116,5 @@ Sequelize pode gerar o alias da associação como `TiposCertificado` (singular) 
 - [ ] Testes de rota do dashboard continuam passando para perfil gestor.
 
 ## Estimativa
+
 P (até 1h — incluindo verificação dos aliases do model)

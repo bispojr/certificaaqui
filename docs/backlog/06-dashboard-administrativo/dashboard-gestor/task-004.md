@@ -1,18 +1,23 @@
 # DASH-GEST-004 — Adicionar card "Total de Participantes Únicos" ao dashboard gestor
 
 ## Identificador
+
 DASH-GEST-004
 
 ## Feature
+
 dashboard-gestor
 
 ## Domínio
+
 06 — Dashboard Administrativo
 
 ## Prioridade
+
 MÉDIA
 
 ## Pré-requisitos
+
 - DASH-GEST-002 implementado
 
 ## Descrição
@@ -28,10 +33,13 @@ Esta task clarifica o label da view para evitar interpretação errada e adicion
 ### 1. `views/admin/dashboard.hbs` — bloco `{{else}}`
 
 **Alterar label do card de participantes** de:
+
 ```hbs
 <div class='card-title text-muted mt-2'>Participantes (seus eventos)</div>
 ```
+
 Para:
+
 ```hbs
 <div class='card-title text-muted mt-2'>Participantes com certificado</div>
 ```
@@ -71,4 +79,5 @@ Nenhuma mudança adicional — `porTipo` já é passado à view por DASH-GEST-00
 - [ ] Label corrigido elimina ambiguidade entre "participantes cadastrados" e "participantes com certificado".
 
 ## Estimativa
+
 PP (até 20min)

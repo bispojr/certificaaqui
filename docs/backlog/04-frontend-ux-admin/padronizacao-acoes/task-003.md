@@ -55,15 +55,19 @@ Substituir `btn-warning` (Editar), `btn-danger` (Remover) e `btn-success` (Resta
 ```
 
 **Botão Restaurar** (seção de arquivados, linha ~86):
+
 ```hbs
 class='btn btn-sm btn-success'
 ```
+
 →
+
 ```hbs
 class='btn btn-sm btn-outline-success'
 ```
 
 **Não alterar:**
+
 - `class='btn btn-outline-secondary'>Buscar` (linha ~15) — botão de formulário de busca
 - `class='btn btn-outline-danger'>Limpar` (linha ~17) — **atenção**: este usa `btn-outline-danger` para "Limpar filtro", o que foge do padrão (btn-outline-danger é reservado para soft delete). Ajustar também para `btn-outline-secondary` para evitar conflito semântico
 

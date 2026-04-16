@@ -14,13 +14,41 @@ const certificadoSSRController = require('../controllers/certificadoSSRControlle
 router.use(authSSR)
 
 // Tipos de Certificados (após autenticação SSR)
-router.get('/tipos-certificados', rbac('gestor'), tiposCertificadosSSRController.index)
-router.get('/tipos-certificados/novo', rbac('gestor'), tiposCertificadosSSRController.novo)
-router.post('/tipos-certificados', rbac('gestor'), tiposCertificadosSSRController.criar)
-router.get('/tipos-certificados/:id/editar', rbac('gestor'), tiposCertificadosSSRController.editar)
-router.post('/tipos-certificados/:id', rbac('gestor'), tiposCertificadosSSRController.atualizar)
-router.post('/tipos-certificados/:id/deletar', rbac('gestor'), tiposCertificadosSSRController.deletar)
-router.post('/tipos-certificados/:id/restaurar', rbac('gestor'), tiposCertificadosSSRController.restaurar)
+router.get(
+  '/tipos-certificados',
+  rbac('gestor'),
+  tiposCertificadosSSRController.index,
+)
+router.get(
+  '/tipos-certificados/novo',
+  rbac('gestor'),
+  tiposCertificadosSSRController.novo,
+)
+router.post(
+  '/tipos-certificados',
+  rbac('gestor'),
+  tiposCertificadosSSRController.criar,
+)
+router.get(
+  '/tipos-certificados/:id/editar',
+  rbac('gestor'),
+  tiposCertificadosSSRController.editar,
+)
+router.post(
+  '/tipos-certificados/:id',
+  rbac('gestor'),
+  tiposCertificadosSSRController.atualizar,
+)
+router.post(
+  '/tipos-certificados/:id/deletar',
+  rbac('gestor'),
+  tiposCertificadosSSRController.deletar,
+)
+router.post(
+  '/tipos-certificados/:id/restaurar',
+  rbac('gestor'),
+  tiposCertificadosSSRController.restaurar,
+)
 
 /**
  * @swagger
@@ -47,10 +75,24 @@ router.get('/dashboard', dashboardController.dashboard)
 router.get('/eventos', rbac('gestor'), eventoSSRController.index)
 router.get('/eventos/novo', rbac('admin'), eventoSSRController.novo)
 router.get('/eventos/:id/editar', rbac('admin'), eventoSSRController.editar)
-router.post('/eventos', rbac('admin'), uploadTemplate, eventoSSRController.criar)
-router.post('/eventos/:id', rbac('admin'), uploadTemplate, eventoSSRController.atualizar)
+router.post(
+  '/eventos',
+  rbac('admin'),
+  uploadTemplate,
+  eventoSSRController.criar,
+)
+router.post(
+  '/eventos/:id',
+  rbac('admin'),
+  uploadTemplate,
+  eventoSSRController.atualizar,
+)
 router.post('/eventos/:id/deletar', rbac('admin'), eventoSSRController.deletar)
-router.post('/eventos/:id/restaurar', rbac('admin'), eventoSSRController.restaurar)
+router.post(
+  '/eventos/:id/restaurar',
+  rbac('admin'),
+  eventoSSRController.restaurar,
+)
 
 // Gestão de participantes (todos os perfis autenticados)
 router.get('/participantes', participanteSSRController.index)
@@ -67,8 +109,16 @@ router.get('/usuarios/novo', rbac('admin'), usuarioSSRController.novo)
 router.post('/usuarios', rbac('admin'), usuarioSSRController.criar)
 router.get('/usuarios/:id/editar', rbac('admin'), usuarioSSRController.editar)
 router.post('/usuarios/:id', rbac('admin'), usuarioSSRController.atualizar)
-router.post('/usuarios/:id/deletar', rbac('admin'), usuarioSSRController.deletar)
-router.post('/usuarios/:id/restaurar', rbac('admin'), usuarioSSRController.restaurar)
+router.post(
+  '/usuarios/:id/deletar',
+  rbac('admin'),
+  usuarioSSRController.deletar,
+)
+router.post(
+  '/usuarios/:id/restaurar',
+  rbac('admin'),
+  usuarioSSRController.restaurar,
+)
 
 /**
  * @swagger
@@ -92,11 +142,35 @@ router.post('/usuarios/:id/restaurar', rbac('admin'), usuarioSSRController.resta
 router.get('/certificados', rbac('monitor'), certificadoSSRController.index)
 router.get('/certificados/novo', rbac('gestor'), certificadoSSRController.novo)
 router.post('/certificados', rbac('gestor'), certificadoSSRController.criar)
-router.get('/certificados/:id', rbac('monitor'), certificadoSSRController.detalhe)
-router.get('/certificados/:id/editar', rbac('gestor'), certificadoSSRController.editar)
-router.post('/certificados/:id', rbac('gestor'), certificadoSSRController.atualizar)
-router.post('/certificados/:id/cancelar', rbac('gestor'), certificadoSSRController.cancelar)
-router.post('/certificados/:id/deletar', rbac('gestor'), certificadoSSRController.deletar)
-router.post('/certificados/:id/restaurar', rbac('admin'), certificadoSSRController.restaurar)
+router.get(
+  '/certificados/:id',
+  rbac('monitor'),
+  certificadoSSRController.detalhe,
+)
+router.get(
+  '/certificados/:id/editar',
+  rbac('gestor'),
+  certificadoSSRController.editar,
+)
+router.post(
+  '/certificados/:id',
+  rbac('gestor'),
+  certificadoSSRController.atualizar,
+)
+router.post(
+  '/certificados/:id/cancelar',
+  rbac('gestor'),
+  certificadoSSRController.cancelar,
+)
+router.post(
+  '/certificados/:id/deletar',
+  rbac('gestor'),
+  certificadoSSRController.deletar,
+)
+router.post(
+  '/certificados/:id/restaurar',
+  rbac('admin'),
+  certificadoSSRController.restaurar,
+)
 
 module.exports = router

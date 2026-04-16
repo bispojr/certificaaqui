@@ -48,17 +48,19 @@ const offset = (page - 1) * PAGE_SIZE
 
 const { rows: participantes, count } = await Participante.findAndCountAll({
   where: textWhere,
-  include: [{
-    model: Certificado,
-    as: 'certificados',
-    where: eventoIds ? certWhere : undefined,
-    required: eventoIds ? true : false,
-  }],
+  include: [
+    {
+      model: Certificado,
+      as: 'certificados',
+      where: eventoIds ? certWhere : undefined,
+      required: eventoIds ? true : false,
+    },
+  ],
   limit: PAGE_SIZE,
   offset,
   order: [['nome', 'ASC']],
-  subQuery: false,  // IMPORTANTE: evitar COUNT incorreto com include + required
-  distinct: true,   // Contar participantes distintos, não linhas de JOIN
+  subQuery: false, // IMPORTANTE: evitar COUNT incorreto com include + required
+  distinct: true, // Contar participantes distintos, não linhas de JOIN
 })
 const totalPages = Math.ceil(count / PAGE_SIZE)
 ```

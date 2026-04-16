@@ -1,18 +1,23 @@
 # [x] DASH-ADMIN-002 — Card "Total de Certificados" e card "Pendentes" no dashboard admin — concluída em 2026-04-11 21:30 (BRT)
 
 ## Identificador
+
 DASH-ADMIN-002
 
 ## Feature
+
 dashboard-admin
 
 ## Domínio
+
 06 — Dashboard Administrativo
 
 ## Prioridade
+
 ALTA
 
 ## Pré-requisitos
+
 - DASH-ADMIN-001 implementado (controller passa `totalCertificados` e `totalCertificadosPendentes` para a view)
 
 ## Descrição
@@ -69,7 +74,9 @@ Adicionar dois novos cards ao bloco `{{#if usuario.isAdmin}}` em `views/admin/da
     <a href='/admin/certificados?status=pendente' class='text-decoration-none'>
       <div class='card text-center border-warning h-100'>
         <div class='card-body'>
-          <div class='display-4 fw-bold text-warning'>{{totalCertificadosPendentes}}</div>
+          <div
+            class='display-4 fw-bold text-warning'
+          >{{totalCertificadosPendentes}}</div>
           <div class='card-title text-muted mt-2'>Pendentes</div>
         </div>
       </div>
@@ -92,4 +99,5 @@ Adicionar dois novos cards ao bloco `{{#if usuario.isAdmin}}` em `views/admin/da
 - [ ] Layout não quebra em telas sm (Bootstrap responsivo).
 
 ## Estimativa
+
 PP (até 30min)

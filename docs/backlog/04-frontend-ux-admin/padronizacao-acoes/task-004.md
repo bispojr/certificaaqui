@@ -23,10 +23,7 @@ Substituir `btn-warning` (Editar), `btn-danger` (Remover) e `btn-success` (Resta
 ## Situação atual (linhas 20–35)
 
 ```hbs
-<a
-  href='/admin/eventos/{{id}}/editar'
-  class='btn btn-sm btn-warning'
->Editar</a>
+<a href='/admin/eventos/{{id}}/editar' class='btn btn-sm btn-warning'>Editar</a>
 <form
   method='POST'
   action='/admin/eventos/{{id}}/deletar'
@@ -55,10 +52,13 @@ Substituir `btn-warning` (Editar), `btn-danger` (Remover) e `btn-success` (Resta
 ```
 
 **Botão Restaurar** (seção de arquivados, linha ~70):
+
 ```hbs
 class='btn btn-sm btn-success'
 ```
+
 →
+
 ```hbs
 class='btn btn-sm btn-outline-success'
 ```

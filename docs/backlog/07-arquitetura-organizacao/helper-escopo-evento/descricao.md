@@ -1,12 +1,15 @@
 # Feature: Helper de Escopo de Evento Reutilizável
 
 ## Identificador da feature
+
 helper-escopo-evento
 
 ## Domínio
+
 07 — Arquitetura e Organização de Código
 
 ## Prioridade
+
 ALTA
 
 ## Problema
@@ -79,8 +82,9 @@ module.exports = { getScopedEventoIds }
 ```
 
 **Diferença em relação à função local de `certificadoSSRController`:**
+
 - Recebe `usuario` diretamente (não `req`) → facilita teste unitário sem mock de `req`
-- Adiciona `attributes: ['evento_id']` para evitar SELECT * na tabela de junção
+- Adiciona `attributes: ['evento_id']` para evitar SELECT \* na tabela de junção
 
 ---
 

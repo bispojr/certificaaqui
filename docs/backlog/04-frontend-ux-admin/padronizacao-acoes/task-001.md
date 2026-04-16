@@ -18,19 +18,20 @@ Estabelecer e registrar o padrão visual de botões de ação de forma que outro
 
 ## Padrão a documentar
 
-| Ação | Label | Classe Bootstrap | Semântica |
-|------|-------|-----------------|-----------|
-| Ver / Detalhe | Ver | `btn-outline-primary btn-sm` | leitura |
-| Editar | Editar | `btn-outline-secondary btn-sm` | atualização |
-| Cancelar (reversível) | Cancelar | `btn-outline-warning btn-sm` | muda status para 'cancelado' |
-| Arquivar (soft delete) | Arquivar | `btn-outline-danger btn-sm` | define deleted_at |
-| Restaurar | Restaurar | `btn-outline-success btn-sm` | limpa deleted_at |
+| Ação                   | Label     | Classe Bootstrap               | Semântica                    |
+| ---------------------- | --------- | ------------------------------ | ---------------------------- |
+| Ver / Detalhe          | Ver       | `btn-outline-primary btn-sm`   | leitura                      |
+| Editar                 | Editar    | `btn-outline-secondary btn-sm` | atualização                  |
+| Cancelar (reversível)  | Cancelar  | `btn-outline-warning btn-sm`   | muda status para 'cancelado' |
+| Arquivar (soft delete) | Arquivar  | `btn-outline-danger btn-sm`    | define deleted_at            |
+| Restaurar              | Restaurar | `btn-outline-success btn-sm`   | limpa deleted_at             |
 
 ## Passos
 
 ### 1. Criar `docs/decisoes/009-padrao-botoes-acoes.md`
 
 Registrar como ADR (Architecture Decision Record) o padrão acima, com:
+
 - **Contexto**: inconsistência observada entre pages
 - **Decisão**: tabela de padrões acima
 - **Consequências**: todas as pages precisam ser atualizadas (tags FRONT-PAD-002 a 006)
@@ -40,14 +41,14 @@ Registrar como ADR (Architecture Decision Record) o padrão acima, com:
 Inserir antes do `{{{body}}}`, como guia para templates filhos:
 
 ```hbs
-{{!--
+{{!
   PADRÃO DE BOTÕES DE AÇÃO (atualizar ao adicionar novas ações):
   Ver        → <a class="btn btn-outline-primary btn-sm">Ver</a>
   Editar     → <a class="btn btn-outline-secondary btn-sm">Editar</a>
   Cancelar   → <button class="btn btn-outline-warning btn-sm">Cancelar</button>
   Arquivar   → <button class="btn btn-outline-danger btn-sm">Arquivar</button>
   Restaurar  → <button class="btn btn-outline-success btn-sm">Restaurar</button>
---}}
+}}
 ```
 
 ## Notas de implementação

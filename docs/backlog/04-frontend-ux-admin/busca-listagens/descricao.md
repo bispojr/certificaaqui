@@ -18,12 +18,12 @@ A listagem de participantes já possui campo de busca `?q=` funcional (com input
 
 ## Situação atual
 
-| Página | Filtros existentes | Busca por texto |
-|--------|-------------------|-----------------|
-| Participantes | `?q=` (nome/e-mail) | ✅ |
-| Certificados | `?evento_id`, `?status`, `?tipo_id` | ❌ |
-| Eventos | nenhum | ❌ |
-| Usuários | nenhum | ❌ |
+| Página        | Filtros existentes                  | Busca por texto |
+| ------------- | ----------------------------------- | --------------- |
+| Participantes | `?q=` (nome/e-mail)                 | ✅              |
+| Certificados  | `?evento_id`, `?status`, `?tipo_id` | ❌              |
+| Eventos       | nenhum                              | ❌              |
+| Usuários      | nenhum                              | ❌              |
 
 ## Padrão de referência
 
@@ -31,8 +31,13 @@ A view `views/admin/participantes/index.hbs` já implementa o padrão correto:
 
 ```hbs
 <form method='GET' action='/admin/participantes' class='mb-3 d-flex gap-2'>
-  <input type='text' class='form-control' name='q' value='{{q}}'
-    placeholder='Buscar por nome ou e-mail' />
+  <input
+    type='text'
+    class='form-control'
+    name='q'
+    value='{{q}}'
+    placeholder='Buscar por nome ou e-mail'
+  />
   <button type='submit' class='btn btn-outline-secondary'>Buscar</button>
   {{#if q}}
     <a href='/admin/participantes' class='btn btn-outline-secondary'>Limpar</a>
@@ -55,11 +60,11 @@ if (q) {
 
 ## Arquivos envolvidos por task
 
-| Task | Controller | View |
-|------|-----------|------|
+| Task            | Controller                    | View                     |
+| --------------- | ----------------------------- | ------------------------ |
 | FRONT-BUSCA-001 | `certificadoSSRController.js` | `certificados/index.hbs` |
-| FRONT-BUSCA-002 | `eventoSSRController.js` | `eventos/index.hbs` |
-| FRONT-BUSCA-003 | `usuarioSSRController.js` | `usuarios/index.hbs` |
+| FRONT-BUSCA-002 | `eventoSSRController.js`      | `eventos/index.hbs`      |
+| FRONT-BUSCA-003 | `usuarioSSRController.js`     | `usuarios/index.hbs`     |
 
 ## Tasks
 

@@ -1,25 +1,28 @@
 # Task: TEST-PART-SSR-004 — Adicionar testes de CRUD ao `participanteSSRController`
 
 ## Identificador
+
 TEST-PART-SSR-004
 
 ## Feature
+
 testes-controllers-ssr
 
 ## Prioridade
+
 ALTA
 
 ## Contexto
 
 `tests/controllers/participanteSSRController.test.js` cobre apenas operações de **listagem**:
 
-| Cobertura existente | Linha |
-|---|---|
-| `GET /admin/participantes` — gestor (escopo restrito) | 125 |
-| `GET /admin/participantes` — monitor (escopo restrito) | 140 |
-| `GET /admin/participantes` — admin (todos) | 162 |
-| `GET /admin/participantes` — admin (ativos + arquivados separados) | 176 |
-| `GET /admin/participantes?q=joao` — admin com filtro | 200 |
+| Cobertura existente                                                | Linha |
+| ------------------------------------------------------------------ | ----- |
+| `GET /admin/participantes` — gestor (escopo restrito)              | 125   |
+| `GET /admin/participantes` — monitor (escopo restrito)             | 140   |
+| `GET /admin/participantes` — admin (todos)                         | 162   |
+| `GET /admin/participantes` — admin (ativos + arquivados separados) | 176   |
+| `GET /admin/participantes?q=joao` — admin com filtro               | 200   |
 
 **Lacunas confirmadas** (nenhum `describe` para as operações de escrita):
 
@@ -69,7 +72,9 @@ describe('Admin SSR — Participante: criar', () => {
     expect(res.headers.location).toMatch(/\/admin\/participantes/)
 
     // Verificar persistência no banco
-    const criado = await Participante.findOne({ where: { email: 'novo@email.com' } })
+    const criado = await Participante.findOne({
+      where: { email: 'novo@email.com' },
+    })
     expect(criado).not.toBeNull()
     expect(criado.nomeCompleto).toBe('Novo Participante')
   })
@@ -176,14 +181,17 @@ describe('Admin SSR — Participante: restaurar', () => {
 ---
 
 ## Arquivo alvo
+
 `tests/controllers/participanteSSRController.test.js`
 
 ## Dependencies
+
 - `setupDb()` já cria participantes id=1 (ativo) e id=2 (arquivado) — reutilizar
 - Rota `DELETE /admin/participantes/:id` deve estar registrada
 - Rota `POST /admin/participantes/:id/restaurar` deve estar registrada
 
 ## Critério de conclusão
+
 - Os 6 novos `describe` blocos passam em `npm run check`
 - Soft delete de participante se reflete no banco (`deletedAt` não nulo)
 - Restore de participante se reflete no banco (`deletedAt` nulo)

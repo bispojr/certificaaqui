@@ -1,12 +1,15 @@
 # Task: TEST-SES-001 — Sessão autenticada permanece válida após reinicialização simulada do store
 
 ## Identificador
+
 TEST-SES-001
 
 ## Feature
+
 testes-sessao-persistente
 
 ## Prioridade
+
 MÉDIA
 
 ## Contexto
@@ -20,6 +23,7 @@ Após implementação de **SEG-SES-002** com `connect-pg-simple`, as sessões fi
 ## O que implementar
 
 ### Localização
+
 `tests/routes/authSSR.test.js` — novo `describe` ao final do arquivo.
 
 ### Estratégia de teste
@@ -84,20 +88,25 @@ Para tornar o teste mais rigoroso com `connect-pg-simple`, adicionar verificaç�
 ```javascript
 // Após o login, verificar que a sessão foi gravada no banco
 const { sequelize } = require('../../src/models')
-const [sessions] = await sequelize.query("SELECT * FROM user_sessions WHERE sess::text LIKE '%admin@email.com%'")
+const [sessions] = await sequelize.query(
+  "SELECT * FROM user_sessions WHERE sess::text LIKE '%admin@email.com%'",
+)
 expect(sessions.length).toBeGreaterThan(0)
 ```
 
 ---
 
 ## Arquivo alvo
+
 `tests/routes/authSSR.test.js`
 
 ## Dependências
+
 - **SEG-SES-002**: `connect-pg-simple` configurado e tabela `user_sessions` criada por migration
 - Usuário `admin@email.com` deve existir no banco de teste (já criado no `setupDb` do arquivo)
 
 ## Critério de conclusão
+
 - Request com cookie de sessão capturado no login retorna 200 em `/admin/dashboard`
 - (Opcional) Registro na tabela `user_sessions` é verificado após o login
 - Teste passa em `npm run check`

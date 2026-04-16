@@ -1,18 +1,23 @@
 # ARQ-ESC-002 — Refatorar `certificadoSSRController.js` para usar `getScopedEventoIds`
 
 ## Identificador
+
 ARQ-ESC-002
 
 ## Feature
+
 helper-escopo-evento
 
 ## Domínio
+
 07 — Arquitetura e Organização de Código
 
 ## Prioridade
+
 ALTA
 
 ## Pré-requisitos
+
 - ARQ-ESC-001 implementado
 
 ## Descrição
@@ -28,6 +33,7 @@ Substituir a função local `getEventoIds(req)` em `certificadoSSRController.js`
 **1. Adicionar import no topo:**
 
 Após os imports existentes, adicionar:
+
 ```js
 const { getScopedEventoIds } = require('../utils/getScopedEventoIds')
 ```
@@ -88,4 +94,5 @@ const {
 - [ ] Testes existentes do controller certificado (se houver) passam sem alteração.
 
 ## Estimativa
+
 PP (até 20min)

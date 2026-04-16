@@ -113,12 +113,16 @@ module.exports = {
       req.flash('success', 'Evento criado com sucesso.')
       return res.redirect('/admin/eventos')
     } catch (err) {
-      req.flash('error', err.message)
+      const errorMessage =
+        err.name === 'SequelizeUniqueConstraintError'
+          ? 'Já existe um evento com este código base.'
+          : err.message
       return res.render('admin/eventos/form', {
         layout: 'layouts/admin',
         title: 'Novo Evento',
         action: '/admin/eventos',
         evento: req.body,
+        flash: { error: [errorMessage], success: [] },
       })
     }
   },

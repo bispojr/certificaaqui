@@ -21,6 +21,7 @@ Remover os dois `require()` invocados dentro de funções em `certificadoSSRCont
 Dois `require()` inline confirmados via grep:
 
 **Linha 42** — dentro da função `index()`:
+
 ```js
 where: { ...where, deleted_at: { [require('sequelize').Op.ne]: null } },
 ```
@@ -28,6 +29,7 @@ where: { ...where, deleted_at: { [require('sequelize').Op.ne]: null } },
 Este require de `sequelize` já está disponível indiretamente (Sequelize é carregado pelos models), mas nenhum `Op` está importado no topo. Corrigir adicionando `const { Op } = require('sequelize')` no topo e substituindo o inline.
 
 **Linha 74** — dentro da função `detalhe()`:
+
 ```js
 const templateService = require('../services/templateService')
 ```
@@ -43,6 +45,7 @@ Este require é feito dentro do corpo da função a cada chamada. Como os module
 ### 1. Adicionar imports no topo do arquivo
 
 Localizar o bloco de imports no início do arquivo:
+
 ```js
 const {
   Certificado,
@@ -55,12 +58,14 @@ const certificadoService = require('../services/certificadoService')
 ```
 
 Adicionar as duas novas linhas após os imports existentes:
+
 ```js
 const { Op } = require('sequelize')
 const templateService = require('../services/templateService')
 ```
 
 O topo do arquivo deve ficar:
+
 ```js
 const {
   Certificado,

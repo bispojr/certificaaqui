@@ -20,7 +20,7 @@ Dois bugs confirmados com impacto imediato na usabilidade do painel administrati
 
    Views afetadas confirmadas:
    - `views/admin/certificados/index.hbs` (linhas 6–7)
-   - `views/admin/certificados/detalhe.hbs` (linhas 11–12)  
+   - `views/admin/certificados/detalhe.hbs` (linhas 11–12)
    - `views/admin/certificados/form.hbs` (linha 4)
    - `views/admin/usuarios/index.hbs` (linhas 6–11)
    - `views/admin/usuarios/form.hbs` (linhas 3–5)

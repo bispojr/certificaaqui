@@ -36,6 +36,7 @@ NODE_ENV=development
 ```
 
 Variáveis ausentes:
+
 - `DATABASE_URL` — usada pelo `connect-pg-simple` como `conString`
 - `SESSION_SECRET` — já está sendo checada em `app.js` com `throw` se ausente, mas não está documentada no `.env.example`
 

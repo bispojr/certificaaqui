@@ -38,13 +38,26 @@ O `INCLUDES` definido no controller (linhas 10–17) deve ser replicado no servi
 ## Passos
 
 1. No topo de `certificadoService.js`, o import atual é:
+
    ```js
-   const { Certificado, TiposCertificados, Evento } = require('../../src/models')
+   const {
+     Certificado,
+     TiposCertificados,
+     Evento,
+   } = require('../../src/models')
    ```
+
    Adicionar `Participante` e `UsuarioEvento` ao destructuring (necessários para os includes padrão):
+
    ```js
-   const { Certificado, TiposCertificados, Evento, Participante } = require('../models')
+   const {
+     Certificado,
+     TiposCertificados,
+     Evento,
+     Participante,
+   } = require('../models')
    ```
+
    > Nota: o path também muda de `../../src/models` para `../models` (coberto por BACK-REQ-001, mas pode ser feito aqui se BACK-REQ-001 ainda não foi aplicada).
 
 2. Adicionar constante de includes após os imports:

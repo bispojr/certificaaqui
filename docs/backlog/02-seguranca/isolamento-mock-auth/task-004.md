@@ -17,6 +17,7 @@ teste
 ## Objetivo
 
 Adaptar `tests/routes/admin/certificados.route.test.js` — único arquivo de rota que usa `mockLogin` — para:
+
 1. Interceptar o middleware `authSSR` via `jest.mock` (antes do `require` do `app`)
 2. Usar a nova assinatura `mockLogin(perfil)` (síncrona, sem `agent`)
 3. Limpar o estado mock após cada teste com `clearMockUser()`
@@ -29,11 +30,11 @@ O `jest.mock()` no Jest é **hoisted** automaticamente ao topo do arquivo de com
 
 ### Diferença de assinatura
 
-| Antes | Depois |
-|-------|--------|
+| Antes                               | Depois                 |
+| ----------------------------------- | ---------------------- |
 | `await mockLogin(agent, 'monitor')` | `mockLogin('monitor')` |
-| `await mockLogin(agent, '...')` | `mockLogin('...')` |
-| `await mockLogin(agent, perfil)` | `mockLogin(perfil)` |
+| `await mockLogin(agent, '...')`     | `mockLogin('...')`     |
+| `await mockLogin(agent, perfil)`    | `mockLogin(perfil)`    |
 
 O `agent` não é mais passado. A função é **síncrona** — remover `await`.
 
@@ -46,13 +47,17 @@ O `agent` não é mais passado. A função é **síncrona** — remover `await`.
 ### 1. Adicionar `jest.mock` e atualizar os imports no topo do arquivo
 
 Substituir:
+
 ```js
 const { mockLogin } = require('../../utils/authMocks')
 ```
+
 por:
+
 ```js
-jest.mock('../../../src/middlewares/authSSR', () =>
-  require('../../utils/authSSR.mock').mockAuthSSR
+jest.mock(
+  '../../../src/middlewares/authSSR',
+  () => require('../../utils/authSSR.mock').mockAuthSSR,
 )
 const { mockLogin, clearMockUser } = require('../../utils/authMocks')
 ```
@@ -62,6 +67,7 @@ const { mockLogin, clearMockUser } = require('../../utils/authMocks')
 ### 2. Adicionar `afterEach` para limpar o user mock
 
 No `describe` principal, adicionar após o `beforeEach`:
+
 ```js
 afterEach(() => {
   clearMockUser()
@@ -83,9 +89,11 @@ await mockLogin(agent, 'admin')         → mockLogin('admin')
 ```
 
 Aplicar a substituição em **todas** as ocorrências. Usar busca no arquivo para garantir que nenhuma ficou para trás:
+
 ```
 grep "await mockLogin" tests/routes/admin/certificados.route.test.js
 ```
+
 O resultado deve ser vazio após as alterações.
 
 ### 4. Verificar `agent` no `beforeEach` — manter

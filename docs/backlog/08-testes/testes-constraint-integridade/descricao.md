@@ -1,12 +1,15 @@
 # Feature: Testes de Constraint de Integridade em Certificados
 
 ## Identificador da feature
+
 testes-constraint-integridade
 
 ## Domínio
+
 08 — Testes
 
 ## Prioridade
+
 ALTA
 
 ## Situação real
@@ -27,14 +30,14 @@ Esta feature documenta as tasks de **teste** que devem validar o comportamento c
 
 ## Estado atual dos testes em `tests/services/certificadoService.test.js`
 
-| Cobertura existente |
-|---|
-| `create` — gera código de validação correto |
-| `create` — lança 404 se tipo não encontrado |
-| `create` — lança 422 se faltar campos dinâmicos |
+| Cobertura existente                                      |
+| -------------------------------------------------------- |
+| `create` — gera código de validação correto              |
+| `create` — lança 404 se tipo não encontrado              |
+| `create` — lança 422 se faltar campos dinâmicos          |
 | `create` — cria normalmente se todos os campos presentes |
-| `create` — cria se dados_dinamicos for null |
-| `cancel`, `delete`, `findAll`, `findById`, `update` |
+| `create` — cria se dados_dinamicos for null              |
+| `cancel`, `delete`, `findAll`, `findById`, `update`      |
 
 **Lacunas identificadas:**
 

@@ -450,15 +450,15 @@ TASKS:
 
 ## Visão Consolidada dos Domínios
 
-| # | Domínio | Features | Prioridade Máxima |
-|---|---------|----------|-------------------|
-| 1 | Integridade de Dados | 4 | CRÍTICA |
-| 2 | Segurança | 3 | CRÍTICA |
-| 3 | Backend — Camada de Serviço | 3 | ALTA |
-| 4 | Frontend / UX Admin | 4 | CRÍTICA |
-| 5 | Performance e Escalabilidade | 2 | ALTA |
-| 6 | Dashboard Administrativo | 2 | ALTA |
-| 7 | Arquitetura e Organização | 3 | ALTA |
-| 8 | Testes | 3 | ALTA |
+| #   | Domínio                      | Features | Prioridade Máxima |
+| --- | ---------------------------- | -------- | ----------------- |
+| 1   | Integridade de Dados         | 4        | CRÍTICA           |
+| 2   | Segurança                    | 3        | CRÍTICA           |
+| 3   | Backend — Camada de Serviço  | 3        | ALTA              |
+| 4   | Frontend / UX Admin          | 4        | CRÍTICA           |
+| 5   | Performance e Escalabilidade | 2        | ALTA              |
+| 6   | Dashboard Administrativo     | 2        | ALTA              |
+| 7   | Arquitetura e Organização    | 3        | ALTA              |
+| 8   | Testes                       | 3        | ALTA              |
 
 **Total: 8 domínios · 24 features**

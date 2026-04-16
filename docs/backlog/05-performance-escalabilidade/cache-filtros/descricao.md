@@ -1,25 +1,28 @@
 # Feature: Redução de Queries por Page Load na Listagem de Certificados
 
 ## Identificador da feature
+
 cache-filtros
 
 ## Domínio
+
 05 — Performance e Escalabilidade
 
 ## Prioridade
+
 MÉDIA
 
 ## Problema
 
 `certificadoSSRController.index()` executa entre 5 e 6 queries a cada request:
 
-| # | Query | Frequência de mudança |
-|---|-------|-----------------------|
-| 1 | escopo de evento do usuário | a cada request (depende do usuário) |
-| 2 | `Certificado.findAndCountAll` — ativos | a cada request |
-| 3 | `Certificado.findAndCountAll` — arquivados | a cada request |
-| 4 | `Evento.findAll()` — select de filtro | raramente muda |
-| 5 | `TiposCertificados.findAll()` — select de filtro | raramente muda |
+| #   | Query                                            | Frequência de mudança               |
+| --- | ------------------------------------------------ | ----------------------------------- |
+| 1   | escopo de evento do usuário                      | a cada request (depende do usuário) |
+| 2   | `Certificado.findAndCountAll` — ativos           | a cada request                      |
+| 3   | `Certificado.findAndCountAll` — arquivados       | a cada request                      |
+| 4   | `Evento.findAll()` — select de filtro            | raramente muda                      |
+| 5   | `TiposCertificados.findAll()` — select de filtro | raramente muda                      |
 
 As queries 4 e 5 retornam dados que mudam raramente (somente quando um evento ou tipo é criado/editado/deletado) e são idênticas para todos os usuários. Cachear essas duas queries em memória por um TTL curto elimina 2 das 5-6 queries por request.
 
@@ -65,7 +68,11 @@ const TTL = 60_000 // 60 segundos
 async function getEventosParaFiltro() {
   const cached = simpleCache.get('eventos:filtro')
   if (cached) return cached
-  const data = await Evento.findAll({ where: { deleted_at: null }, attributes: ['id', 'nome'], order: [['nome', 'ASC']] })
+  const data = await Evento.findAll({
+    where: { deleted_at: null },
+    attributes: ['id', 'nome'],
+    order: [['nome', 'ASC']],
+  })
   simpleCache.set('eventos:filtro', data, TTL)
   return data
 }

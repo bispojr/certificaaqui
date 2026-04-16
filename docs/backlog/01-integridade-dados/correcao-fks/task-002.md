@@ -21,6 +21,7 @@ Criar uma migration Sequelize que remove as duas FK constraints da tabela `usuar
 A migration `20260313190000-create-usuario_eventos.js` criou as FKs com `onDelete: 'CASCADE'`. O mesmo padrão da INTEG-FK-001 aplica-se aqui.
 
 Nomes esperados das constraints (padrão Sequelize + PostgreSQL):
+
 - `usuario_eventos_usuario_id_fkey`
 - `usuario_eventos_evento_id_fkey`
 

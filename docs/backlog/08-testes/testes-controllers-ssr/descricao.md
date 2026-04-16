@@ -1,12 +1,15 @@
 # Feature: Complemento de Cobertura nos Testes de Controllers SSR
 
 ## Identificador da feature
+
 testes-controllers-ssr
 
 ## Domínio
+
 08 — Testes
 
 ## Prioridade
+
 ALTA
 
 ## Situação real
@@ -15,12 +18,12 @@ Os controllers SSR **já possuem testes** criados em `/tests/controllers/`. O it
 
 Cobertura existente confirmada:
 
-| Controller | Funções cobertas |
-|---|---|
-| `certificadoSSRController` | index (admin), detalhe, novo, editar, criar, atualizar, cancelar, deletar |
-| `usuarioSSRController` | index, novo, editar, criar, atualizar, deletar |
-| `eventoSSRController` | index, novo, editar, criar, atualizar, deletar, restaurar |
-| `participanteSSRController` | (verificar escopo atual) |
+| Controller                  | Funções cobertas                                                          |
+| --------------------------- | ------------------------------------------------------------------------- |
+| `certificadoSSRController`  | index (admin), detalhe, novo, editar, criar, atualizar, cancelar, deletar |
+| `usuarioSSRController`      | index, novo, editar, criar, atualizar, deletar                            |
+| `eventoSSRController`       | index, novo, editar, criar, atualizar, deletar, restaurar                 |
+| `participanteSSRController` | (verificar escopo atual)                                                  |
 
 ---
 

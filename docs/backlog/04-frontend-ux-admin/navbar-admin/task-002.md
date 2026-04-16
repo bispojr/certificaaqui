@@ -22,15 +22,15 @@ Adicionar um `<i class="fa-solid fa-...">` antes de cada label de texto na navba
 
 ## Mapeamento de ícones
 
-| Item | Ícone FA6 |
-|------|-----------|
-| Dashboard | `fa-solid fa-house` |
-| Certificados | `fa-solid fa-award` |
-| Participantes | `fa-solid fa-users` |
-| Eventos | `fa-solid fa-calendar-days` |
-| Tipos de Certificados | `fa-solid fa-tags` |
-| Usuários | `fa-solid fa-user-gear` |
-| Área Pública (task FRONT-NAV-003) | `fa-solid fa-globe` |
+| Item                              | Ícone FA6                   |
+| --------------------------------- | --------------------------- |
+| Dashboard                         | `fa-solid fa-house`         |
+| Certificados                      | `fa-solid fa-award`         |
+| Participantes                     | `fa-solid fa-users`         |
+| Eventos                           | `fa-solid fa-calendar-days` |
+| Tipos de Certificados             | `fa-solid fa-tags`          |
+| Usuários                          | `fa-solid fa-user-gear`     |
+| Área Pública (task FRONT-NAV-003) | `fa-solid fa-globe`         |
 
 ## Situação atual (trecho da navbar, linhas ~15–40)
 

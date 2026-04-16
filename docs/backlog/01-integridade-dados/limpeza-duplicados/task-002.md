@@ -21,6 +21,7 @@ Gerar um arquivo `.sql` que cancela os registros duplicados, mantendo apenas o c
 A normalização de duplicatas é pré-requisito para a migration `INTEG-PREV-001`, que adiciona constraint única parcial. Se a constraint for aplicada antes da limpeza e houver duplicatas no banco, a migration falhará com erro de violação de unicidade.
 
 Estratégia de normalização:
+
 - **Manter:** o registro com `created_at` mais recente (última criação) para cada grupo
 - **Cancelar:** todos os demais registros do grupo, definindo `status = 'cancelado'`
 - **Não deletar:** o soft delete não é usado aqui para preservar rastreabilidade; o `status = 'cancelado'` é suficiente e mantém o registro visível para auditoria

@@ -1,18 +1,23 @@
 # PERF-CACHE-002 — Invalidação do cache após mutações de Evento e TiposCertificados
 
 ## Identificador
+
 PERF-CACHE-002
 
 ## Feature
+
 cache-filtros
 
 ## Domínio
+
 05 — Performance e Escalabilidade
 
 ## Prioridade
+
 MÉDIA
 
 ## Pré-requisitos
+
 - PERF-CACHE-001 implementado (`src/utils/simpleCache.js` existe e está em uso em `certificadoSSRController`)
 
 ## Descrição
@@ -38,6 +43,7 @@ simpleCache.invalidate('eventos:filtro')
 ```
 
 **Pontos de inserção:**
+
 - Após `await eventoService.create(...)` ou equivalente em `criar`
 - Após `await eventoService.update(...)` ou equivalente em `editar`
 - Após `await eventoService.softDelete(...)` ou equivalente em `deletar`
@@ -67,13 +73,13 @@ simpleCache.invalidate('tipos:filtro')
 
 ## Comportamento esperado
 
-| Ação | Resultado no cache |
-|------|--------------------|
-| GET /admin/certificados | Miss na 1ª request → preenche cache |
-| GET /admin/certificados (2ª) | Hit → sem query ao banco |
-| POST /admin/eventos/criar | `invalidate('eventos:filtro')` |
-| GET /admin/certificados (após criar evento) | Miss → preenche cache atualizado |
-| 60s após qualquer SET | TTL expira → próxima request faz query e repreenche |
+| Ação                                        | Resultado no cache                                  |
+| ------------------------------------------- | --------------------------------------------------- |
+| GET /admin/certificados                     | Miss na 1ª request → preenche cache                 |
+| GET /admin/certificados (2ª)                | Hit → sem query ao banco                            |
+| POST /admin/eventos/criar                   | `invalidate('eventos:filtro')`                      |
+| GET /admin/certificados (após criar evento) | Miss → preenche cache atualizado                    |
+| 60s após qualquer SET                       | TTL expira → próxima request faz query e repreenche |
 
 ---
 
@@ -85,4 +91,5 @@ simpleCache.invalidate('tipos:filtro')
 - [ ] Nenhum teste existente quebra após a adição das chamadas de invalidação.
 
 ## Estimativa
+
 PP (até 30min)

@@ -31,10 +31,13 @@ O path atual `../../src/models` funciona porque vai: `src/services/` → `src/` 
 ## Passos
 
 Para cada arquivo, localizar a linha:
+
 ```js
 const { ... } = require('../../src/models')
 ```
+
 e substituir por:
+
 ```js
 const { ... } = require('../models')
 ```
@@ -42,6 +45,7 @@ const { ... } = require('../models')
 Manter os nomes dos símbolos importados (conteúdo das chaves `{ ... }`) exatamente iguais — apenas o path muda.
 
 ### `participanteService.js`
+
 ```js
 // Antes:
 const { Participante } = require('../../src/models')
@@ -50,6 +54,7 @@ const { Participante } = require('../models')
 ```
 
 ### `certificadoService.js`
+
 ```js
 // Antes:
 const { Certificado, TiposCertificados, Evento } = require('../../src/models')
@@ -58,6 +63,7 @@ const { Certificado, TiposCertificados, Evento } = require('../models')
 ```
 
 ### `tiposCertificadosService.js`
+
 ```js
 // Antes:
 const { TiposCertificados } = require('../../src/models')

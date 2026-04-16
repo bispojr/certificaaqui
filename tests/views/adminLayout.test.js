@@ -16,7 +16,7 @@ describe('views/layouts/admin.hbs', () => {
     })
     // Confirma Bootstrap 5
     expect(html).toMatch(
-      /https:\/\/cdn\.jsdelivr\.net\/npm\/bootswatch@5\.3\.8\/dist\/brite\/bootstrap\.min\.css/
+      /https:\/\/cdn\.jsdelivr\.net\/npm\/bootswatch@5\.3\.8\/dist\/brite\/bootstrap\.min\.css/,
     )
     // Confirma navbar admin (novo padrão)
     expect(html).toMatch(/CertificaAqui/)

@@ -1,23 +1,29 @@
 # [x] DASH-ADMIN-001 — Adicionar queries de certificados ao dashboardController (admin) — concluída em 2026-04-11 19:16 (BRT)
 
 ## Identificador
+
 DASH-ADMIN-001
 
 ## Feature
+
 dashboard-admin
 
 ## Domínio
+
 06 — Dashboard Administrativo
 
 ## Prioridade
+
 ALTA
 
 ## Pré-requisitos
+
 - Nenhum
 
 ## Descrição
 
 Expandir o bloco `if (perfil === 'admin')` em `dashboardController.js` para incluir:
+
 1. `Certificado.count()` — total de certificados ativos
 2. `Certificado.count({ where: { status: 'pendente' } })` — pendentes operacionais
 3. `Certificado.findAll({ limit: 5, order, include })` — últimos 5 emitidos
@@ -103,4 +109,5 @@ return res.render('admin/dashboard', {
 - [ ] Testes de rota do dashboard (`GET /admin`) continuam passando.
 
 ## Estimativa
+
 P (até 1h)

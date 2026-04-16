@@ -53,14 +53,14 @@ module.exports = {
       queryInterface,
       'certificados',
       ['tipo_certificado_id'],
-      'idx_certificados_tipo_certificado_id'
+      'idx_certificados_tipo_certificado_id',
     )
   },
 
   async down(queryInterface) {
     await queryInterface.removeIndex(
       'certificados',
-      'idx_certificados_tipo_certificado_id'
+      'idx_certificados_tipo_certificado_id',
     )
   },
 }

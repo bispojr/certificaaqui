@@ -1,18 +1,23 @@
 # DASH-GEST-003 — Tabelas "por tipo" e "últimos certificados" na view do gestor
 
 ## Identificador
+
 DASH-GEST-003
 
 ## Feature
+
 dashboard-gestor
 
 ## Domínio
+
 06 — Dashboard Administrativo
 
 ## Prioridade
+
 MÉDIA
 
 ## Pré-requisitos
+
 - DASH-GEST-002 implementado (controller passa `porTipo` e `ultimosCertificadosGestor` para a view)
 
 ## Descrição
@@ -90,6 +95,7 @@ Inserir **após** o fechamento `</div>` da row de cards do gestor:
 ```
 
 **Notas de implementação:**
+
 - O nome do campo `TiposCertificado.nome` deve ser ajustado para o alias real da associação (verificar em DASH-GEST-002).
 - As seções ficam ocultas automaticamente quando os arrays estão vazios — sem JavaScript necessário.
 - Ambas as seções ficam **dentro do bloco `{{else}}`**, portanto invísíveis para o admin.
@@ -105,4 +111,5 @@ Inserir **após** o fechamento `</div>` da row de cards do gestor:
 - [ ] O link "Ver todos os certificados" navega para `/admin/certificados`.
 
 ## Estimativa
+
 PP (até 30min)

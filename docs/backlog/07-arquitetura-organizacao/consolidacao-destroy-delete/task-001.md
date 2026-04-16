@@ -1,18 +1,23 @@
 # ARQ-DEL-001 — Renomear `delete()` para `softDelete()` e remover `destroy()` público em `eventoService`
 
 ## Identificador
+
 ARQ-DEL-001
 
 ## Feature
+
 consolidacao-destroy-delete
 
 ## Domínio
+
 07 — Arquitetura e Organização de Código
 
 ## Prioridade
+
 ALTA
 
 ## Pré-requisitos
+
 - ARQ-PATH-001 implementado (mover `UsuarioEvento` para o topo e corrigir path — evitar conflito de edição no mesmo arquivo)
 
 ## Descrição
@@ -69,4 +74,5 @@ async destroy(id) {
 - [ ] Chamada a `eventoService.destroy(id)` lança `TypeError: eventoService.destroy is not a function` (confirma que foi removido).
 
 ## Estimativa
+
 PP (até 15min)

@@ -9,7 +9,7 @@ module.exports = {
    */
   async generateCertificadoPdf(certificado) {
     // Lazy require para evitar dependência circular
-    const r2Service = require('./r2Service');
+    const r2Service = require('./r2Service')
     return new Promise(async (resolve, reject) => {
       try {
         // Log para depuração
@@ -31,15 +31,21 @@ module.exports = {
 
         // --- NOVO: Buscar e inserir imagem de fundo do R2 ---
         const backgroundKey =
-          certificado.Evento?.url_template_base || 'template/padrao.jpg';
+          certificado.Evento?.url_template_base || 'template/padrao.jpg'
         try {
-          const bgResult = await r2Service.getFile(backgroundKey);
+          const bgResult = await r2Service.getFile(backgroundKey)
           if (bgResult && bgResult.Body) {
             // PDFKit exige buffer, x=0, y=0 para fundo
-            doc.image(bgResult.Body, 0, 0, { width: doc.page.width, height: doc.page.height });
+            doc.image(bgResult.Body, 0, 0, {
+              width: doc.page.width,
+              height: doc.page.height,
+            })
           }
         } catch (err) {
-          console.warn('Não foi possível carregar o background do R2:', err.message);
+          console.warn(
+            'Não foi possível carregar o background do R2:',
+            err.message,
+          )
         }
         // --- FIM NOVO ---
 
@@ -63,7 +69,11 @@ module.exports = {
             evento: evento?.nome,
             // Adicione outros campos se necessário
           }
-          texto = templateService.interpolate(tipo.texto_base, valores, valores.nome)
+          texto = templateService.interpolate(
+            tipo.texto_base,
+            valores,
+            valores.nome,
+          )
         } catch (err) {
           return reject(new Error(err.message || 'Erro de interpolação'))
         }
@@ -72,14 +82,24 @@ module.exports = {
         // Nome do evento centralizado
         doc.fontSize(18)
         doc.font('Helvetica-Bold')
-        doc.text(evento?.nome || 'Evento', 0, 60, { width: doc.page.width, align: 'center' })
+        doc.text(evento?.nome || 'Evento', 0, 60, {
+          width: doc.page.width,
+          align: 'center',
+        })
 
         // Nome do participante (ou campo nome)
-        const nomeCompleto = (certificado.nome || participante?.nomeCompleto || '').toUpperCase()
+        const nomeCompleto = (
+          certificado.nome ||
+          participante?.nomeCompleto ||
+          ''
+        ).toUpperCase()
         if (nomeCompleto) {
           doc.fontSize(22)
           doc.font('Helvetica-Bold')
-          doc.text(nomeCompleto, 0, 120, { width: doc.page.width, align: 'center' })
+          doc.text(nomeCompleto, 0, 120, {
+            width: doc.page.width,
+            align: 'center',
+          })
         }
 
         // Texto base interpolado
@@ -88,10 +108,21 @@ module.exports = {
         doc.text(texto, 270, 200, { width: 480, align: 'justify' })
 
         // Código de validação e link
-        const endereco_validacao = process.env.ENDERECO_VALIDACAO || 'https://certifique.me/validar'
+        const endereco_validacao =
+          process.env.ENDERECO_VALIDACAO || 'https://certifique.me/validar'
         doc.fontSize(9.5)
-        doc.fillColor('black').text(`Use o código ${certificado.codigo} para validar o certificado em: `, 145, 545, { width: doc.page.width, align: 'left' })
-        doc.fillColor('blue').text(`${endereco_validacao}`, 392, 545, { link: endereco_validacao, underline: true })
+        doc
+          .fillColor('black')
+          .text(
+            `Use o código ${certificado.codigo} para validar o certificado em: `,
+            145,
+            545,
+            { width: doc.page.width, align: 'left' },
+          )
+        doc.fillColor('blue').text(`${endereco_validacao}`, 392, 545, {
+          link: endereco_validacao,
+          underline: true,
+        })
         doc.fillColor('black')
 
         doc.end()

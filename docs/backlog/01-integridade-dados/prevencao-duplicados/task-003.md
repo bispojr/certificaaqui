@@ -22,12 +22,16 @@ O gerador de código atual em `src/services/certificadoService.js` usa:
 
 ```javascript
 const count = await Certificado.count({
-  where: { evento_id: data.evento_id, tipo_certificado_id: data.tipo_certificado_id },
+  where: {
+    evento_id: data.evento_id,
+    tipo_certificado_id: data.tipo_certificado_id,
+  },
 })
 const incremental = count + 1
 ```
 
 O Sequelize com `paranoid: true` exclui registros soft-deleted por padrão. Isso cria o seguinte cenário de colisão:
+
 1. Certificado `EDU-25-PT-1` é emitido → `count = 0`, `incremental = 1`
 2. Certificado `EDU-25-PT-1` é soft-deletado
 3. Novo certificado é criado → `count = 0` novamente → `incremental = 1`
@@ -78,16 +82,23 @@ const count = await Certificado.count({
 
 ```javascript
 it('conta registros incluindo soft-deleted ao gerar o código', async () => {
-  TiposCertificados.findByPk.mockResolvedValue({ dados_dinamicos: {}, codigo: 'PT' })
+  TiposCertificados.findByPk.mockResolvedValue({
+    dados_dinamicos: {},
+    codigo: 'PT',
+  })
   Evento.findByPk.mockResolvedValue({ codigo_base: 'EDC', ano: 2025 })
   Certificado.findOne.mockResolvedValue(null)
   Certificado.count.mockResolvedValue(0)
   Certificado.create.mockResolvedValue({ id: 1, codigo: 'EDC-25-PT-1' })
 
-  await certificadoService.create({ tipo_certificado_id: 1, evento_id: 2, valores_dinamicos: {} })
+  await certificadoService.create({
+    tipo_certificado_id: 1,
+    evento_id: 2,
+    valores_dinamicos: {},
+  })
 
   expect(Certificado.count).toHaveBeenCalledWith(
-    expect.objectContaining({ paranoid: false })
+    expect.objectContaining({ paranoid: false }),
   )
 })
 ```

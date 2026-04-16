@@ -1,12 +1,15 @@
 # Task: TEST-CERT-SSR-001 — Adicionar testes de `index` com filtros ao `certificadoSSRController`
 
 ## Identificador
+
 TEST-CERT-SSR-001
 
 ## Feature
+
 testes-controllers-ssr
 
 ## Prioridade
+
 ALTA
 
 ## Contexto
@@ -137,14 +140,17 @@ it('deve filtrar certificados pelo eventoIds do gestor', async () => {
 ---
 
 ## Arquivo alvo
+
 `tests/controllers/certificadoSSRController.test.js`
 
 ## Dependências
+
 - O controller já existe e trata `req.query.q`, `req.query.evento_id`, `req.query.tipo_id`, `req.query.status`
 - O mecanismo de mock de autenticação via `x-test-user-id` já está configurado em `authSSR.js`
 - `Certificado.findAll` e `UsuarioEvento.findAll` já são mockados no arquivo de teste
 
 ## Critério de conclusão
+
 - Todos os novos testes passam em `npm run check`
 - `Certificado.findAll.mock.calls[0][0].where` reflete os filtros aplicados ao controller
 - O teste do gestor valida que `evento_id` está restrito ao escopo do usuário

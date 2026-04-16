@@ -51,7 +51,13 @@ const { rows: eventos, count } = await Evento.findAndCountAll({
 // Gestor:
 const { rows: eventos, count } = await Evento.findAndCountAll({
   where: searchWhere,
-  include: [{ association: 'usuarios', where: { id: req.usuario.id }, through: { attributes: [] } }],
+  include: [
+    {
+      association: 'usuarios',
+      where: { id: req.usuario.id },
+      through: { attributes: [] },
+    },
+  ],
   limit: PAGE_SIZE,
   offset,
   order: [['created_at', 'DESC']],

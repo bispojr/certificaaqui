@@ -21,6 +21,7 @@ Eliminar o código de bypass de autenticação do middleware de produção `auth
 Os blocos a remover ficam entre as linhas 4–27 de `authSSR.js` (antes do `const token = req.cookies?.token`):
 
 **Bloco 1 — header `x-mock-user`** (linhas 5–15):
+
 ```js
 if (process.env.NODE_ENV === 'test' && req.headers['x-mock-user']) {
   try {
@@ -36,6 +37,7 @@ if (process.env.NODE_ENV === 'test' && req.headers['x-mock-user']) {
 ```
 
 **Bloco 2 — sessão mockUser** (linhas 17–26):
+
 ```js
 if (process.env.NODE_ENV === 'test' && req.session?.mockUser) {
   const mockUser = { ...req.session.mockUser }

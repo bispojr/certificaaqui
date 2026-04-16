@@ -1,12 +1,15 @@
 # Feature: Remoção de Acoplamento de Path em Services
 
 ## Identificador da feature
+
 acoplamento-path-services
 
 ## Domínio
+
 07 — Arquitetura e Organização de Código
 
 ## Prioridade
+
 MÉDIA
 
 ## Problema
@@ -16,12 +19,15 @@ Auditoria de `require()` inline e paths incorretos, confirmada via grep:
 ### `src/services/eventoService.js` — 3 problemas
 
 **Linha 2 — path incorreto:**
+
 ```js
 const { Evento } = require('../../src/models')
 ```
+
 O arquivo está em `src/services/`, portanto o path correto para `src/models/` é `'../models'`, não `'../../src/models'` (que sai de `src/services` → volta para raiz → entra em `src/models`, funcionando por acidente no Node.js devido ao cache de módulos).
 
 **Linhas 41 e 49 — `require()` inline dentro de funções:**
+
 ```js
 async delete(id) {
   // ...
@@ -53,7 +59,7 @@ Para `eventoService.js`:
 const { Evento } = require('../../src/models')
 
 // DEPOIS:
-'use strict'
+;('use strict')
 const { Evento, UsuarioEvento } = require('../models')
 ```
 

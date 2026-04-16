@@ -1,45 +1,45 @@
-  it('incrementa corretamente o número no código de validação', async () => {
-    TiposCertificados.findByPk.mockResolvedValue({
-      dados_dinamicos: {},
-      codigo: 'PT',
-    })
-    Evento.findByPk.mockResolvedValue({
-      codigo_base: 'EDC',
-      ano: 2025,
-    })
-    // Simula 3 inserções, count retorna 0, 1, 2
-    Certificado.count = jest.fn()
-    Certificado.create = jest.fn()
-    Certificado.count
-      .mockResolvedValueOnce(0)
-      .mockResolvedValueOnce(1)
-      .mockResolvedValueOnce(2)
-    Certificado.create
-      .mockResolvedValueOnce({ id: 1, codigo: 'EDC-25-PT-1' })
-      .mockResolvedValueOnce({ id: 2, codigo: 'EDC-25-PT-2' })
-      .mockResolvedValueOnce({ id: 3, codigo: 'EDC-25-PT-3' })
-    const data1 = { tipo_certificado_id: 1, evento_id: 2, valores_dinamicos: {} }
-    const data2 = { tipo_certificado_id: 1, evento_id: 2, valores_dinamicos: {} }
-    const data3 = { tipo_certificado_id: 1, evento_id: 2, valores_dinamicos: {} }
-    const result1 = await certificadoService.create({ ...data1 })
-    const result2 = await certificadoService.create({ ...data2 })
-    const result3 = await certificadoService.create({ ...data3 })
-    expect(Certificado.create).toHaveBeenNthCalledWith(
-      1,
-      expect.objectContaining({ codigo: 'EDC-25-PT-1' })
-    )
-    expect(Certificado.create).toHaveBeenNthCalledWith(
-      2,
-      expect.objectContaining({ codigo: 'EDC-25-PT-2' })
-    )
-    expect(Certificado.create).toHaveBeenNthCalledWith(
-      3,
-      expect.objectContaining({ codigo: 'EDC-25-PT-3' })
-    )
-    expect(result1.codigo).toBe('EDC-25-PT-1')
-    expect(result2.codigo).toBe('EDC-25-PT-2')
-    expect(result3.codigo).toBe('EDC-25-PT-3')
+it('incrementa corretamente o número no código de validação', async () => {
+  TiposCertificados.findByPk.mockResolvedValue({
+    dados_dinamicos: {},
+    codigo: 'PT',
   })
+  Evento.findByPk.mockResolvedValue({
+    codigo_base: 'EDC',
+    ano: 2025,
+  })
+  // Simula 3 inserções, count retorna 0, 1, 2
+  Certificado.count = jest.fn()
+  Certificado.create = jest.fn()
+  Certificado.count
+    .mockResolvedValueOnce(0)
+    .mockResolvedValueOnce(1)
+    .mockResolvedValueOnce(2)
+  Certificado.create
+    .mockResolvedValueOnce({ id: 1, codigo: 'EDC-25-PT-1' })
+    .mockResolvedValueOnce({ id: 2, codigo: 'EDC-25-PT-2' })
+    .mockResolvedValueOnce({ id: 3, codigo: 'EDC-25-PT-3' })
+  const data1 = { tipo_certificado_id: 1, evento_id: 2, valores_dinamicos: {} }
+  const data2 = { tipo_certificado_id: 1, evento_id: 2, valores_dinamicos: {} }
+  const data3 = { tipo_certificado_id: 1, evento_id: 2, valores_dinamicos: {} }
+  const result1 = await certificadoService.create({ ...data1 })
+  const result2 = await certificadoService.create({ ...data2 })
+  const result3 = await certificadoService.create({ ...data3 })
+  expect(Certificado.create).toHaveBeenNthCalledWith(
+    1,
+    expect.objectContaining({ codigo: 'EDC-25-PT-1' }),
+  )
+  expect(Certificado.create).toHaveBeenNthCalledWith(
+    2,
+    expect.objectContaining({ codigo: 'EDC-25-PT-2' }),
+  )
+  expect(Certificado.create).toHaveBeenNthCalledWith(
+    3,
+    expect.objectContaining({ codigo: 'EDC-25-PT-3' }),
+  )
+  expect(result1.codigo).toBe('EDC-25-PT-1')
+  expect(result2.codigo).toBe('EDC-25-PT-2')
+  expect(result3.codigo).toBe('EDC-25-PT-3')
+})
 const certificadoService = require('../../src/services/certificadoService')
 const { Certificado } = require('../../src/models')
 
@@ -62,12 +62,13 @@ jest.mock('../../src/models', () => ({
 }))
 const { TiposCertificados, Evento } = require('../../src/models')
 describe('create', () => {
-
   beforeEach(() => {
     Certificado.create.mockReset()
     TiposCertificados.findByPk.mockReset()
     Evento.findByPk.mockReset()
-    Certificado.count && Certificado.count.mockReset && Certificado.count.mockReset()
+    Certificado.count &&
+      Certificado.count.mockReset &&
+      Certificado.count.mockReset()
   })
   it('gera código de validação correto', async () => {
     TiposCertificados.findByPk.mockResolvedValue({
@@ -87,7 +88,7 @@ describe('create', () => {
     }
     const result = await certificadoService.create(data)
     expect(Certificado.create).toHaveBeenCalledWith(
-      expect.objectContaining({ codigo: 'EDC-25-PT-1' })
+      expect.objectContaining({ codigo: 'EDC-25-PT-1' }),
     )
     expect(result).toEqual({ id: 10, codigo: 'EDC-25-PT-1' })
   })

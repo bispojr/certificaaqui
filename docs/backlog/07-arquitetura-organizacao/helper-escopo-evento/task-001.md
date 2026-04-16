@@ -1,18 +1,23 @@
 # ARQ-ESC-001 — Criar `src/utils/getScopedEventoIds.js`
 
 ## Identificador
+
 ARQ-ESC-001
 
 ## Feature
+
 helper-escopo-evento
 
 ## Domínio
+
 07 — Arquitetura e Organização de Código
 
 ## Prioridade
+
 ALTA
 
 ## Pré-requisitos
+
 - Nenhum
 
 ## Descrição
@@ -53,6 +58,7 @@ module.exports = { getScopedEventoIds }
 ```
 
 **Notas de implementação:**
+
 - `attributes: ['evento_id']` garante SELECT mínimo (sem `created_at`, `updated_at`, etc.)
 - Arquivo em `src/utils/` — mesma convenção de `simpleCache.js` (PERF-CACHE-001)
 - `require('../models')` é o path correto a partir de `src/utils/`
@@ -68,4 +74,5 @@ module.exports = { getScopedEventoIds }
 - [ ] Quando não há registros em `usuario_eventos` para o usuário, retorna `[]`.
 
 ## Estimativa
+
 PP (até 20min)

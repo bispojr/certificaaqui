@@ -56,19 +56,19 @@ module.exports = {
     }
 
     // Geração do código de validação
-    const eventCode = evento.codigo_base; // Ex: 'EDC'
-    const year = evento.ano.toString().slice(-2); // Ex: '25'
-    const tipoCode = tipo.codigo; // Ex: 'PT'
+    const eventCode = evento.codigo_base // Ex: 'EDC'
+    const year = evento.ano.toString().slice(-2) // Ex: '25'
+    const tipoCode = tipo.codigo // Ex: 'PT'
     // Buscar o número incremental
     const count = await Certificado.count({
       where: {
         evento_id: data.evento_id,
         tipo_certificado_id: data.tipo_certificado_id,
       },
-    });
-    const incremental = count + 1;
-    const validationCode = `${eventCode}-${year}-${tipoCode}-${incremental}`;
-    data.codigo = validationCode;
+    })
+    const incremental = count + 1
+    const validationCode = `${eventCode}-${year}-${tipoCode}-${incremental}`
+    data.codigo = validationCode
 
     return Certificado.create(data)
   },

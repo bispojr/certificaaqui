@@ -1,18 +1,23 @@
 # ARQ-DEL-003 — Atualizar testes de `eventoService` e `eventoSSRController`
 
 ## Identificador
+
 ARQ-DEL-003
 
 ## Feature
+
 consolidacao-destroy-delete
 
 ## Domínio
+
 07 — Arquitetura e Organização de Código
 
 ## Prioridade
+
 ALTA
 
 ## Pré-requisitos
+
 - ARQ-DEL-001 e ARQ-DEL-002 implementados
 
 ## Descrição
@@ -58,6 +63,7 @@ describe('softDelete', () => {
 ```
 
 **Verificar e atualizar os testes de `destroy`** (linhas 122–132 aproximadas):
+
 - Os testes `it('destroy retorna null...')` e `it('destroy chama destroy...')` referem-se ao método removido.
 - **Opção A:** Remover esses testes — o método não existe mais.
 - **Opção B:** Converter em teste negativo: verificar que `eventoService.destroy` não está definido.
@@ -98,4 +104,5 @@ eventoService.softDelete.mockRejectedValue(new Error('erro'))
 - [ ] `npm run check` passa sem erros após todas as atualizações.
 
 ## Estimativa
+
 P (até 30min)

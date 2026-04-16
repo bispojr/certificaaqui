@@ -1,12 +1,15 @@
 # Task: TEST-SES-002 — Verificar que `cookie.httpOnly: true` está presente no cabeçalho de resposta do login
 
 ## Identificador
+
 TEST-SES-002
 
 ## Feature
+
 testes-sessao-persistente
 
 ## Prioridade
+
 MÉDIA
 
 ## Contexto
@@ -20,7 +23,7 @@ session({
   secret: sessionSecret,
   store: pgSession,
   cookie: {
-    httpOnly: true,      // ← explícito
+    httpOnly: true, // ← explícito
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
     maxAge: 8 * 60 * 60 * 1000, // 8 horas
@@ -50,6 +53,7 @@ Não verifica `HttpOnly` nem outros atributos de segurança do cookie de sessão
 ## O que implementar
 
 ### Localização
+
 `tests/routes/authSSR.test.js` — dentro do `describe('POST /auth/login', ...)` existente (linha 30), como novo `it`.
 
 ### Cenário
@@ -70,7 +74,9 @@ it('deve retornar cookie de sessão com atributo HttpOnly', async () => {
   expect(setCookieHeader).toBeDefined()
 
   // O cookie de sessão deve ter o atributo HttpOnly
-  const sessionCookie = setCookieHeader.find((c) => c.startsWith('connect.sid='))
+  const sessionCookie = setCookieHeader.find((c) =>
+    c.startsWith('connect.sid='),
+  )
   expect(sessionCookie).toBeDefined()
   expect(sessionCookie).toMatch(/HttpOnly/i)
 })
@@ -95,23 +101,26 @@ curl -v -X POST http://localhost:3000/auth/login \
 
 ## Atributos de segurança recomendados a verificar
 
-| Atributo | Teste obrigatório | Observação |
-|---|---|---|
-| `HttpOnly` | ✅ (esta task) | Protege contra XSS e roubo de session cookie |
-| `SameSite=Strict` | Opcional | Protege contra CSRF |
-| `Secure` | Coberto em task-003 | Só em produção |
-| `Max-Age` ou `Expires` | Opcional | Evita sessões eternas |
+| Atributo               | Teste obrigatório   | Observação                                   |
+| ---------------------- | ------------------- | -------------------------------------------- |
+| `HttpOnly`             | ✅ (esta task)      | Protege contra XSS e roubo de session cookie |
+| `SameSite=Strict`      | Opcional            | Protege contra CSRF                          |
+| `Secure`               | Coberto em task-003 | Só em produção                               |
+| `Max-Age` ou `Expires` | Opcional            | Evita sessões eternas                        |
 
 ---
 
 ## Arquivo alvo
+
 `tests/routes/authSSR.test.js`
 
 ## Dependências
+
 - **SEG-SES-003**: `cookie.httpOnly: true` declarado explicitamente em `app.js`
 - O nome do cookie deve ser `connect.sid` — confirmar se foi alterado na configuração
 
 ## Critério de conclusão
+
 - `sessionCookie` encontrado via `connect.sid=` no `set-cookie`
 - `sessionCookie` contém a string `HttpOnly` (case-insensitive)
 - Teste passa em `npm run check`

@@ -1,12 +1,15 @@
 # Task: TEST-INTEG-004 — Teste: geração de código via `MAX` não repete incremento após restore
 
 ## Identificador
+
 TEST-INTEG-004
 
 ## Feature
+
 testes-constraint-integridade
 
 ## Prioridade
+
 ALTA
 
 ## Contexto
@@ -47,6 +50,7 @@ const incremental = (max || 0) + 1
 ## O que implementar
 
 ### Localização
+
 `tests/services/certificadoService.test.js` — novo `describe` ou dentro do `describe('create', ...)`.
 
 ### Cenário com mock
@@ -72,7 +76,9 @@ it('não deve reutilizar incremento de certificado soft-deleted (usa MAX, não C
 
   // Mock do MAX que inclui o soft-deleted (paranoid: false)
   Certificado.max = jest.fn().mockResolvedValueOnce(3) // máximo histórico é 3
-  Certificado.create = jest.fn().mockResolvedValueOnce({ id: 10, codigo: 'EVT-26-PT-4' })
+  Certificado.create = jest
+    .fn()
+    .mockResolvedValueOnce({ id: 10, codigo: 'EVT-26-PT-4' })
 
   // Act
   const resultado = await certificadoService.create({
@@ -107,7 +113,9 @@ it('deve gerar incremento 1 quando não existem certificados anteriores (MAX ret
   })
   Certificado.findOne = jest.fn().mockResolvedValueOnce(null)
   Certificado.max = jest.fn().mockResolvedValueOnce(null) // nenhum certificado anterior
-  Certificado.create = jest.fn().mockResolvedValueOnce({ id: 1, codigo: 'EVT-26-PT-1' })
+  Certificado.create = jest
+    .fn()
+    .mockResolvedValueOnce({ id: 1, codigo: 'EVT-26-PT-1' })
 
   await certificadoService.create({
     participante_id: 1,
@@ -131,11 +139,13 @@ it('deve gerar incremento 1 quando não existem certificados anteriores (MAX ret
 A implementação de `MAX` pode ser feita de duas formas:
 
 **Opção A** — `MAX` sobre campo `codigo` com extração do incremento por substring:
+
 ```javascript
 // Frágil — depende do formato do código
 ```
 
 **Opção B** — Adicionar coluna `incremento INTEGER` na tabela `certificados` e usar `MAX('incremento', { paranoid: false })`:
+
 ```javascript
 // Mais robusto — o incremento é armazenado explicitamente
 ```
@@ -145,13 +155,16 @@ A decisão deve ser registrada em **INTEG-PREV-003**. Os mocks do teste assumem 
 ---
 
 ## Arquivo alvo
+
 `tests/services/certificadoService.test.js`
 
 ## Dependências
+
 - INTEG-PREV-003 (geração de código via `MAX`) deve ser implementado antes dos testes passarem
 - O design da coluna `incremento` deve ser definido em INTEG-PREV-003
 
 ## Critério de conclusão
+
 - Teste com MAX retornando 3 gera código com sufixo `-4`
 - Teste com MAX retornando `null` gera código com sufixo `-1`
 - Os testes existentes de geração de código continuam passando (compatibilidade retroativa)

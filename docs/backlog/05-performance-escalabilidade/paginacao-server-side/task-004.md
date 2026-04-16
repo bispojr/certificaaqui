@@ -1,23 +1,29 @@
 # PERF-PAG-004 — Helpers Handlebars para paginação e partial de controles
 
 ## Identificador
+
 PERF-PAG-004
 
 ## Feature
+
 paginacao-server-side
 
 ## Domínio
+
 05 — Performance e Escalabilidade
 
 ## Prioridade
+
 ALTA
 
 ## Pré-requisitos
+
 - PERF-PAG-001, PERF-PAG-002 e PERF-PAG-003 implementados (controllers já passam objeto `pagination` para as views)
 
 ## Descrição
 
 Os controllers agora passam um objeto `pagination` para cada view de listagem. Faltam:
+
 1. Dois helpers Handlebars aritméticos simples — `prev` e `next` — que os controles de navegação usarão para calcular o número da página anterior e da próxima.
 2. Um partial `views/partials/pagination.hbs` que renderize os controles de navegação reutilizáveis em todas as views.
 
@@ -78,6 +84,7 @@ Criar em `views/partials/pagination.hbs` com o seguinte conteúdo:
 ```
 
 **Notas de implementação:**
+
 - `pagination.queryString` é uma string sem `page=`, ex.: `q=joao&status=ativo` — montada pelo controller.
 - O href resulta em `?page=2&q=joao&status=ativo` — concatenação simples, sem encoding manual.
 - O `&` no template HBS é renderizado como literal por ser contexto de atributo href (não HTML body).
@@ -106,8 +113,8 @@ res.render('certificados/index', {
     count,
     hasPrev: page > 1,
     hasNext: page < totalPages,
-    queryString: params.toString()
-  }
+    queryString: params.toString(),
+  },
 })
 ```
 
@@ -125,4 +132,5 @@ Adaptar analogamente para `participanteSSRController` (`q`), `eventoSSRControlle
 - [ ] Nenhum teste existente quebra após adicionar os helpers.
 
 ## Estimativa
+
 P (até 1h)

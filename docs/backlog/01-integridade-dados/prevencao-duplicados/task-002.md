@@ -21,6 +21,7 @@ Esta camada de aplicação é complementar ao índice de banco (`INTEG-PREV-001`
 ## Contexto
 
 Atualmente `certificadoService.create()` em `src/services/certificadoService.js` executa:
+
 1. `TiposCertificados.findByPk`
 2. `Evento.findByPk`
 3. Validação de campos dinâmicos
@@ -50,7 +51,7 @@ const duplicata = await Certificado.findOne({
 })
 if (duplicata) {
   const err = new Error(
-    'Já existe um certificado ativo para este participante neste evento e tipo.'
+    'Já existe um certificado ativo para este participante neste evento e tipo.',
   )
   err.statusCode = 409
   err.code = 'DUPLICATE_CERTIFICADO'

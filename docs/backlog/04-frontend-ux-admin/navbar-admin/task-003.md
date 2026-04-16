@@ -28,19 +28,25 @@ Duas mudanças de conteúdo na navbar:
 Localizar todas as ocorrências de `>Tipos</a>` no bloco da navbar e substituir por `>Tipos de Certificados</a>`.
 
 Se FRONT-NAV-002 já foi executada, o trecho a alterar é:
+
 ```hbs
 <i class='fa-solid fa-tags me-1'></i>Tipos
 ```
+
 →
+
 ```hbs
 <i class='fa-solid fa-tags me-1'></i>Tipos de Certificados
 ```
 
 Se FRONT-NAV-002 ainda não foi executada, o trecho é:
+
 ```hbs
 >Tipos</a>
 ```
+
 →
+
 ```hbs
 >Tipos de Certificados</a>
 ```

@@ -32,6 +32,7 @@ Atualizar os três arquivos de teste que referenciam `eventoService.delete` ou `
 **Renomear** o `describe('delete', ...)` para `describe('softDelete', ...)`.
 
 **Substituir** as chamadas `eventoService.delete(...)` por `eventoService.softDelete(...)` dentro desse bloco:
+
 ```js
 // Antes:
 await eventoService.delete(1)
@@ -47,19 +48,25 @@ const result = await eventoService.softDelete(999)
 ### 2. `tests/controllers/eventoSSRController.test.js`
 
 Localizar os testes de `deletar` (linhas ~186-200). O mock está como:
+
 ```js
 eventoService.delete.mockResolvedValue({})
 ```
+
 Substituir por:
+
 ```js
 eventoService.softDelete.mockResolvedValue({})
 ```
 
 Fazer o mesmo para o teste de erro:
+
 ```js
 eventoService.delete.mockRejectedValue(new Error('erro'))
 ```
+
 →
+
 ```js
 eventoService.softDelete.mockRejectedValue(new Error('erro'))
 ```
@@ -67,10 +74,13 @@ eventoService.softDelete.mockRejectedValue(new Error('erro'))
 ### 3. `tests/controllers/eventoController.test.js`
 
 Localizar o teste "deve deletar um evento" (~linha 90):
+
 ```js
 eventoService.delete.mockResolvedValue()
 ```
+
 Substituir por:
+
 ```js
 eventoService.softDelete.mockResolvedValue()
 ```
@@ -78,14 +88,17 @@ eventoService.softDelete.mockResolvedValue()
 ## Verificação final
 
 Após as alterações, executar:
+
 ```bash
 npx jest tests/services/eventoService.test.js \
          tests/controllers/eventoSSRController.test.js \
          tests/controllers/eventoController.test.js
 ```
+
 Todos devem passar.
 
 Em seguida:
+
 ```bash
 npm run check
 ```

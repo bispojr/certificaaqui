@@ -1,12 +1,15 @@
 # Feature: Enriquecimento do Dashboard Admin
 
 ## Identificador da feature
+
 dashboard-admin
 
 ## Domínio
+
 06 — Dashboard Administrativo
 
 ## Prioridade
+
 ALTA
 
 ## Problema
@@ -16,6 +19,7 @@ O dashboard admin atual exibe 4 cards de contagem (`totalEventos`, `totalTipos`,
 Estado atual confirmado (via leitura do código):
 
 **`dashboardController.js` — bloco admin (linhas 17–30):**
+
 ```js
 const [totalEventos, totalTipos, totalParticipantes, totalUsuarios] =
   await Promise.all([
@@ -27,6 +31,7 @@ const [totalEventos, totalTipos, totalParticipantes, totalUsuarios] =
 ```
 
 **`views/admin/dashboard.hbs` — bloco `{{#if usuario.isAdmin}}`:**
+
 - 4 cards: Eventos (azul), Tipos de Certificados (verde), Participantes (amarelo), Usuários (vermelho)
 - Nenhum card de certificados
 - Nenhuma tabela de atividade recente
@@ -38,26 +43,32 @@ const [totalEventos, totalTipos, totalParticipantes, totalUsuarios] =
 ### Novas queries no `Promise.all` do admin
 
 ```js
-const [totalEventos, totalTipos, totalParticipantes, totalUsuarios,
-       totalCertificados, totalCertificadosPendentes, ultimosCertificados] =
-  await Promise.all([
-    Evento.count(),
-    TiposCertificados.count(),
-    Participante.count(),
-    Usuario.count(),
-    Certificado.count(),
-    Certificado.count({ where: { status: 'pendente' } }),
-    Certificado.findAll({
-      limit: 5,
-      order: [['created_at', 'DESC']],
-      include: [
-        { model: Participante, attributes: ['nome'] },
-        { model: Evento, attributes: ['nome'] },
-        { model: TiposCertificados, attributes: ['nome'] },
-      ],
-      attributes: ['id', 'codigo', 'status', 'created_at']
-    })
-  ])
+const [
+  totalEventos,
+  totalTipos,
+  totalParticipantes,
+  totalUsuarios,
+  totalCertificados,
+  totalCertificadosPendentes,
+  ultimosCertificados,
+] = await Promise.all([
+  Evento.count(),
+  TiposCertificados.count(),
+  Participante.count(),
+  Usuario.count(),
+  Certificado.count(),
+  Certificado.count({ where: { status: 'pendente' } }),
+  Certificado.findAll({
+    limit: 5,
+    order: [['created_at', 'DESC']],
+    include: [
+      { model: Participante, attributes: ['nome'] },
+      { model: Evento, attributes: ['nome'] },
+      { model: TiposCertificados, attributes: ['nome'] },
+    ],
+    attributes: ['id', 'codigo', 'status', 'created_at'],
+  }),
+])
 ```
 
 ### Layout visual final (Bootstrap 5)

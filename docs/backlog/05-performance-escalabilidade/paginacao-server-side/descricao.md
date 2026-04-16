@@ -43,18 +43,32 @@ Criar um helper `pagination` em `hbs-helpers.js` que receba `{ page, totalPages,
 const totalPages = Math.ceil(count / PAGE_SIZE)
 res.render('...', {
   // ...
-  pagination: { page, totalPages, hasNext: page < totalPages, hasPrev: page > 1 }
+  pagination: {
+    page,
+    totalPages,
+    hasNext: page < totalPages,
+    hasPrev: page > 1,
+  },
 })
 ```
 
 ```hbs
-{{!-- No template --}}
+{{! No template }}
 {{#if pagination.hasPrev}}
-  <a href="?page={{prev pagination.page}}&q={{q}}" class="btn btn-outline-secondary btn-sm">← Anterior</a>
+  <a
+    href='?page={{prev pagination.page}}&q={{q}}'
+    class='btn btn-outline-secondary btn-sm'
+  >← Anterior</a>
 {{/if}}
-<span class="mx-2">Página {{pagination.page}} de {{pagination.totalPages}}</span>
+<span class='mx-2'>Página
+  {{pagination.page}}
+  de
+  {{pagination.totalPages}}</span>
 {{#if pagination.hasNext}}
-  <a href="?page={{next pagination.page}}&q={{q}}" class="btn btn-outline-secondary btn-sm">Próxima →</a>
+  <a
+    href='?page={{next pagination.page}}&q={{q}}'
+    class='btn btn-outline-secondary btn-sm'
+  >Próxima →</a>
 {{/if}}
 ```
 
@@ -62,14 +76,14 @@ Isso requer helpers `prev` (retorna `page - 1`) e `next` (retorna `page + 1`) em
 
 ## Arquivos envolvidos
 
-| Task | Controller | View |
-|------|-----------|------|
-| PERF-PAG-001 | `certificadoSSRController.js` | `certificados/index.hbs` |
-| PERF-PAG-002 | `participanteSSRController.js` | `participantes/index.hbs` |
-| PERF-PAG-003 | `eventoSSRController.js` | `eventos/index.hbs` |
-| PERF-PAG-004 | `usuarioSSRController.js` | `usuarios/index.hbs` |
-| PERF-PAG-005 | `hbs-helpers.js` | Helpers `prev`, `next`, `add`, controles de paginação |
-| PERF-PAG-006 | Todas as 4 views | Controles de navegação nas views |
+| Task         | Controller                     | View                                                  |
+| ------------ | ------------------------------ | ----------------------------------------------------- |
+| PERF-PAG-001 | `certificadoSSRController.js`  | `certificados/index.hbs`                              |
+| PERF-PAG-002 | `participanteSSRController.js` | `participantes/index.hbs`                             |
+| PERF-PAG-003 | `eventoSSRController.js`       | `eventos/index.hbs`                                   |
+| PERF-PAG-004 | `usuarioSSRController.js`      | `usuarios/index.hbs`                                  |
+| PERF-PAG-005 | `hbs-helpers.js`               | Helpers `prev`, `next`, `add`, controles de paginação |
+| PERF-PAG-006 | Todas as 4 views               | Controles de navegação nas views                      |
 
 ## Ordem de execução recomendada
 

@@ -21,6 +21,7 @@ Criar um utilitário que recebe `req.usuario` e retorna `null` (admin = sem filt
 Dois controllers implementam essa lógica de forma diferente:
 
 **`certificadoSSRController.js`** — usa `UsuarioEvento`:
+
 ```js
 async function getEventoIds(req) {
   if (req.usuario.perfil === 'admin') return null
@@ -32,6 +33,7 @@ async function getEventoIds(req) {
 ```
 
 **`participanteSSRController.js`** — usa `Usuario.findByPk + include`:
+
 ```js
 if (req.usuario && req.usuario.perfil !== 'admin') {
   const usuarioComEventos = await Usuario.findByPk(req.usuario.id, {
@@ -50,9 +52,11 @@ O utilitário usa a estratégia do `certificadoSSRController` (`UsuarioEvento.fi
 ## Passos
 
 1. Verificar se `src/utils/` já existe:
+
    ```bash
    ls src/utils/
    ```
+
    Se não existir, o arquivo criado abaixo criará o diretório implicitamente.
 
 2. Criar `src/utils/getScopedEventoIds.js`:

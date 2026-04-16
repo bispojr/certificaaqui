@@ -34,4 +34,4 @@ Completar a cobertura Swagger das rotas restantes: `public.js` (imediato) e rota
 
 - [x] DOC-SWAGGER-001 — anotações public.js concluída em 2026-04-10 23:51 (BRT)
 - [x] DOC-SWAGGER-002 — anotações SSR concluída em 2026-04-10 23:54 (BRT)
-✅ 2/2 — Todas as tasks concluídas
+      ✅ 2/2 — Todas as tasks concluídas

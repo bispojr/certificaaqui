@@ -1,12 +1,15 @@
 # Feature: Consolidação entre `destroy` e `delete` no `eventoService`
 
 ## Identificador da feature
+
 consolidacao-destroy-delete
 
 ## Domínio
+
 07 — Arquitetura e Organização de Código
 
 ## Prioridade
+
 ALTA
 
 ## Problema

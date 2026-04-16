@@ -78,6 +78,7 @@ module.exports = {
 ```
 
 Notas:
+
 - Usar `CREATE TABLE IF NOT EXISTS` e `CREATE INDEX IF NOT EXISTS` para tornar a migration idempotente
 - Usar `queryInterface.sequelize.query()` com SQL raw porque o schema da tabela não mapeia para um model Sequelize
 

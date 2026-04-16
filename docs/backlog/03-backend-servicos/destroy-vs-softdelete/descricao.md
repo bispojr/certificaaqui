@@ -12,12 +12,13 @@ Domínio 3 — Backend / Camada de Serviço
 
 `eventoService.js` expõe dois métodos públicos com comportamentos divergentes para a mesma operação de soft delete:
 
-| Método | Comportamento |
-|--------|---------------|
-| `destroy(id)` | Soft delete apenas no `Evento` (via `evento.destroy()`) |
-| `delete(id)` | Soft delete no `Evento` **e** cascata em `UsuarioEvento.destroy(...)` |
+| Método        | Comportamento                                                         |
+| ------------- | --------------------------------------------------------------------- |
+| `destroy(id)` | Soft delete apenas no `Evento` (via `evento.destroy()`)               |
+| `delete(id)`  | Soft delete no `Evento` **e** cascata em `UsuarioEvento.destroy(...)` |
 
 Problemas adicionais:
+
 1. Ambos são públicos — não há indicação de qual usar
 2. `eventoSSRController.deletar()` e `eventoController.delete()` usam `eventoService.delete()` corretamente, mas qualquer novo código pode invocar `destroy()` por engano, deixando associações órfãs silenciosamente
 3. `delete()` e `restore()` executam `require('../../src/models')` **inline** dentro da função — path relativo incorreto e impede mock efetivo

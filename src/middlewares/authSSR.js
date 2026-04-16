@@ -27,6 +27,7 @@ module.exports = async function authSSR(req, res, next) {
   }
 
   const token = req.cookies?.token
+
   if (!token) {
     req.usuario = null
     res.locals.usuario = null

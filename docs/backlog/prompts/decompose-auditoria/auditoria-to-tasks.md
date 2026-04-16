@@ -53,6 +53,7 @@ DOMÍNIO → FEATURE → TASK (alto nível)
 2. Identifique os DOMÍNIOS principais do sistema
 
 Exemplos (adapte conforme necessário):
+
 - Arquitetura
 - Backend
 - Frontend / UX Admin
@@ -103,6 +104,7 @@ Para cada FEATURE, incluir:
 PRIORIDADE: CRÍTICA | ALTA | MÉDIA | BAIXA
 
 Critérios:
+
 - risco de dados
 - impacto no usuário
 - impacto arquitetural

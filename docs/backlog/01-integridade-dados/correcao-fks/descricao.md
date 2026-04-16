@@ -9,16 +9,28 @@ Mudar para `onDelete: 'RESTRICT'` transforma esse silent failure em um erro expl
 ## Estado atual (code)
 
 `migrations/20260311180841-create-certificados.js`:
+
 ```javascript
-participante_id: { onDelete: 'CASCADE' }  // linha ~27
-evento_id:       { onDelete: 'CASCADE' }  // linha ~35
-tipo_certificado_id: { onDelete: 'CASCADE' } // linha ~43
+participante_id: {
+  onDelete: 'CASCADE'
+} // linha ~27
+evento_id: {
+  onDelete: 'CASCADE'
+} // linha ~35
+tipo_certificado_id: {
+  onDelete: 'CASCADE'
+} // linha ~43
 ```
 
 `migrations/20260313190000-create-usuario_eventos.js`:
+
 ```javascript
-usuario_id: { onDelete: 'CASCADE' }  // linha ~15
-evento_id:  { onDelete: 'CASCADE' }  // linha ~22
+usuario_id: {
+  onDelete: 'CASCADE'
+} // linha ~15
+evento_id: {
+  onDelete: 'CASCADE'
+} // linha ~22
 ```
 
 ## Observação importante

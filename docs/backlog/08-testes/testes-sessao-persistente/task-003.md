@@ -1,12 +1,15 @@
 # Task: TEST-SES-003 — Verificar que `cookie.secure` é condicional ao `NODE_ENV`
 
 ## Identificador
+
 TEST-SES-003
 
 ## Feature
+
 testes-sessao-persistente
 
 ## Prioridade
+
 MÉDIA
 
 ## Contexto
@@ -32,6 +35,7 @@ Este comportamento precisa de dois testes:
 ## O que implementar
 
 ### Localização
+
 `tests/routes/authSSR.test.js` — novo `describe` ao final do arquivo.
 
 ### Cenário 1 — `NODE_ENV=test`: sem atributo `Secure`
@@ -48,7 +52,9 @@ describe('Atributos do cookie de sessão por ambiente', () => {
     expect(res.status).toBe(302)
 
     const setCookieHeader = res.headers['set-cookie']
-    const sessionCookie = setCookieHeader?.find((c) => c.startsWith('connect.sid='))
+    const sessionCookie = setCookieHeader?.find((c) =>
+      c.startsWith('connect.sid='),
+    )
     expect(sessionCookie).toBeDefined()
 
     // Em ambiente de teste (HTTP), Secure não deve estar presente
@@ -64,26 +70,26 @@ Testar o comportamento condicional de `cookie.secure` sem subir o app em produç
 **Atenção**: alterar `process.env.NODE_ENV` em testes Jest pode afetar outros módulos carregados. A abordagem recomendada é usar um arquivo de teste dedicado com `@jest-environment node` e controle de variável via `beforeAll`/`afterAll`.
 
 ```javascript
-  it('deve ter atributo Secure em NODE_ENV=production (lógica de configuração)', () => {
-    // Testar a lógica de configuração diretamente, sem subir o app
-    // Esta abordagem evita efeitos colaterais no process.env
+it('deve ter atributo Secure em NODE_ENV=production (lógica de configuração)', () => {
+  // Testar a lógica de configuração diretamente, sem subir o app
+  // Esta abordagem evita efeitos colaterais no process.env
 
-    const cookieConfig = {
-      secure: 'production' === 'production', // simular NODE_ENV=production
-      httpOnly: true,
-      sameSite: 'strict',
-    }
+  const cookieConfig = {
+    secure: 'production' === 'production', // simular NODE_ENV=production
+    httpOnly: true,
+    sameSite: 'strict',
+  }
 
-    // Assert — a expressão condicional deve resultar em true para produção
-    expect(cookieConfig.secure).toBe(true)
-  })
+  // Assert — a expressão condicional deve resultar em true para produção
+  expect(cookieConfig.secure).toBe(true)
+})
 
-  it('deve ter secure=false em configuração para NODE_ENV=test', () => {
-    const cookieConfig = {
-      secure: 'test' === 'production',
-    }
-    expect(cookieConfig.secure).toBe(false)
-  })
+it('deve ter secure=false em configuração para NODE_ENV=test', () => {
+  const cookieConfig = {
+    secure: 'test' === 'production',
+  }
+  expect(cookieConfig.secure).toBe(false)
+})
 ```
 
 > Nota: Os testes de lógica de configuração são propositalmente simples — validam a expressão `NODE_ENV === 'production'` sem efeitos colaterais. O teste do comportamento real (atributo `Secure` no cabeçalho) só é aplicável em um ambiente de integração com HTTPS real, que está fora do escopo dos testes automatizados.
@@ -127,16 +133,20 @@ describe('cookie.secure em produção (módulo isolado)', () => {
 ---
 
 ## Arquivo alvo (primário)
+
 `tests/routes/authSSR.test.js`
 
 ## Arquivo alvo (alternativo)
+
 `tests/routes/authSSR.production.test.js` — arquivo isolado para o cenário de `NODE_ENV=production`
 
 ## Dependências
+
 - **SEG-SES-003**: `cookie.secure: process.env.NODE_ENV === 'production'` em `app.js`
 - O comportamento condicional deve estar na configuração do `express-session`, não em um `if` separado
 
 ## Critério de conclusão
+
 - Em `NODE_ENV=test`: cookie de sessão sem atributo `Secure` — teste passa
 - Lógica condicional de `secure` validada via teste unitário de configuração
 - Se abordagem com `jest.resetModules()` for adotada: teste de produção em arquivo separado passes isoladamente

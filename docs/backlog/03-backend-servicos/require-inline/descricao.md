@@ -16,11 +16,11 @@ Três categorias de problemas identificados via grep:
 
 Todos os services em `src/services/` usam o path `../../src/models` para importar models:
 
-| Arquivo | Path atual | Path correto |
-|---------|-----------|--------------|
-| `src/services/participanteService.js` | `../../src/models` | `../models` |
-| `src/services/certificadoService.js` | `../../src/models` | `../models` |
-| `src/services/tiposCertificadosService.js` | `../../src/models` | `../models` |
+| Arquivo                                    | Path atual         | Path correto |
+| ------------------------------------------ | ------------------ | ------------ |
+| `src/services/participanteService.js`      | `../../src/models` | `../models`  |
+| `src/services/certificadoService.js`       | `../../src/models` | `../models`  |
+| `src/services/tiposCertificadosService.js` | `../../src/models` | `../models`  |
 
 O path `../../src/models` funciona acidentalmente (vai para a raiz e desce de novo), mas é semanticamente errado, frágil a movimentações de diretório e confuso para novos contribuidores.
 
@@ -29,11 +29,13 @@ O path `../../src/models` funciona acidentalmente (vai para a raiz e desce de no
 ### 2. `require()` inline em `certificadoSSRController.js`
 
 **Linha 42** — `require('sequelize').Op` inline dentro de `Certificado.findAll()`:
+
 ```js
 where: { ...where, deleted_at: { [require('sequelize').Op.ne]: null } },
 ```
 
 **Linha 74** — `templateService` importado dentro da função `detalhe()`:
+
 ```js
 const templateService = require('../services/templateService')
 ```

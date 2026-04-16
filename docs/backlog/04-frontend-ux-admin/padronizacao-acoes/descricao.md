@@ -16,27 +16,28 @@ ALTA
 
 A mesma operação semântica (ex.: soft delete) usa labels e classes Bootstrap diferentes em cada página do painel admin, tornando o comportamento imprevisível para o usuário:
 
-| Página | Botão soft delete | Cor atual |
-|--------|------------------|-----------|
-| Certificados | "Remover" | `btn-danger` |
-| Participantes | "Remover" | `btn-danger` |
-| Eventos | "Remover" | `btn-danger` |
-| Usuários | "Arquivar" | `btn-warning` |
-| Tipos de Certificados | "Arquivar" | `btn-warning` |
+| Página                | Botão soft delete | Cor atual     |
+| --------------------- | ----------------- | ------------- |
+| Certificados          | "Remover"         | `btn-danger`  |
+| Participantes         | "Remover"         | `btn-danger`  |
+| Eventos               | "Remover"         | `btn-danger`  |
+| Usuários              | "Arquivar"        | `btn-warning` |
+| Tipos de Certificados | "Arquivar"        | `btn-warning` |
 
 Além disso, botões de visualização e edição usam `btn-info` e `btn-secondary` em algumas páginas e variações em outras.
 
 ## Padrão alvo
 
-| Ação | Label | Classe Bootstrap | Semântica |
-|------|-------|-----------------|-----------|
-| Ver / Detalhe | Ver | `btn-outline-primary` | leitura |
-| Editar | Editar | `btn-outline-secondary` | atualização |
-| Cancelar (reversível) | Cancelar | `btn-outline-warning` | status reversível |
-| Arquivar (soft delete) | Arquivar | `btn-outline-danger` | soft delete |
-| Restaurar | Restaurar | `btn-outline-success` | restore |
+| Ação                   | Label     | Classe Bootstrap        | Semântica         |
+| ---------------------- | --------- | ----------------------- | ----------------- |
+| Ver / Detalhe          | Ver       | `btn-outline-primary`   | leitura           |
+| Editar                 | Editar    | `btn-outline-secondary` | atualização       |
+| Cancelar (reversível)  | Cancelar  | `btn-outline-warning`   | status reversível |
+| Arquivar (soft delete) | Arquivar  | `btn-outline-danger`    | soft delete       |
+| Restaurar              | Restaurar | `btn-outline-success`   | restore           |
 
 **Nota sobre "Cancelar" vs "Arquivar"**: Em certificados existe um estado de negócio "cancelado" distinto do soft delete. Nesse caso:
+
 - `Cancelar` = mudar status para `'cancelado'` → `btn-outline-warning`
 - `Arquivar` = soft delete (`deleted_at`) → `btn-outline-danger`
 

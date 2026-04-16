@@ -33,6 +33,7 @@ Browser/Cliente
 ```
 
 **Pontos que evoluíram:**
+
 - Migrations versionadas (DONE)
 - Autenticação JWT + cookie-based (DONE)
 - RBAC hierárquico com `roles.indexOf` (DONE)
@@ -76,6 +77,7 @@ Dois métodos com semânticas diferentes, sem documentação. Se o controller ch
 **Problema 3 — `require()` inline dentro de funções**
 
 Em `eventoService.js`:
+
 ```javascript
 async delete(id) {
   ...
@@ -88,9 +90,11 @@ Além de ser anti-pattern (o módulo é cacheado, mas a intenção é obscura), 
 **Problema 4 — Código de debug em produção**
 
 Em `pdfService.js`, linha 14:
+
 ```javascript
 console.log('PDFService certificado:', certificado)
 ```
+
 Este log vaza dados de certificados (incluindo dados pessoais) para stdout em produção.
 
 ---
@@ -106,6 +110,7 @@ O sistema base com Google Sheets usava a estrutura da planilha como barreira nat
 
 **2. Geração de código — contador com soft delete**  
 O sistema atual conta certificados `WHERE evento_id AND tipo_certificado_id` para gerar o incremental, mas não inclui deletados (`paranoid: true` no Sequelize). Cenário crítico:
+
 - Emite certificado EDU-25-PT-1
 - Soft-deleta esse certificado
 - Emite novo certificado → também gera EDU-25-PT-1 (colisão no campo única `codigo`)
@@ -125,6 +130,7 @@ Certificados acadêmicos frequentemente registram horas de atividade. O sistema 
 **Ausência de constraint composta no banco:**
 
 A migration `20260311180841-create-certificados.js` cria apenas um índice UNIQUE em `codigo`. Não existe nenhum constraint em:
+
 ```
 (participante_id, evento_id, tipo_certificado_id)
 ```
@@ -135,15 +141,17 @@ Isso significa que o mesmo participante pode receber **N certificados do mesmo t
 
 ```javascript
 // certificadoService.js — create()
-const count = await Certificado.count({    // ← lê
-  where: { evento_id, tipo_certificado_id }
+const count = await Certificado.count({
+  // ← lê
+  where: { evento_id, tipo_certificado_id },
 })
-const incremental = count + 1              // ← calcula
+const incremental = count + 1 // ← calcula
 data.codigo = `${eventCode}-${year}-${tipoCode}-${incremental}`
-return Certificado.create(data)            // ← escreve
+return Certificado.create(data) // ← escreve
 ```
 
 Entre `count` e `create`, outro request pode executar o mesmo `count`, obter o mesmo valor e tentar inserir o mesmo `codigo`. O UNIQUE em `codigo` captura isso com erro de constraint — mas:
+
 1. A mensagem de erro para o usuário é genérica
 2. O usuário pode tentar novamente e o segundo request terá um count diferente e terá sucesso — criando duplicata de (participante, evento, tipo) mesmo que o código seja único
 
@@ -163,14 +171,15 @@ module.exports = {
       fields: ['participante_id', 'evento_id', 'tipo_certificado_id'],
       type: 'unique',
       name: 'uq_certificados_participante_evento_tipo',
-      where: { deleted_at: null }  // índice parcial: só ativo
+      where: { deleted_at: null }, // índice parcial: só ativo
     })
   },
   async down(queryInterface) {
-    await queryInterface.removeConstraint('certificados', 
-      'uq_certificados_participante_evento_tipo'
+    await queryInterface.removeConstraint(
+      'certificados',
+      'uq_certificados_participante_evento_tipo',
     )
-  }
+  },
 }
 ```
 
@@ -210,9 +219,12 @@ const sequencia = await sequelize.query(
    FROM certificados
    WHERE evento_id = :eventoId AND tipo_certificado_id = :tipoId`,
   {
-    replacements: { eventoId: data.evento_id, tipoId: data.tipo_certificado_id },
+    replacements: {
+      eventoId: data.evento_id,
+      tipoId: data.tipo_certificado_id,
+    },
     type: sequelize.QueryTypes.SELECT,
-  }
+  },
 )
 const incremental = sequencia[0].next
 ```
@@ -223,7 +235,7 @@ const incremental = sequencia[0].next
 
 ```sql
 -- Identificar duplicatas existentes
-SELECT participante_id, evento_id, tipo_certificado_id, COUNT(*), 
+SELECT participante_id, evento_id, tipo_certificado_id, COUNT(*),
        ARRAY_AGG(id ORDER BY created_at) AS ids
 FROM certificados
 WHERE deleted_at IS NULL
@@ -235,7 +247,7 @@ UPDATE certificados SET status = 'cancelado'
 WHERE id IN (
   SELECT id FROM (
     SELECT id, ROW_NUMBER() OVER (
-      PARTITION BY participante_id, evento_id, tipo_certificado_id 
+      PARTITION BY participante_id, evento_id, tipo_certificado_id
       ORDER BY created_at DESC
     ) AS rn
     FROM certificados WHERE deleted_at IS NULL
@@ -252,8 +264,9 @@ WHERE id IN (
 O problema é estrutural e afeta **múltiplas páginas** simultaneamente.
 
 **Causa raiz:** `views/layouts/admin.hbs` já renderiza flash globalmente:
+
 ```handlebars
-{{!-- admin.hbs --}}
+{{! admin.hbs }}
 {{#if flash.success}}
   {{#each flash.success}}
     <div class='alert alert-success'>{{this}}</div>
@@ -262,14 +275,18 @@ O problema é estrutural e afeta **múltiplas páginas** simultaneamente.
 ```
 
 E as views individuais também renderizam flash localmente com sintaxe diferente:
+
 ```handlebars
-{{!-- certificados/index.hbs, usuarios/index.hbs, tipos-certificados/index.hbs --}}
-{{#if flash.success}}<div class="alert alert-success">{{flash.success}}</div>{{/if}}
+{{! certificados/index.hbs, usuarios/index.hbs, tipos-certificados/index.hbs }}
+{{#if flash.success}}<div
+    class='alert alert-success'
+  >{{flash.success}}</div>{{/if}}
 ```
 
 **Páginas afetadas:**
+
 - `admin/certificados/index.hbs` — flash duplicado
-- `admin/usuarios/index.hbs` — flash duplicado  
+- `admin/usuarios/index.hbs` — flash duplicado
 - `admin/tipos-certificados/index.hbs` — flash duplicado
 
 **Por que o layout já deveria ser suficiente?** O `connect-flash` drena a mensagem na primeira leitura. Porém, em `app.js`, o middleware popula `res.locals.flash` logo após o `flash()`:
@@ -277,8 +294,8 @@ E as views individuais também renderizam flash localmente com sintaxe diferente
 ```javascript
 app.use((req, res, next) => {
   res.locals.flash = {
-    success: req.flash('success'),  // ← consome o flash aqui
-    error: req.flash('error'),       // ← e aqui
+    success: req.flash('success'), // ← consome o flash aqui
+    error: req.flash('error'), // ← e aqui
   }
   next()
 })
@@ -300,17 +317,22 @@ Remover os blocos de flash das views individuais. O layout já é responsável p
 
 ```handlebars
 <td>
-  <span class="badge ...">{{status}}</span>
-  {{!-- ❌ Este form está no lugar ERRADO --}}
-  <form method="POST" action="/admin/certificados/{{id}}/deletar" class="d-inline" ...>
-    <button type="submit" class="btn btn-sm btn-danger">Remover</button>
+  <span class='badge ...'>{{status}}</span>
+  {{! ❌ Este form está no lugar ERRADO }}
+  <form
+    method='POST'
+    action='/admin/certificados/{{id}}/deletar'
+    class='d-inline'
+    ...
+  >
+    <button type='submit' class='btn btn-sm btn-danger'>Remover</button>
   </form>
 </td>
 <td>
-  <a href="..." class="btn btn-sm btn-info">Ver</a>
-  <a href="..." class="btn btn-sm btn-secondary">Editar</a>
+  <a href='...' class='btn btn-sm btn-info'>Ver</a>
+  <a href='...' class='btn btn-sm btn-secondary'>Editar</a>
   {{#unless (eq status 'cancelado')}}
-    <button ... class="btn btn-sm btn-warning">Cancelar</button>
+    <button ... class='btn btn-sm btn-warning'>Cancelar</button>
   {{/unless}}
 </td>
 ```
@@ -321,13 +343,13 @@ Resultado visual: a coluna "Status" exibe o badge + botão vermelho, enquanto a 
 
 Diferentes páginas usam diferentes verbos e cores para ações semelhantes:
 
-| Página | Ação destrutiva | Cor/Label |
-|--------|----------------|-----------|
-| Certificados | Soft delete | `btn-danger` + "Remover" |
-| Participantes | Soft delete | `btn-danger` + "Remover" |
-| Eventos | Soft delete | `btn-danger` + "Remover" |
-| Usuários | Soft delete | `btn-warning` + "Arquivar" |
-| Tipos de Cert. | Soft delete | `btn-warning` + "Arquivar" |
+| Página         | Ação destrutiva | Cor/Label                  |
+| -------------- | --------------- | -------------------------- |
+| Certificados   | Soft delete     | `btn-danger` + "Remover"   |
+| Participantes  | Soft delete     | `btn-danger` + "Remover"   |
+| Eventos        | Soft delete     | `btn-danger` + "Remover"   |
+| Usuários       | Soft delete     | `btn-warning` + "Arquivar" |
+| Tipos de Cert. | Soft delete     | `btn-warning` + "Arquivar" |
 
 Mesma operação (soft delete), três labels diferentes, duas cores diferentes. O usuário admin não consegue prever o comportamento esperado.
 
@@ -342,6 +364,7 @@ Ações de restauração:   btn-outline-success   (Restaurar)
 ```
 
 **Com ícones FontAwesome (recomendado):**
+
 ```html
 <a href="..." class="btn btn-sm btn-outline-primary" title="Ver detalhes">
   <i class="fa fa-eye"></i>
@@ -399,6 +422,7 @@ Gestor/Monitor:
 ### 4.6 Navbar Admin — Problemas
 
 **Problemas identificados:**
+
 1. Sem ícones — puramente textual
 2. Sem classe `active` no item atual
 3. "Tipos" como label truncado — confuso em navbar estreita
@@ -406,6 +430,7 @@ Gestor/Monitor:
 5. Sem link para a área pública (`/public/pagina/opcoes`)
 
 **Proposta de reorganização:**
+
 ```
 [Logo] Certifique-me Admin
   ├── Dashboard (ícone: home)
@@ -413,7 +438,7 @@ Gestor/Monitor:
   ├── Participantes (ícone: users)
   ├── --- [separador apenas admin/gestor] ---
   ├── Eventos (ícone: calendar)           [admin + gestor]
-  ├── Tipos de Certificados (ícone: tag)  [admin + gestor]  
+  ├── Tipos de Certificados (ícone: tag)  [admin + gestor]
   └── Usuários (ícone: user-cog)          [admin only]
                                    [Área Pública] [Nome (perfil)] [Sair]
 ```
@@ -428,18 +453,19 @@ Gestor/Monitor:
 
 ### Constraints Ausentes
 
-| Tabela | Constraint Ausente | Risco |
-|--------|-------------------|-------|
-| `certificados` | UNIQUE (participante_id, evento_id, tipo_certificado_id) WHERE deleted_at IS NULL | CRÍTICO |
-| `certificados` | Sem índice em `tipo_certificado_id` | MÉDIO (consultas lentas) |
-| `tipos_certificados` | UNIQUE em `codigo` — OK ✅ | — |
-| `eventos` | UNIQUE em `codigo_base` — OK ✅ | — |
-| `participantes` | UNIQUE em `email` — OK ✅ | — |
-| `usuarios` | UNIQUE em `email` — OK ✅ | — |
+| Tabela               | Constraint Ausente                                                                | Risco                    |
+| -------------------- | --------------------------------------------------------------------------------- | ------------------------ |
+| `certificados`       | UNIQUE (participante_id, evento_id, tipo_certificado_id) WHERE deleted_at IS NULL | CRÍTICO                  |
+| `certificados`       | Sem índice em `tipo_certificado_id`                                               | MÉDIO (consultas lentas) |
+| `tipos_certificados` | UNIQUE em `codigo` — OK ✅                                                        | —                        |
+| `eventos`            | UNIQUE em `codigo_base` — OK ✅                                                   | —                        |
+| `participantes`      | UNIQUE em `email` — OK ✅                                                         | —                        |
+| `usuarios`           | UNIQUE em `email` — OK ✅                                                         | —                        |
 
 ### Problema de Integridade Referencial com Soft Delete + FK CASCADE
 
 A migration de `certificados` define:
+
 ```javascript
 participante_id: {
   references: { model: 'participantes', key: 'id' },
@@ -447,7 +473,7 @@ participante_id: {
 }
 ```
 
-Com paranoid (soft delete), um participante nunca é hard-deleted pelo Sequelize. Porém, se for feito un hard delete manual no banco (ex: via psql em produção), os certificados seriam **deletados em cascata permanentemente**, sem possibilidade de restore. 
+Com paranoid (soft delete), um participante nunca é hard-deleted pelo Sequelize. Porém, se for feito un hard delete manual no banco (ex: via psql em produção), os certificados seriam **deletados em cascata permanentemente**, sem possibilidade de restore.
 
 **Recomendação:** Mudar `onDelete: 'RESTRICT'` para entidades que usam soft delete. Só deve ser `CASCADE` se o hard delete for intencional e os filhos não precisam ser preservados.
 
@@ -463,14 +489,17 @@ Certificados de eventos acadêmicos tipicamente exigem carga horária. Atualment
 
 ```javascript
 // app.js
-app.use(session({
-  secret: sessionSecret,
-  resave: false,
-  saveUninitialized: false,
-}))
+app.use(
+  session({
+    secret: sessionSecret,
+    resave: false,
+    saveUninitialized: false,
+  }),
+)
 ```
 
 **MemoryStore (default do express-session)** — sem configuração de store explícita. Isso significa:
+
 - Sessões vivem **apenas na memória do processo Node.js**
 - Ao reiniciar o servidor → **todas as sessões são perdidas** (todos os usuários deslogados)
 - Com múltiplos processos (PM2 cluster) → sessões não são compartilhadas entre workers
@@ -479,11 +508,13 @@ app.use(session({
 ### Redis — Quando faz sentido?
 
 **Faz sentido usar Redis quando:**
+
 - A aplicação roda em múltiplas instâncias (horizontal scaling)
 - Sessões precisam persistir após restart
 - Alta concorrência com muitos usuários simultâneos
 
 **É overengineering quando:**
+
 - Aplicação roda em instância única
 - Poucos usuários simultâneos (< 100)
 - Redis seria uma dependência extra sem benefício imediato
@@ -497,22 +528,24 @@ O PostgreSQL já está presente. Usar o mesmo banco para sessões é a decisão 
 ```javascript
 const pgSession = require('connect-pg-simple')(session)
 
-app.use(session({
-  store: new pgSession({
-    conString: process.env.DATABASE_URL,
-    tableName: 'user_sessions',
-    pruneSessionInterval: 60 * 15, // limpa sessões expiradas a cada 15 min
+app.use(
+  session({
+    store: new pgSession({
+      conString: process.env.DATABASE_URL,
+      tableName: 'user_sessions',
+      pruneSessionInterval: 60 * 15, // limpa sessões expiradas a cada 15 min
+    }),
+    secret: sessionSecret,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 dias
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      sameSite: 'lax',
+    },
   }),
-  secret: sessionSecret,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 dias
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'lax',
-  },
-}))
+)
 ```
 
 **Upgrade para Redis:** Considerar apenas se houver necessidade de múltiplas instâncias ou se a carga de usuários simultâneos justificar.
@@ -532,19 +565,22 @@ app.use(session({
 ### Cenário 2: Alta criação de certificados simultânea
 
 O fluxo de criação executa:
-1. `TiposCertificados.findByPk` 
+
+1. `TiposCertificados.findByPk`
 2. `Evento.findByPk`
 3. Validação de campos (loop)
-4. `Certificado.count` 
+4. `Certificado.count`
 5. `Certificado.create`
 
 São 5 queries sequenciais sem transaction. Em concorrência:
+
 - Queries 1-3: safe (reads)
 - Queries 4-5: **race condition** (count + insert não atômico)
 
 ### Cenário 3: Integridade sob carga
 
 Com a ausência de constraint única composta, em alta carga:
+
 - Dois operadores podem criar certificados para o mesmo participante/evento/tipo
 - Ambos recebem sucesso (códigos distintos, porém dados duplicados)
 - O banco não rejeita
@@ -560,6 +596,7 @@ A ausência de testes de controller SSR (apenas controllers JSON têm testes) si
 ### G1 — Controllers SSR com lógica de negócio (MÉDIO)
 
 `certificadoSSRController.index()` implementa filtragem por eventos do usuário diretamente:
+
 ```javascript
 async function getEventoIds(req) {
   if (req.usuario.perfil === 'admin') return null
@@ -584,6 +621,7 @@ Sem `limit`. Deve ser paginado.
 ### G3 — N queries para renderizar a página de listagem de certificados
 
 A cada acesso a `/admin/certificados`:
+
 1. `UsuarioEvento.findAll` (escopo)
 2. `Certificado.findAll` (ativos)
 3. `Certificado.findAll` (arquivados)
@@ -616,35 +654,35 @@ Lógica de teste está no middleware de autenticação de produção. Isso é um
 
 ### ALTO RISCO
 
-| # | Problema | Arquivo | Impacto |
-|---|----------|---------|---------|
-| DT-01 | Sem constraint única (participante, evento, tipo) → duplicatas | `migrations/` | Dados corrompidos |
-| DT-02 | Race condition na geração de código | `certificadoService.js:L63` | Erros silenciosos em concorrência |
-| DT-03 | MemoryStore em sessão (sem persistência, sem compartilhamento) | `app.js` | Usuários deslogados no restart |
-| DT-04 | Flash message duplicada em múltiplas páginas | `admin.hbs` + views | UX quebrada |
-| DT-05 | Botão "Remover" no `<td>` errado na tabela de certificados | `certificados/index.hbs` | UX confusa |
-| DT-06 | `console.log` com dados pessoais em pdfService | `pdfService.js:L14` | Violação LGPD/OWASP A09 |
+| #     | Problema                                                       | Arquivo                     | Impacto                           |
+| ----- | -------------------------------------------------------------- | --------------------------- | --------------------------------- |
+| DT-01 | Sem constraint única (participante, evento, tipo) → duplicatas | `migrations/`               | Dados corrompidos                 |
+| DT-02 | Race condition na geração de código                            | `certificadoService.js:L63` | Erros silenciosos em concorrência |
+| DT-03 | MemoryStore em sessão (sem persistência, sem compartilhamento) | `app.js`                    | Usuários deslogados no restart    |
+| DT-04 | Flash message duplicada em múltiplas páginas                   | `admin.hbs` + views         | UX quebrada                       |
+| DT-05 | Botão "Remover" no `<td>` errado na tabela de certificados     | `certificados/index.hbs`    | UX confusa                        |
+| DT-06 | `console.log` com dados pessoais em pdfService                 | `pdfService.js:L14`         | Violação LGPD/OWASP A09           |
 
 ### MÉDIO RISCO
 
-| # | Problema | Arquivo | Impacto |
-|---|----------|---------|---------|
-| DT-07 | findAll sem limite em todos os SSR controllers | múltiplos | Performance degradada com volume |
-| DT-08 | destroy() vs delete() com semânticas divergentes | `eventoService.js` | Bugs silenciosos |
-| DT-09 | Controllers SSR bypassam service layer em queries | `certificadoSSRController.js` | Manutenibilidade |
-| DT-10 | Código de teste em middleware de produção (`authSSR`) | `authSSR.js` | Risco de segurança |
-| DT-11 | `onDelete: 'CASCADE'` em entidades com soft delete | migrations | Risco de hard delete acidental |
-| DT-12 | `require()` inline dentro de funções de service | `eventoService.js` | Legibilidade e testabilidade |
+| #     | Problema                                              | Arquivo                       | Impacto                          |
+| ----- | ----------------------------------------------------- | ----------------------------- | -------------------------------- |
+| DT-07 | findAll sem limite em todos os SSR controllers        | múltiplos                     | Performance degradada com volume |
+| DT-08 | destroy() vs delete() com semânticas divergentes      | `eventoService.js`            | Bugs silenciosos                 |
+| DT-09 | Controllers SSR bypassam service layer em queries     | `certificadoSSRController.js` | Manutenibilidade                 |
+| DT-10 | Código de teste em middleware de produção (`authSSR`) | `authSSR.js`                  | Risco de segurança               |
+| DT-11 | `onDelete: 'CASCADE'` em entidades com soft delete    | migrations                    | Risco de hard delete acidental   |
+| DT-12 | `require()` inline dentro de funções de service       | `eventoService.js`            | Legibilidade e testabilidade     |
 
 ### BAIXO RISCO
 
-| # | Problema | Arquivo | Impacto |
-|---|----------|---------|---------|
-| DT-13 | Sem classe `active` na navbar admin | `admin.hbs` | UX mínima |
-| DT-14 | Labels inconsistentes ("Remover" vs "Arquivar") | várias views | Confusão no usuário |
-| DT-15 | templateService `require()` dentro de função de detalhe | `certificadoSSRController.js:L68` | Estilo |
-| DT-16 | Sem índice em `certificados.tipo_certificado_id` | migrations | Consultas mais lentas com volume |
-| DT-17 | Sem busca full-text em certificados ou eventos | views | Usabilidade |
+| #     | Problema                                                | Arquivo                           | Impacto                          |
+| ----- | ------------------------------------------------------- | --------------------------------- | -------------------------------- |
+| DT-13 | Sem classe `active` na navbar admin                     | `admin.hbs`                       | UX mínima                        |
+| DT-14 | Labels inconsistentes ("Remover" vs "Arquivar")         | várias views                      | Confusão no usuário              |
+| DT-15 | templateService `require()` dentro de função de detalhe | `certificadoSSRController.js:L68` | Estilo                           |
+| DT-16 | Sem índice em `certificados.tipo_certificado_id`        | migrations                        | Consultas mais lentas com volume |
+| DT-17 | Sem busca full-text em certificados ou eventos          | views                             | Usabilidade                      |
 
 ---
 
@@ -653,6 +691,7 @@ Lógica de teste está no middleware de autenticação de produção. Isso é um
 ### CRÍTICAS (fazer agora)
 
 **C1 — Adicionar constraint única composta em certificados**
+
 ```
 Migration: ADD UNIQUE (participante_id, evento_id, tipo_certificado_id) WHERE deleted_at IS NULL
 Service: Verificação de duplicata antes de criar
@@ -687,9 +726,10 @@ Renomear para `softDelete` (com cascata) e remover o alias `destroy` público.
 **I5 — Adicionar busca por nome/código na listagem de certificados**
 
 **I6 — Adicionar índice em `certificados.tipo_certificado_id`**
+
 ```javascript
 await queryInterface.addIndex('certificados', ['tipo_certificado_id'], {
-  name: 'idx_certificados_tipo_certificado_id'
+  name: 'idx_certificados_tipo_certificado_id',
 })
 ```
 
@@ -741,21 +781,29 @@ return res.render('admin/certificados/index', {
 ```
 
 ```handlebars
-{{!-- no template: paginação simples --}}
+{{! no template: paginação simples }}
 {{#if paginacao.totalPages}}
   <nav>
-    <ul class="pagination pagination-sm">
+    <ul class='pagination pagination-sm'>
       {{#if (gt paginacao.page 1)}}
-        <li class="page-item">
-          <a class="page-link" href="?page={{dec paginacao.page}}&...">Anterior</a>
+        <li class='page-item'>
+          <a
+            class='page-link'
+            href='?page={{dec paginacao.page}}&...'
+          >Anterior</a>
         </li>
       {{/if}}
-      <li class="page-item disabled">
-        <span class="page-link">{{paginacao.page}} / {{paginacao.totalPages}}</span>
+      <li class='page-item disabled'>
+        <span class='page-link'>{{paginacao.page}}
+          /
+          {{paginacao.totalPages}}</span>
       </li>
       {{#if (lt paginacao.page paginacao.totalPages)}}
-        <li class="page-item">
-          <a class="page-link" href="?page={{inc paginacao.page}}&...">Próxima</a>
+        <li class='page-item'>
+          <a
+            class='page-link'
+            href='?page={{inc paginacao.page}}&...'
+          >Próxima</a>
         </li>
       {{/if}}
     </ul>
@@ -815,7 +863,8 @@ module.exports = async function authSSR(req, res, next) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
     const usuario = await Usuario.findByPk(decoded.id)
     if (!usuario) {
-      if (req.originalUrl.startsWith('/admin')) return res.redirect('/auth/login')
+      if (req.originalUrl.startsWith('/admin'))
+        return res.redirect('/auth/login')
       return next()
     }
     const usuarioData = {
@@ -860,22 +909,24 @@ npm install connect-pg-simple
 // app.js
 const pgSession = require('connect-pg-simple')(session)
 
-app.use(session({
-  store: new pgSession({
-    conString: process.env.DATABASE_URL,
-    tableName: 'user_sessions',
-    pruneSessionInterval: 900, // segundos
+app.use(
+  session({
+    store: new pgSession({
+      conString: process.env.DATABASE_URL,
+      tableName: 'user_sessions',
+      pruneSessionInterval: 900, // segundos
+    }),
+    secret: sessionSecret,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 8 * 60 * 60 * 1000, // 8 horas
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    },
   }),
-  secret: sessionSecret,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 8 * 60 * 60 * 1000, // 8 horas
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-  },
-}))
+)
 ```
 
 ---
@@ -994,16 +1045,16 @@ C4Component
 
 ## Priorização Final
 
-| Prioridade | Item | Esforço | Impacto |
-|-----------|------|---------|---------|
-| 🔴 P0 | DT-01: Constraint única composta + migration | Baixo | Crítico |
-| 🔴 P0 | DT-02: Verificação de duplicata no service | Baixo | Crítico |
-| 🔴 P0 | DT-04: Flash duplicado nas views | Baixo | Alto |
-| 🔴 P0 | DT-05: Botão Remover no lugar errado (certificados) | Baixo | Alto |
-| 🔴 P0 | DT-06: Remover console.log de dados pessoais | Trivial | Segurança |
-| 🟡 P1 | DT-03: Trocar MemoryStore por connect-pg-simple | Médio | Médio |
-| 🟡 P1 | DT-07: Paginação nos SSR controllers | Médio | Alto |
-| 🟡 P1 | DT-10: Extrair mock do authSSR | Médio | Segurança |
-| 🟢 P2 | O1: Dashboard operacional com métricas | Alto | Médio |
-| 🟢 P2 | O2/O3: Ícones e active state na navbar | Baixo | Baixo |
-| 🟢 P3 | O5: Logging estruturado | Médio | Operabilidade |
+| Prioridade | Item                                                | Esforço | Impacto       |
+| ---------- | --------------------------------------------------- | ------- | ------------- |
+| 🔴 P0      | DT-01: Constraint única composta + migration        | Baixo   | Crítico       |
+| 🔴 P0      | DT-02: Verificação de duplicata no service          | Baixo   | Crítico       |
+| 🔴 P0      | DT-04: Flash duplicado nas views                    | Baixo   | Alto          |
+| 🔴 P0      | DT-05: Botão Remover no lugar errado (certificados) | Baixo   | Alto          |
+| 🔴 P0      | DT-06: Remover console.log de dados pessoais        | Trivial | Segurança     |
+| 🟡 P1      | DT-03: Trocar MemoryStore por connect-pg-simple     | Médio   | Médio         |
+| 🟡 P1      | DT-07: Paginação nos SSR controllers                | Médio   | Alto          |
+| 🟡 P1      | DT-10: Extrair mock do authSSR                      | Médio   | Segurança     |
+| 🟢 P2      | O1: Dashboard operacional com métricas              | Alto    | Médio         |
+| 🟢 P2      | O2/O3: Ícones e active state na navbar              | Baixo   | Baixo         |
+| 🟢 P3      | O5: Logging estruturado                             | Médio   | Operabilidade |

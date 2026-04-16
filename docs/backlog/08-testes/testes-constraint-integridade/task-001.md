@@ -1,12 +1,15 @@
 # Task: TEST-INTEG-001 — Teste de unidade: `create()` lança 409 para certificado duplicado ativo
 
 ## Identificador
+
 TEST-INTEG-001
 
 ## Feature
+
 testes-constraint-integridade
 
 ## Prioridade
+
 ALTA
 
 ## Contexto
@@ -20,6 +23,7 @@ O código atual (linha 30–73 de `src/services/certificadoService.js`) **não**
 ## O que implementar
 
 ### Localização
+
 `tests/services/certificadoService.test.js` — dentro do `describe('create', ...)` existente (linha 64).
 
 ### Cenário
@@ -85,7 +89,9 @@ const duplicata = await Certificado.findOne({
 })
 
 if (duplicata) {
-  const err = new Error('Já existe um certificado ativo para esta combinação de participante, evento e tipo')
+  const err = new Error(
+    'Já existe um certificado ativo para esta combinação de participante, evento e tipo',
+  )
   err.status = 409
   throw err
 }
@@ -94,13 +100,16 @@ if (duplicata) {
 ---
 
 ## Arquivo alvo
+
 `tests/services/certificadoService.test.js`
 
 ## Dependências
+
 - INTEG-PREV-002 deve ser implementado antes deste teste ser executado com sucesso
 - Este teste pode ser criado antes da implementação como base do ciclo TDD
 
 ## Critério de conclusão
+
 - O teste falha com o código atual (sem a verificação)
 - O teste passa após implementação de INTEG-PREV-002
 - Nenhum teste regressivo quebra ao adicionar o novo caso

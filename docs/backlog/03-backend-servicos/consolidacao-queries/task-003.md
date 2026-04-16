@@ -27,11 +27,13 @@ Substituir a lógica de escopo e as queries diretas nos dois controllers pelos u
 ### 1. `certificadoSSRController.js`
 
 **Adicionar import no topo:**
+
 ```js
 const getScopedEventoIds = require('../utils/getScopedEventoIds')
 ```
 
 **Remover a função local `getEventoIds`** (linhas 19–24):
+
 ```js
 // REMOVER este bloco inteiro:
 async function getEventoIds(req) {
@@ -57,10 +59,12 @@ async function index(req, res) {
 
     if (tipo_id) where.tipo_certificado_id = Number(tipo_id)
 
-    const { certificados, arquivados } = await certificadoService.findAllForSSR({
-      where,
-      eventoIds: evento_id ? null : eventoIds, // filtro manual de evento_id tem precedência
-    })
+    const { certificados, arquivados } = await certificadoService.findAllForSSR(
+      {
+        where,
+        eventoIds: evento_id ? null : eventoIds, // filtro manual de evento_id tem precedência
+      },
+    )
 
     const eventos = await Evento.findAll({ attributes: ['id', 'nome'] })
     const tipos = await TiposCertificados.findAll({
@@ -83,6 +87,7 @@ async function index(req, res) {
 ```
 
 **Remover `UsuarioEvento` do destructuring de models** no topo do arquivo (se não mais usado em outro lugar do controller):
+
 ```js
 // Verificar se UsuarioEvento ainda é usado em outra função do arquivo
 // Se não, remover do import
@@ -91,11 +96,13 @@ async function index(req, res) {
 ### 2. `participanteSSRController.js`
 
 **Adicionar import no topo:**
+
 ```js
 const getScopedEventoIds = require('../utils/getScopedEventoIds')
 ```
 
 **Substituir o bloco de escopo inline** dentro de `index()`:
+
 ```js
 // REMOVER:
 let eventoIds = null

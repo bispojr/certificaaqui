@@ -31,14 +31,12 @@ Aplicar o padrão `btn-outline-*` nos dois arquivos onde os labels já estão co
   class='btn btn-sm btn-secondary'
 >Editar</a>
 <form ...>
-  <button
-    type='submit'
-    class='btn btn-sm btn-warning'
-  >Arquivar</button>
+  <button type='submit' class='btn btn-sm btn-warning'>Arquivar</button>
 </form>
 ```
 
 Restaurar (~84):
+
 ```hbs
 class='btn btn-sm btn-success'
 ```
@@ -51,14 +49,12 @@ class='btn btn-sm btn-success'
   class='btn btn-sm btn-outline-secondary'
 >Editar</a>
 <form ...>
-  <button
-    type='submit'
-    class='btn btn-sm btn-outline-danger'
-  >Arquivar</button>
+  <button type='submit' class='btn btn-sm btn-outline-danger'>Arquivar</button>
 </form>
 ```
 
 Restaurar:
+
 ```hbs
 class='btn btn-sm btn-outline-success'
 ```
@@ -73,14 +69,12 @@ class='btn btn-sm btn-outline-success'
   class='btn btn-sm btn-secondary'
 >Editar</a>
 <form ...>
-  <button
-    type='submit'
-    class='btn btn-sm btn-warning'
-  >Arquivar</button>
+  <button type='submit' class='btn btn-sm btn-warning'>Arquivar</button>
 </form>
 ```
 
 Restaurar (~82):
+
 ```hbs
 class='btn btn-sm btn-success'
 ```
@@ -93,14 +87,12 @@ class='btn btn-sm btn-success'
   class='btn btn-sm btn-outline-secondary'
 >Editar</a>
 <form ...>
-  <button
-    type='submit'
-    class='btn btn-sm btn-outline-danger'
-  >Arquivar</button>
+  <button type='submit' class='btn btn-sm btn-outline-danger'>Arquivar</button>
 </form>
 ```
 
 Restaurar:
+
 ```hbs
 class='btn btn-sm btn-outline-success'
 ```

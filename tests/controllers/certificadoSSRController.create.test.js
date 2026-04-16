@@ -18,7 +18,10 @@ describe('certificadoSSRController.criar', () => {
   })
 
   it('deve criar certificado e gerar código de validação', async () => {
-    certificadoService.create.mockResolvedValue({ id: 1, codigo: 'EDC-25-PT-1' })
+    certificadoService.create.mockResolvedValue({
+      id: 1,
+      codigo: 'EDC-25-PT-1',
+    })
     const req = httpMocks.createRequest({
       body: {
         nome: 'Teste',
@@ -40,7 +43,7 @@ describe('certificadoSSRController.criar', () => {
         evento_id: 2,
         tipo_certificado_id: 3,
         valores_dinamicos: {},
-      })
+      }),
     )
     expect(res.redirect).toHaveBeenCalledWith('/admin/certificados')
   })

@@ -104,9 +104,13 @@ async function cleanE2E() {
   await sequelize.query('TRUNCATE TABLE certificados RESTART IDENTITY CASCADE')
   await sequelize.query('TRUNCATE TABLE participantes RESTART IDENTITY CASCADE')
   await sequelize.query('TRUNCATE TABLE eventos RESTART IDENTITY CASCADE')
-  await sequelize.query('TRUNCATE TABLE tipos_certificados RESTART IDENTITY CASCADE')
+  await sequelize.query(
+    'TRUNCATE TABLE tipos_certificados RESTART IDENTITY CASCADE',
+  )
   await sequelize.query('TRUNCATE TABLE usuarios RESTART IDENTITY CASCADE')
-  await sequelize.query('TRUNCATE TABLE usuario_eventos RESTART IDENTITY CASCADE')
+  await sequelize.query(
+    'TRUNCATE TABLE usuario_eventos RESTART IDENTITY CASCADE',
+  )
 }
 
 module.exports = { seedE2E, cleanE2E }

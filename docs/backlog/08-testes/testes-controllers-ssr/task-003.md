@@ -1,17 +1,21 @@
 # Task: TEST-USR-SSR-003 — Adicionar testes de `restaurar` e `index?q=` ao `usuarioSSRController`
 
 ## Identificador
+
 TEST-USR-SSR-003
 
 ## Feature
+
 testes-controllers-ssr
 
 ## Prioridade
+
 ALTA
 
 ## Contexto
 
 `tests/controllers/usuarioSSRController.test.js` cobre os seguintes blocos `describe`:
+
 - `index` (listagem geral sem filtro)
 - `novo` (form de criação)
 - `editar` (form de edição)
@@ -36,7 +40,11 @@ Adicionar `describe('restaurar', ...)` ao final do arquivo:
 describe('restaurar', () => {
   it('deve restaurar usuário arquivado e redirecionar', async () => {
     // Arrange
-    usuarioService.restore.mockResolvedValueOnce({ id: 1, nome: 'Admin', deletedAt: null })
+    usuarioService.restore.mockResolvedValueOnce({
+      id: 1,
+      nome: 'Admin',
+      deletedAt: null,
+    })
 
     // Act
     const res = await request(app)
@@ -54,20 +62,20 @@ describe('restaurar', () => {
 ### 2. Teste de `restaurar` — usuário não encontrado
 
 ```javascript
-  it('deve exibir erro se usuário não encontrado ao restaurar', async () => {
-    // Arrange
-    usuarioService.restore.mockResolvedValueOnce(null)
+it('deve exibir erro se usuário não encontrado ao restaurar', async () => {
+  // Arrange
+  usuarioService.restore.mockResolvedValueOnce(null)
 
-    // Act
-    const res = await request(app)
-      .post('/admin/usuarios/999/restaurar')
-      .set('x-test-user-id', '1')
+  // Act
+  const res = await request(app)
+    .post('/admin/usuarios/999/restaurar')
+    .set('x-test-user-id', '1')
 
-    // Assert
-    expect(res.status).toBe(302)
-    // Flash de erro deve ter sido disparado — verificável via redirect location
-    expect(res.headers.location).toMatch(/\/admin\/usuarios/)
-  })
+  // Assert
+  expect(res.status).toBe(302)
+  // Flash de erro deve ter sido disparado — verificável via redirect location
+  expect(res.headers.location).toMatch(/\/admin\/usuarios/)
+})
 ```
 
 ### 3. Teste de `index?q=` (busca textual)
@@ -115,14 +123,17 @@ Se o método se chama `undelete` ou `restore`, ajustar o mock conforme o nome re
 ---
 
 ## Arquivo alvo
+
 `tests/controllers/usuarioSSRController.test.js`
 
 ## Dependências
+
 - `usuarioService.restore()` deve existir em `src/services/usuarioService.js`
 - A rota `POST /admin/usuarios/:id/restaurar` deve estar registrada em `src/routes/admin.js`
 - Para o teste de `index?q=`, aguardar FRONT-BUSCA-003
 
 ## Critério de conclusão
+
 - `describe('restaurar', ...)` com ao menos 2 cenários passa em `npm run check`
 - `it.todo(...)` para o filtro de busca está registrado como lembrete futuro
 - Nenhum teste regressivo quebra
