@@ -145,3 +145,80 @@ describe('pdfService - seleção de template de fundo (R2)', () => {
     templateService.interpolate.mockRestore()
   }, 15000)
 })
+
+describe('pdfService - fonte Lato-Medium do R2', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    r2Service.getFile.mockResolvedValue(null)
+  })
+
+  const baseCert = () => ({
+    codigo: 'FONT01',
+    nome: 'Participante Teste',
+    valores_dinamicos: {},
+    Evento: { nome: 'Evento Fonte', url_template_base: null },
+    Participante: { nomeCompleto: 'Participante Teste' },
+    TiposCertificados: { texto_base: 'Certificamos que ${nome} participou.' },
+  })
+
+  it('deve tentar buscar a fonte Lato-Medium.ttf do R2', async () => {
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
+    await pdfService.generateCertificadoPdf(baseCert())
+    expect(r2Service.getFile).toHaveBeenCalledWith('fontes/Lato-Medium.ttf')
+    templateService.interpolate.mockRestore()
+  }, 15000)
+
+  it('deve gerar PDF mesmo quando a fonte não está disponível no R2', async () => {
+    r2Service.getFile.mockResolvedValue(null)
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
+    const buffer = await pdfService.generateCertificadoPdf(baseCert())
+    expect(Buffer.isBuffer(buffer)).toBe(true)
+    expect(buffer.slice(0, 4).toString()).toBe('%PDF')
+    templateService.interpolate.mockRestore()
+  }, 15000)
+})
+
+describe('pdfService - coordenadas configuráveis por evento', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    r2Service.getFile.mockResolvedValue(null)
+  })
+
+  it('deve gerar PDF com coordenadas customizadas sem erro', async () => {
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
+    const cert = {
+      codigo: 'COORD1',
+      nome: 'Participante',
+      valores_dinamicos: {},
+      Evento: {
+        nome: 'Evento Custom',
+        url_template_base: null,
+        texto_x: 300,
+        texto_y: 250,
+        validacao_x: 100,
+        validacao_y: 500,
+      },
+      Participante: { nomeCompleto: 'Participante' },
+      TiposCertificados: { texto_base: 'Certificamos que ${nome}.' },
+    }
+    const buffer = await pdfService.generateCertificadoPdf(cert)
+    expect(Buffer.isBuffer(buffer)).toBe(true)
+    expect(buffer.slice(0, 4).toString()).toBe('%PDF')
+    templateService.interpolate.mockRestore()
+  }, 15000)
+
+  it('deve usar valores padrão quando coordenadas não estão definidas no evento', async () => {
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
+    const cert = {
+      codigo: 'DEF01',
+      nome: 'Participante',
+      valores_dinamicos: {},
+      Evento: { nome: 'Evento Padrão', url_template_base: null },
+      Participante: { nomeCompleto: 'Participante' },
+      TiposCertificados: { texto_base: 'Certificamos que ${nome}.' },
+    }
+    const buffer = await pdfService.generateCertificadoPdf(cert)
+    expect(Buffer.isBuffer(buffer)).toBe(true)
+    templateService.interpolate.mockRestore()
+  }, 15000)
+})

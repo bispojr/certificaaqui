@@ -117,6 +117,10 @@ describe('eventoSSRController', () => {
     expect(eventoService.create).toHaveBeenCalledWith({
       nome: 'Novo',
       ano: '2026',
+      texto_x: null,
+      texto_y: null,
+      validacao_x: null,
+      validacao_y: null,
     })
     expect(r2Service.uploadFile).not.toHaveBeenCalled()
   })

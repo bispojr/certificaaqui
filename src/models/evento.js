@@ -42,6 +42,22 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      texto_x: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      texto_y: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      validacao_x: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      validacao_y: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
     },
     {
       sequelize,

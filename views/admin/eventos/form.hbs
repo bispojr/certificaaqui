@@ -69,6 +69,63 @@
         />
         <div class='form-text'>Deixe em branco para manter o template atual.</div>
       </div>
+
+      <h5 class='mt-4'>Posição do texto-base no certificado</h5>
+      <div class='row mb-3'>
+        <div class='col-md-6'>
+          <label for='texto_x' class='form-label'>X (horizontal)</label>
+          <input
+            type='number'
+            class='form-control'
+            name='texto_x'
+            id='texto_x'
+            value='{{evento.texto_x}}'
+            min='0'
+            placeholder='Ex.: 270'
+          />
+        </div>
+        <div class='col-md-6'>
+          <label for='texto_y' class='form-label'>Y (vertical)</label>
+          <input
+            type='number'
+            class='form-control'
+            name='texto_y'
+            id='texto_y'
+            value='{{evento.texto_y}}'
+            min='0'
+            placeholder='Ex.: 200'
+          />
+        </div>
+      </div>
+
+      <h5 class='mt-2'>Posição da validação no certificado</h5>
+      <div class='row mb-3'>
+        <div class='col-md-6'>
+          <label for='validacao_x' class='form-label'>X (horizontal)</label>
+          <input
+            type='number'
+            class='form-control'
+            name='validacao_x'
+            id='validacao_x'
+            value='{{evento.validacao_x}}'
+            min='0'
+            placeholder='Ex.: 145'
+          />
+        </div>
+        <div class='col-md-6'>
+          <label for='validacao_y' class='form-label'>Y (vertical)</label>
+          <input
+            type='number'
+            class='form-control'
+            name='validacao_y'
+            id='validacao_y'
+            value='{{evento.validacao_y}}'
+            min='0'
+            placeholder='Ex.: 545'
+          />
+        </div>
+      </div>
+
       <button type='submit' class='btn btn-primary'>Salvar</button>
       <a href='/admin/eventos' class='btn btn-secondary ms-2'>Cancelar</a>
     </form>

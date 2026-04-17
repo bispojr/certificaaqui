@@ -38,5 +38,23 @@ describe('views/admin/eventos', () => {
       expect(html).toMatch(/name='codigo_base'[\s\S]*pattern='\[A-Za-z\]\{3\}'/)
       expect(html).toMatch(/name='codigo_base'[\s\S]*maxlength='3'/)
     })
+    it('campo texto_x existe no formulário', () => {
+      expect(html).toMatch(/name='texto_x'/)
+    })
+    it('campo texto_y existe no formulário', () => {
+      expect(html).toMatch(/name='texto_y'/)
+    })
+    it('campo validacao_x existe no formulário', () => {
+      expect(html).toMatch(/name='validacao_x'/)
+    })
+    it('campo validacao_y existe no formulário', () => {
+      expect(html).toMatch(/name='validacao_y'/)
+    })
+    it('seção de posição do texto-base existe', () => {
+      expect(html).toMatch(/Posição do texto-base no certificado/)
+    })
+    it('seção de posição da validação existe', () => {
+      expect(html).toMatch(/Posição da validação no certificado/)
+    })
   })
 })

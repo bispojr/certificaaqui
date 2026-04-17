@@ -28,7 +28,7 @@ module.exports = defineConfig({
   webServer: {
     command: 'NODE_ENV=e2e node ./bin/www',
     url: BASE_URL,
-    reuseExistingServer: false,
+    reuseExistingServer: !process.env.CI,
     timeout: 15_000,
   },
 })

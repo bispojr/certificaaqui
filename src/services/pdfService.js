@@ -49,6 +49,28 @@ module.exports = {
         }
         // --- FIM NOVO ---
 
+        // --- Buscar fonte Lato-Medium do R2 ---
+        let fontBuffer = null
+        try {
+          const fontResult = await r2Service.getFile('fontes/Lato-Medium.ttf')
+          if (fontResult && fontResult.Body) {
+            fontBuffer = fontResult.Body
+          }
+        } catch (err) {
+          console.warn(
+            'Não foi possível carregar a fonte do R2, usando fonte padrão:',
+            err.message,
+          )
+        }
+        const setFont = () => {
+          if (fontBuffer) {
+            doc.font(fontBuffer)
+          } else {
+            doc.font('Helvetica')
+          }
+        }
+        // --- FIM fonte ---
+
         // Dados principais
         const evento = certificado.Evento
         const participante = certificado.Participante
@@ -102,24 +124,33 @@ module.exports = {
           })
         }
 
+        // Coordenadas do texto-base (configuráveis por evento)
+        const textoX = evento?.texto_x ?? 270
+        const textoY = evento?.texto_y ?? 200
+
         // Texto base interpolado
         doc.fontSize(texto.length > 400 ? 10 : 14)
-        doc.font('Helvetica')
-        doc.text(texto, 270, 200, { width: 480, align: 'justify' })
+        setFont()
+        doc.text(texto, textoX, textoY, { width: 480, align: 'justify' })
+
+        // Coordenadas da validação (configuráveis por evento)
+        const validacaoX = evento?.validacao_x ?? 145
+        const validacaoY = evento?.validacao_y ?? 545
 
         // Código de validação e link
         const endereco_validacao =
           process.env.ENDERECO_VALIDACAO || 'https://certifique.me/validar'
         doc.fontSize(9.5)
+        setFont()
         doc
           .fillColor('black')
           .text(
             `Use o código ${certificado.codigo} para validar o certificado em: `,
-            145,
-            545,
+            validacaoX,
+            validacaoY,
             { width: doc.page.width, align: 'left' },
           )
-        doc.fillColor('blue').text(`${endereco_validacao}`, 392, 545, {
+        doc.fillColor('blue').text(`${endereco_validacao}`, validacaoX + 247, validacaoY, {
           link: endereco_validacao,
           underline: true,
         })

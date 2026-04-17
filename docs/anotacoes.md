@@ -10,6 +10,10 @@ For more information, check the blog post at https://a.co/cUPnyil
 
 ====================================================
 
+Remover o duplo alert de "tipo criado com sucesso" em admin/tipos-certificados.
+
+Remover o duplo alert de "certificado criado com sucesso" em admin/certificados.
+
 Na página https://certificaaqui.com/public/pagina/validar, esse botão voltar não tem nada a ver. Tem que tirar ele.
 
 Por que não renomear a url https://certificaaqui.com/public/pagina/validar para apenas

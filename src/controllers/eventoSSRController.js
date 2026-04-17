@@ -109,6 +109,10 @@ module.exports = {
       const urlTemplateBase = await handleTemplateUpload(req)
       const data = { ...req.body }
       if (urlTemplateBase) data.url_template_base = urlTemplateBase
+      for (const field of ['texto_x', 'texto_y', 'validacao_x', 'validacao_y']) {
+        if (data[field] === '' || data[field] === undefined) data[field] = null
+        else data[field] = parseInt(data[field], 10) || null
+      }
       await eventoService.create(data)
       req.flash('success', 'Evento criado com sucesso.')
       return res.redirect('/admin/eventos')
@@ -132,6 +136,10 @@ module.exports = {
       const urlTemplateBase = await handleTemplateUpload(req)
       const data = { ...req.body }
       if (urlTemplateBase) data.url_template_base = urlTemplateBase
+      for (const field of ['texto_x', 'texto_y', 'validacao_x', 'validacao_y']) {
+        if (data[field] === '' || data[field] === undefined) data[field] = null
+        else data[field] = parseInt(data[field], 10) || null
+      }
       await eventoService.update(req.params.id, data)
       req.flash('success', 'Evento atualizado com sucesso.')
       return res.redirect('/admin/eventos')
