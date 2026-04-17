@@ -5,6 +5,11 @@ async function globalSetup() {
     stdio: 'inherit',
     cwd: process.cwd(),
   })
+
+  // Garante banco limpo no início de cada sessão de testes
+  // (protege contra execuções anteriores interrompidas sem afterAll)
+  const { cleanE2E } = require('./seed')
+  await cleanE2E()
 }
 
 module.exports = globalSetup

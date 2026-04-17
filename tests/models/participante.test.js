@@ -1,9 +1,13 @@
 const { Participante, sequelize } = require('../../src/models')
 
+
 describe('Participante Model', () => {
   beforeEach(async () => {
-    // Limpa tabela antes de cada teste (cascade remove certificados dependentes)
-    await sequelize.query('TRUNCATE TABLE participantes CASCADE')
+    // Limpa tabelas relacionadas para evitar conflitos de chave única e FK
+    await sequelize.query('TRUNCATE TABLE certificados RESTART IDENTITY CASCADE')
+    await sequelize.query('TRUNCATE TABLE participantes RESTART IDENTITY CASCADE')
+    await sequelize.query('TRUNCATE TABLE eventos RESTART IDENTITY CASCADE')
+    await sequelize.query('TRUNCATE TABLE tipos_certificados RESTART IDENTITY CASCADE')
   })
 
   test('deve criar participante com dados válidos', async () => {

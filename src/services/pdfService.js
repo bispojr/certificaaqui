@@ -101,28 +101,6 @@ module.exports = {
         }
 
         // Layout detalhado inspirado no obterArquivo
-        // Nome do evento centralizado
-        doc.fontSize(18)
-        doc.font('Helvetica-Bold')
-        doc.text(evento?.nome || 'Evento', 0, 60, {
-          width: doc.page.width,
-          align: 'center',
-        })
-
-        // Nome do participante (ou campo nome)
-        const nomeCompleto = (
-          certificado.nome ||
-          participante?.nomeCompleto ||
-          ''
-        ).toUpperCase()
-        if (nomeCompleto) {
-          doc.fontSize(22)
-          doc.font('Helvetica-Bold')
-          doc.text(nomeCompleto, 0, 120, {
-            width: doc.page.width,
-            align: 'center',
-          })
-        }
 
         // Coordenadas do texto-base (configuráveis por evento)
         const textoX = evento?.texto_x ?? 270
@@ -139,7 +117,7 @@ module.exports = {
 
         // Código de validação e link
         const endereco_validacao =
-          process.env.ENDERECO_VALIDACAO || 'https://certifique.me/validar'
+          process.env.ENDERECO_VALIDACAO || 'https://certificaaqui.com/validar'
         doc.fontSize(9.5)
         setFont()
         doc
@@ -150,10 +128,12 @@ module.exports = {
             validacaoY,
             { width: doc.page.width, align: 'left' },
           )
-        doc.fillColor('blue').text(`${endereco_validacao}`, validacaoX + 247, validacaoY, {
-          link: endereco_validacao,
-          underline: true,
-        })
+        doc
+          .fillColor('blue')
+          .text(`${endereco_validacao}`, validacaoX + 247, validacaoY, {
+            link: endereco_validacao,
+            underline: true,
+          })
         doc.fillColor('black')
 
         doc.end()

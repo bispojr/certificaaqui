@@ -24,7 +24,9 @@ describe('views/admin/eventos', () => {
       expect(html).toMatch(/<th>URL template base<\/th>/)
     })
     it('exibe valor da url_template_base se presente', () => {
-      expect(html).toMatch(/{{#if url_template_base}}[\s\S]*{{url_template_base}}/)
+      expect(html).toMatch(
+        /{{#if url_template_base}}[\s\S]*{{url_template_base}}/,
+      )
     })
   })
 

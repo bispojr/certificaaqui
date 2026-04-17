@@ -109,7 +109,12 @@ module.exports = {
       const urlTemplateBase = await handleTemplateUpload(req)
       const data = { ...req.body }
       if (urlTemplateBase) data.url_template_base = urlTemplateBase
-      for (const field of ['texto_x', 'texto_y', 'validacao_x', 'validacao_y']) {
+      for (const field of [
+        'texto_x',
+        'texto_y',
+        'validacao_x',
+        'validacao_y',
+      ]) {
         if (data[field] === '' || data[field] === undefined) data[field] = null
         else data[field] = parseInt(data[field], 10) || null
       }
@@ -136,7 +141,12 @@ module.exports = {
       const urlTemplateBase = await handleTemplateUpload(req)
       const data = { ...req.body }
       if (urlTemplateBase) data.url_template_base = urlTemplateBase
-      for (const field of ['texto_x', 'texto_y', 'validacao_x', 'validacao_y']) {
+      for (const field of [
+        'texto_x',
+        'texto_y',
+        'validacao_x',
+        'validacao_y',
+      ]) {
         if (data[field] === '' || data[field] === undefined) data[field] = null
         else data[field] = parseInt(data[field], 10) || null
       }
