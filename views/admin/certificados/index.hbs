@@ -3,9 +3,6 @@
     <a href="/admin/certificados/novo" class="btn btn-primary">+ Novo Certificado</a>
   </div>
 
-  {{#if flash.success}}<div class="alert alert-success">{{flash.success}}</div>{{/if}}
-  {{#if flash.error}}<div class="alert alert-danger">{{flash.error}}</div>{{/if}}
-
   <form method="GET" action="/admin/certificados" class="row g-2 mb-3">
     <div class="col-auto">
       <select name="evento_id" class="form-select form-select-sm">

@@ -1,8 +1,6 @@
 {{#> layouts/admin}}
   <h2>{{#if certificado}}Editar{{else}}Novo{{/if}} Certificado</h2>
 
-  {{#if flash.error}}<div class="alert alert-danger">{{flash.error}}</div>{{/if}}
-
   <form id="certForm" method="POST"
         action="{{#if certificado}}/admin/certificados/{{certificado.id}}{{else}}/admin/certificados{{/if}}">
 

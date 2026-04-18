@@ -1,10 +1,6 @@
 <!-- layout aplicado pelo mecanismo de views -->
 <h2>{{#if tipo}}Editar{{else}}Novo{{/if}} Tipo de Certificado</h2>
 
-{{#if flash.error}}
-  <div class='alert alert-danger'>{{flash.error}}</div>
-{{/if}}
-
 <form id='tipoForm' method='POST' action='{{actionUrl}}'>
 
   <div class='mb-3'>

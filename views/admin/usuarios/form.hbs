@@ -1,9 +1,5 @@
 <h2>{{#if usuario}}Editar{{else}}Novo{{/if}} Usuário</h2>
 
-{{#if flash.error}}
-  <div class='alert alert-danger'>{{flash.error}}</div>
-{{/if}}
-
 {{#if usuario}}
   <form method='POST' action='/admin/usuarios/{{usuario.id}}'>
     <div class='mb-3'>
