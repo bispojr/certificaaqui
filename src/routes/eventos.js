@@ -4,6 +4,7 @@ const eventoController = require('../controllers/eventoController')
 const auth = require('../middlewares/auth')
 const rbac = require('../middlewares/rbac')
 const scopedEvento = require('../middlewares/scopedEvento')
+const authorizeUser = require('../middlewares/authorizeUser')
 const validate = require('../middlewares/validate')
 const eventoSchema = require('../validators/evento')
 
@@ -140,40 +141,53 @@ const eventoSchema = require('../validators/evento')
  *         description: Evento não encontrado
  */
 
+// Novo padrão: /:papel/:id/eventos
 router.post(
-  '/',
+  '/:papel/:id/eventos',
   auth,
-  rbac('monitor'),
+  authorizeUser,
+  rbac('admin'),
   scopedEvento,
   validate(eventoSchema),
   eventoController.create,
 )
-router.get('/', auth, rbac('monitor'), scopedEvento, eventoController.findAll)
 router.get(
-  '/:id',
+  '/:papel/:id/eventos',
   auth,
+  authorizeUser,
+  rbac('monitor'),
+  scopedEvento,
+  eventoController.findAll,
+)
+router.get(
+  '/:papel/:id/eventos/:eventoId',
+  auth,
+  authorizeUser,
   rbac('monitor'),
   scopedEvento,
   eventoController.findById,
 )
 router.put(
-  '/:id',
+  '/:papel/:id/eventos/:eventoId',
   auth,
+  authorizeUser,
   rbac('monitor'),
   scopedEvento,
   validate(eventoSchema.partial()),
   eventoController.update,
 )
 router.delete(
-  '/:id',
+  '/:papel/:id/eventos/:eventoId',
   auth,
+  authorizeUser,
   rbac('monitor'),
   scopedEvento,
   eventoController.delete,
 )
 router.post(
-  '/:id/restore',
+  '/:papel/:id/eventos/:eventoId/restore',
   auth,
+  authorizeUser,
   rbac('monitor'),
   scopedEvento,
   eventoController.restore,

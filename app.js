@@ -168,7 +168,8 @@ app.use('/', indexRouter)
 const authRouter = require('./src/routes/auth')
 app.use('/auth', authRouter)
 app.use('/participantes', participantesRouter)
-app.use('/eventos', eventosRouter)
+
+app.use('/', eventosRouter) // Necessário para rotas /:papel/:id/eventos
 // Redireciona GET /certificados para SSR apenas se não houver Bearer token (API)
 app.get('/certificados', (req, res, next) => {
   const auth = req.headers['authorization']

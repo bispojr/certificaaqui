@@ -17,8 +17,9 @@ module.exports = async function scopedEvento(req, res, next) {
       .json({ error: 'Acesso restrito: nenhum evento vinculado.' })
   }
 
-  // Para rotas de listagem (GET sem id), força filtro pelo(s) evento(s) do usuário
-  if (req.method === 'GET' && !req.params.id) {
+
+  // Para rotas de listagem (GET sem eventoId), força filtro pelo(s) evento(s) do usuário
+  if (req.method === 'GET' && !req.params.eventoId) {
     if (req.query.evento_id) {
       if (!eventosIds.includes(Number(req.query.evento_id))) {
         return res

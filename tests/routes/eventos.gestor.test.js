@@ -55,7 +55,7 @@ describe('Eventos API - Visibilidade do Gestor', () => {
 
   it('gestor só vê eventos aos quais está associado', async () => {
     const res = await request(app)
-      .get('/eventos')
+      .get(`/gestor/${gestor.id}/eventos`)
       .set('Authorization', `Bearer ${token}`)
     expect(res.status).toBe(200)
     expect(Array.isArray(res.body.data)).toBe(true)

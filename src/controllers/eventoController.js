@@ -24,7 +24,7 @@ class EventoController {
 
   async findById(req, res) {
     try {
-      const evento = await eventoService.findById(req.params.id)
+      const evento = await eventoService.findById(req.params.eventoId)
       if (!evento) {
         return res.status(404).json({ error: 'Evento não encontrado' })
       }
@@ -36,7 +36,7 @@ class EventoController {
 
   async update(req, res) {
     try {
-      const evento = await eventoService.update(req.params.id, req.body)
+      const evento = await eventoService.update(req.params.eventoId, req.body)
       return res.status(200).json(evento)
     } catch (error) {
       return res.status(400).json({ error: error.message })
@@ -45,7 +45,7 @@ class EventoController {
 
   async delete(req, res) {
     try {
-      await eventoService.delete(req.params.id)
+      await eventoService.delete(req.params.eventoId)
       return res.status(204).send()
     } catch (error) {
       return res.status(400).json({ error: error.message })
@@ -54,7 +54,7 @@ class EventoController {
 
   async restore(req, res) {
     try {
-      const evento = await eventoService.restore(req.params.id)
+      const evento = await eventoService.restore(req.params.eventoId)
       return res.status(200).json(evento)
     } catch (error) {
       return res.status(400).json({ error: error.message })

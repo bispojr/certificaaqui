@@ -8,7 +8,9 @@ jest.mock('../../src/services/eventoService')
 
 const JWT_SECRET = process.env.JWT_SECRET
 if (!JWT_SECRET) throw new Error('JWT_SECRET não configurado')
+
 let adminToken
+let adminId
 
 beforeAll(async () => {
   await sequelize.query('TRUNCATE TABLE usuarios RESTART IDENTITY CASCADE')
@@ -18,8 +20,9 @@ beforeAll(async () => {
     senha: 'senha123',
     perfil: 'admin',
   })
+  adminId = admin.id
   adminToken = jwt.sign(
-    { id: admin.id, perfil: admin.perfil, evento_id: admin.evento_id },
+    { id: admin.id, perfil: admin.perfil },
     JWT_SECRET,
   )
 })
@@ -37,7 +40,7 @@ describe('EventoController', () => {
       ano: 2026,
     })
     const res = await request(app)
-      .post('/eventos')
+      .post(`/admin/${adminId}/eventos`)
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ nome: 'Evento Teste', codigo_base: 'ABC', ano: 2026 })
     expect(res.statusCode).toBe(201)
@@ -52,7 +55,7 @@ describe('EventoController', () => {
   it('deve retornar todos os eventos', async () => {
     eventoService.findAll.mockResolvedValue([{ id: 1, nome: 'Evento Teste' }])
     const res = await request(app)
-      .get('/eventos')
+      .get(`/admin/${adminId}/eventos`)
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.statusCode).toBe(200)
     expect(res.body).toEqual([{ id: 1, nome: 'Evento Teste' }])
@@ -61,7 +64,7 @@ describe('EventoController', () => {
   it('deve retornar evento pelo id', async () => {
     eventoService.findById.mockResolvedValue({ id: 1, nome: 'Evento Teste' })
     const res = await request(app)
-      .get('/eventos/1')
+      .get(`/admin/${adminId}/eventos/1`)
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.statusCode).toBe(200)
     expect(res.body).toEqual({ id: 1, nome: 'Evento Teste' })
@@ -70,7 +73,7 @@ describe('EventoController', () => {
   it('deve retornar 404 se evento não encontrado', async () => {
     eventoService.findById.mockResolvedValue(null)
     const res = await request(app)
-      .get('/eventos/999')
+      .get(`/admin/${adminId}/eventos/999`)
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.statusCode).toBe(404)
     expect(res.body).toEqual({ error: 'Evento não encontrado' })
@@ -79,7 +82,7 @@ describe('EventoController', () => {
   it('deve atualizar um evento', async () => {
     eventoService.update.mockResolvedValue({ id: 1, nome: 'Atualizado' })
     const res = await request(app)
-      .put('/eventos/1')
+      .put(`/admin/${adminId}/eventos/1`)
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ nome: 'Atualizado' })
     expect(res.statusCode).toBe(200)
@@ -89,7 +92,7 @@ describe('EventoController', () => {
   it('deve deletar um evento', async () => {
     eventoService.delete.mockResolvedValue()
     const res = await request(app)
-      .delete('/eventos/1')
+      .delete(`/admin/${adminId}/eventos/1`)
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.statusCode).toBe(204)
   })
@@ -97,7 +100,7 @@ describe('EventoController', () => {
   it('deve restaurar um evento', async () => {
     eventoService.restore.mockResolvedValue({ id: 1, nome: 'Restaurado' })
     const res = await request(app)
-      .post('/eventos/1/restore')
+      .post(`/admin/${adminId}/eventos/1/restore`)
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.statusCode).toBe(200)
     expect(res.body).toEqual({ id: 1, nome: 'Restaurado' })

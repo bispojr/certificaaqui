@@ -46,9 +46,7 @@ describe('Rotas de Usuários', () => {
     )
   })
 
-  afterAll(async () => {
-    await sequelize.close()
-  })
+  // Não fechar sequelize aqui! O fechamento é feito no afterAll global do arquivo.
 
   it('deve autenticar usuário e retornar token', async () => {
     const res = await request(app)
@@ -318,7 +316,7 @@ describe('Rotas de Usuários', () => {
     expect(resCriacao.status).toBe(201)
     const usuarioId = resCriacao.body.id
     await request(app)
-      .delete(`/eventos/${evento.id}`)
+      .delete(`/admin/${global.adminId}/eventos/${evento.id}`)
       .set('Authorization', `Bearer ${global.adminToken}`)
     const usuario = await sequelize.models.Usuario.findByPk(usuarioId, {
       include: [
@@ -360,5 +358,84 @@ describe('Rotas de Usuários', () => {
     expect(res.body.eventos.map((e) => e.nome)).toEqual(
       expect.arrayContaining(['Evento X', 'Evento Y']),
     )
+  })
+})
+
+describe('Autorização de updateEventos por papel/id', () => {
+  let adminId, adminToken, gestorId, gestorToken, monitorId, usuarioAlvoId
+
+  beforeAll(async () => {
+    await sequelize.query(
+      'TRUNCATE TABLE usuario_eventos, usuarios, eventos RESTART IDENTITY CASCADE',
+    )
+    const admin = await sequelize.models.Usuario.create({
+      nome: 'Admin',
+      email: 'admin_ue_authz@test.com',
+      senha: 'senha123',
+      perfil: 'admin',
+    })
+    adminId = admin.id
+    adminToken = jwt.sign({ id: admin.id, perfil: admin.perfil }, JWT_SECRET)
+
+    const gestor = await sequelize.models.Usuario.create({
+      nome: 'Gestor',
+      email: 'gestor_ue_authz@test.com',
+      senha: 'senha123',
+      perfil: 'gestor',
+    })
+    gestorId = gestor.id
+    gestorToken = jwt.sign({ id: gestor.id, perfil: gestor.perfil }, JWT_SECRET)
+
+    const monitor = await sequelize.models.Usuario.create({
+      nome: 'Monitor',
+      email: 'monitor_ue_authz@test.com',
+      senha: 'senha123',
+      perfil: 'monitor',
+    })
+    monitorId = monitor.id
+
+    const usuarioAlvo = await sequelize.models.Usuario.create({
+      nome: 'Alvo',
+      email: 'alvo_ue_authz@test.com',
+      senha: 'senha123',
+      perfil: 'monitor',
+    })
+    usuarioAlvoId = usuarioAlvo.id
+  })
+
+  afterAll(async () => {
+    await sequelize.close()
+  })
+
+  it('admin pode atualizar eventos de um usuário', async () => {
+    const res = await request(app)
+      .put(`/admin/${adminId}/usuarios/${usuarioAlvoId}/eventos`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ eventos: [] })
+    expect(res.status).toBe(200)
+  })
+
+  it('gestor não pode atualizar eventos de usuário (papel não-admin)', async () => {
+    const res = await request(app)
+      .put(`/gestor/${gestorId}/usuarios/${usuarioAlvoId}/eventos`)
+      .set('Authorization', `Bearer ${gestorToken}`)
+      .send({ eventos: [] })
+    expect(res.status).toBe(403)
+  })
+
+  it('admin com id diferente do token não pode atualizar eventos', async () => {
+    const res = await request(app)
+      .put(`/admin/99999/usuarios/${usuarioAlvoId}/eventos`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ eventos: [] })
+    expect(res.status).toBe(403)
+  })
+
+  it('gestor tentando usar papel admin é bloqueado', async () => {
+    const res = await request(app)
+      .put(`/admin/${adminId}/usuarios/${usuarioAlvoId}/eventos`)
+      .set('Authorization', `Bearer ${gestorToken}`)
+      .send({ eventos: [] })
+    expect(res.status).toBe(403)
   })
 })
