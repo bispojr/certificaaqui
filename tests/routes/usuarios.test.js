@@ -5,7 +5,9 @@ const jwt = require('jsonwebtoken')
 
 const JWT_SECRET = process.env.JWT_SECRET
 if (!JWT_SECRET) throw new Error('JWT_SECRET não configurado')
+
 global.adminToken = null
+global.adminId = null
 
 describe('Rotas de Usuários', () => {
   beforeAll(async () => {
@@ -18,6 +20,7 @@ describe('Rotas de Usuários', () => {
       senha: 'senha123',
       perfil: 'admin',
     })
+    global.adminId = admin.id
     global.adminToken = jwt.sign(
       { id: admin.id, perfil: admin.perfil },
       JWT_SECRET,
@@ -35,6 +38,7 @@ describe('Rotas de Usuários', () => {
       senha: 'senha123',
       perfil: 'admin',
     })
+    global.adminId = admin.id
     global.adminToken = jwt.sign(
       { id: admin.id, perfil: admin.perfil },
       JWT_SECRET,
@@ -90,9 +94,59 @@ describe('Rotas de Usuários', () => {
     expect(res.body.message).toBe('Logout realizado')
   })
 
+  it('retorna 401 ao criar usuário sem autenticação', async () => {
+    const res = await request(app)
+      .post(`/admin/${global.adminId}/usuarios`)
+      .send({
+        nome: 'SemAuth',
+        email: 'semauth@email.com',
+        senha: 'senha123',
+        perfil: 'gestor',
+      })
+    expect(res.status).toBe(401)
+  })
+
+  it('retorna 403 ao criar usuário com token de perfil não-admin', async () => {
+    const gestor = await Usuario.create({
+      nome: 'Gestor',
+      email: 'gestor@email.com',
+      senha: 'senha123',
+      perfil: 'gestor',
+    })
+    const gestorToken = jwt.sign(
+      { id: gestor.id, perfil: gestor.perfil },
+      JWT_SECRET,
+      { expiresIn: '1h' },
+    )
+    const res = await request(app)
+      .post(`/gestor/${gestor.id}/usuarios`)
+      .set('Authorization', `Bearer ${gestorToken}`)
+      .send({
+        nome: 'Novo',
+        email: 'novo@email.com',
+        senha: 'senha123',
+        perfil: 'monitor',
+      })
+    expect(res.status).toBe(403)
+  })
+
+  it('retorna 403 ao criar usuário com id diferente do token', async () => {
+    const res = await request(app)
+      .post(`/admin/99999/usuarios`)
+      .set('Authorization', `Bearer ${global.adminToken}`)
+      .send({
+        nome: 'Teste',
+        email: 'teste@email.com',
+        senha: 'senha123',
+        perfil: 'monitor',
+      })
+    expect(res.status).toBe(403)
+  })
+
   it('não permite criar usuário com eventos inexistentes', async () => {
     const res = await request(app)
-      .post('/usuarios')
+      .post(`/admin/${global.adminId}/usuarios`)
+      .set('Authorization', `Bearer ${global.adminToken}`)
       .send({
         nome: 'Invalido',
         email: 'invalido@evento.com',
@@ -105,25 +159,31 @@ describe('Rotas de Usuários', () => {
   })
 
   it('permite criar usuário sem eventos (ausente)', async () => {
-    const res = await request(app).post('/usuarios').send({
-      nome: 'SemEvento1',
-      email: 'semevento1@evento.com',
-      senha: 'senha123',
-      perfil: 'gestor',
-    })
+    const res = await request(app)
+      .post(`/admin/${global.adminId}/usuarios`)
+      .set('Authorization', `Bearer ${global.adminToken}`)
+      .send({
+        nome: 'SemEvento1',
+        email: 'semevento1@evento.com',
+        senha: 'senha123',
+        perfil: 'gestor',
+      })
     expect(res.status).toBe(201)
     expect(res.body.nome).toBe('SemEvento1')
     expect(res.body.eventos.length).toBe(0)
   })
 
   it('permite criar usuário com eventos array vazio', async () => {
-    const res = await request(app).post('/usuarios').send({
-      nome: 'SemEvento2',
-      email: 'semevento2@evento.com',
-      senha: 'senha123',
-      perfil: 'gestor',
-      eventos: [],
-    })
+    const res = await request(app)
+      .post(`/admin/${global.adminId}/usuarios`)
+      .set('Authorization', `Bearer ${global.adminToken}`)
+      .send({
+        nome: 'SemEvento2',
+        email: 'semevento2@evento.com',
+        senha: 'senha123',
+        perfil: 'gestor',
+        eventos: [],
+      })
     expect(res.status).toBe(201)
     expect(res.body.nome).toBe('SemEvento2')
     expect(res.body.eventos.length).toBe(0)
@@ -136,7 +196,8 @@ describe('Rotas de Usuários', () => {
       ano: 2026,
     })
     const res = await request(app)
-      .post('/usuarios')
+      .post(`/admin/${global.adminId}/usuarios`)
+      .set('Authorization', `Bearer ${global.adminToken}`)
       .send({
         nome: 'Duplicado',
         email: 'duplicado@evento.com',
@@ -160,7 +221,8 @@ describe('Rotas de Usuários', () => {
       ano: 2026,
     })
     const resCriacao = await request(app)
-      .post('/usuarios')
+      .post(`/admin/${global.adminId}/usuarios`)
+      .set('Authorization', `Bearer ${global.adminToken}`)
       .send({
         nome: 'Consulta',
         email: 'consulta@evento.com',
@@ -191,7 +253,8 @@ describe('Rotas de Usuários', () => {
       ano: 2026,
     })
     const resCriacao = await request(app)
-      .post('/usuarios')
+      .post(`/admin/${global.adminId}/usuarios`)
+      .set('Authorization', `Bearer ${global.adminToken}`)
       .send({
         nome: 'Atualiza',
         email: 'atualiza@evento.com',
@@ -202,7 +265,8 @@ describe('Rotas de Usuários', () => {
     expect(resCriacao.status).toBe(201)
     const usuarioId = resCriacao.body.id
     const resUpdate = await request(app)
-      .put(`/usuarios/${usuarioId}/eventos`)
+      .put(`/admin/${global.adminId}/usuarios/${usuarioId}/eventos`)
+      .set('Authorization', `Bearer ${global.adminToken}`)
       .send({ eventos: [eventoB.id] })
     expect(resUpdate.status).toBe(200)
     expect(resUpdate.body.eventos.length).toBe(1)
@@ -216,7 +280,8 @@ describe('Rotas de Usuários', () => {
       ano: 2026,
     })
     const resCriacao = await request(app)
-      .post('/usuarios')
+      .post(`/admin/${global.adminId}/usuarios`)
+      .set('Authorization', `Bearer ${global.adminToken}`)
       .send({
         nome: 'RemoveEventos',
         email: 'remove@evento.com',
@@ -227,7 +292,8 @@ describe('Rotas de Usuários', () => {
     expect(resCriacao.status).toBe(201)
     const usuarioId = resCriacao.body.id
     const resUpdate = await request(app)
-      .put(`/usuarios/${usuarioId}/eventos`)
+      .put(`/admin/${global.adminId}/usuarios/${usuarioId}/eventos`)
+      .set('Authorization', `Bearer ${global.adminToken}`)
       .send({ eventos: [] })
     expect(resUpdate.status).toBe(200)
     expect(resUpdate.body.eventos.length).toBe(0)
@@ -240,7 +306,8 @@ describe('Rotas de Usuários', () => {
       ano: 2026,
     })
     const resCriacao = await request(app)
-      .post('/usuarios')
+      .post(`/admin/${global.adminId}/usuarios`)
+      .set('Authorization', `Bearer ${global.adminToken}`)
       .send({
         nome: 'Cascata',
         email: 'cascata@evento.com',
@@ -250,18 +317,9 @@ describe('Rotas de Usuários', () => {
       })
     expect(resCriacao.status).toBe(201)
     const usuarioId = resCriacao.body.id
-    const admin = await sequelize.models.Usuario.create({
-      nome: 'AdminCascade',
-      email: 'admincascade@evento.com',
-      senha: 'senha123',
-      perfil: 'admin',
-    })
-    const token = jwt.sign({ id: admin.id, perfil: admin.perfil }, JWT_SECRET, {
-      expiresIn: '1h',
-    })
     await request(app)
       .delete(`/eventos/${evento.id}`)
-      .set('Authorization', `Bearer ${token}`)
+      .set('Authorization', `Bearer ${global.adminToken}`)
     const usuario = await sequelize.models.Usuario.findByPk(usuarioId, {
       include: [
         {
@@ -287,7 +345,8 @@ describe('Rotas de Usuários', () => {
       ano: 2026,
     })
     const res = await request(app)
-      .post('/usuarios')
+      .post(`/admin/${global.adminId}/usuarios`)
+      .set('Authorization', `Bearer ${global.adminToken}`)
       .send({
         nome: 'MultiEventoRoute',
         email: 'multi.route@evento.com',

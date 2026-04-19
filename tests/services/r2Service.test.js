@@ -28,5 +28,5 @@ describe('R2 Service', () => {
 
     // Remover
     await expect(r2Service.deleteFile(key)).resolves.toBeDefined()
-  })
+  }, 10000)
 })

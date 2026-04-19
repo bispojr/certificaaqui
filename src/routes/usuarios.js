@@ -122,14 +122,9 @@ const loginLimiter = rateLimit({
  *         description: Usuário não encontrado
  */
 
+// Rotas de autenticação — permanecem em /usuarios
 router.post('/login', loginLimiter, usuarioController.login)
 router.post('/logout', usuarioController.logout)
 router.get('/me', auth, usuarioController.me)
-router.post('/', validate(usuarioSchema), usuarioController.create)
-router.put(
-  '/:id/eventos',
-  validate(usuarioSchema.pick({ eventos: true })),
-  usuarioController.updateEventos,
-)
 
 module.exports = router

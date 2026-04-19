@@ -39,13 +39,9 @@ describe('Rate limiting em POST /usuarios/login', () => {
   })
 
   it('não afeta outras rotas', async () => {
-    const res = await request(app).post('/usuarios').send({
-      nome: 'Outro',
-      email: 'outro@teste.com',
-      senha: 'senha123',
-      perfil: 'monitor',
-    })
-    expect([201, 400]).toContain(res.status)
-    // 201 se criou, 400 se email já existe
+    // Verifica que o rate limit do login não bloqueia outras rotas
+    const res = await request(app).get('/usuarios/me')
+    // Sem token deve retornar 401, não 429 (rate limit)
+    expect(res.status).toBe(401)
   })
 })

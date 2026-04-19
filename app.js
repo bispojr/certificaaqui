@@ -178,6 +178,8 @@ app.get('/certificados', (req, res, next) => {
 app.use('/certificados', certificadosRouter)
 app.use('/tipos-certificados', tiposCertificadosRouter)
 app.use('/usuarios', usuariosRouter)
+const usuariosCrudRouter = require('./src/routes/usuarios-crud')
+app.use('/', usuariosCrudRouter)
 app.use('/admin', adminRouter)
 app.use('/public', publicRouter)
 app.use(healthRouter)

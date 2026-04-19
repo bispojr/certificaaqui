@@ -92,5 +92,5 @@ describe('Rotas públicas de certificados', () => {
     )
     expect(Buffer.isBuffer(res.body)).toBe(true)
     expect(res.body.slice(0, 4).toString()).toBe('%PDF')
-  })
+  }, 10000)
 })

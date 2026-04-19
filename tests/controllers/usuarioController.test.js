@@ -77,8 +77,21 @@ describe('UsuarioController', () => {
       codigo_base: 'BBB',
       ano: 2026,
     })
+    // Cria admin e token
+    const admin = await Usuario.create({
+      nome: 'Admin',
+      email: 'admin2@email.com',
+      senha: 'senha123',
+      perfil: 'admin',
+    })
+    const adminToken = jwt.sign(
+      { id: admin.id, perfil: admin.perfil },
+      JWT_SECRET,
+      { expiresIn: '1h' },
+    )
     const res = await request(app)
-      .post('/usuarios')
+      .post(`/admin/${admin.id}/usuarios`)
+      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         nome: 'MultiEvento',
         email: 'multi@evento.com',

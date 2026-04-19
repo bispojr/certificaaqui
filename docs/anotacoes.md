@@ -10,6 +10,8 @@ For more information, check the blog post at https://a.co/cUPnyil
 
 ====================================================
 
+Vamos lá. Quando eu logo como gestor, a rota "admin/tipos-certificados/novo" não me dá opção alguma no campo evento (mesmo quando se está associado um evento para esse gestor).
+
 Em /public/pagina/buscar, é preciso aparecer tanto o nome de evento quanto o tipo de certificado. Também se pode tirar o link "buscar novamente".
 
 Fazer com que a rota https://certificaaqui.com/validar/EDC-25-PT-109 mostre a validação do certificado.
