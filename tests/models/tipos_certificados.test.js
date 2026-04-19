@@ -1,13 +1,34 @@
-const { TiposCertificados, sequelize } = require('../../src/models')
+const { TiposCertificados, Evento, sequelize } = require('../../src/models')
+
+let eventoId
+let outroEventoId
 
 describe('TiposCertificados Model', () => {
+  beforeAll(async () => {
+    await sequelize.query(
+      'TRUNCATE TABLE tipos_certificados, eventos RESTART IDENTITY CASCADE',
+    )
+    const evento = await Evento.create({
+      nome: 'Evento Modelo',
+      codigo_base: 'EMO',
+      ano: 2026,
+    })
+    eventoId = evento.id
+    const outroEvento = await Evento.create({
+      nome: 'Outro Evento',
+      codigo_base: 'OEM',
+      ano: 2026,
+    })
+    outroEventoId = outroEvento.id
+  })
+
   beforeEach(async () => {
-    // Limpa tabela antes de cada teste (cascade remove certificados dependentes)
     await sequelize.query('TRUNCATE TABLE tipos_certificados CASCADE')
   })
 
   test('deve criar tipos_certificados com campo_destaque, texto_base e dados_dinamicos', async () => {
     const tipoData = {
+      evento_id: eventoId,
       codigo: 'PA',
       descricao: 'Palestra',
       campo_destaque: 'tema',
@@ -30,6 +51,7 @@ describe('TiposCertificados Model', () => {
   test('não deve criar tipos_certificados sem texto_base', async () => {
     await expect(
       TiposCertificados.create({
+        evento_id: eventoId,
         codigo: 'MC',
         descricao: 'Minicurso',
         campo_destaque: 'tema',
@@ -41,6 +63,7 @@ describe('TiposCertificados Model', () => {
   test('não deve criar tipos_certificados sem campo_destaque', async () => {
     await expect(
       TiposCertificados.create({
+        evento_id: eventoId,
         codigo: 'MC',
         descricao: 'Minicurso',
         texto_base: 'Texto exemplo',
@@ -52,6 +75,7 @@ describe('TiposCertificados Model', () => {
   test('não deve criar tipos_certificados sem codigo', async () => {
     await expect(
       TiposCertificados.create({
+        evento_id: eventoId,
         descricao: 'Oficina',
         campo_destaque: 'material',
         texto_base: 'Texto exemplo',
@@ -63,6 +87,7 @@ describe('TiposCertificados Model', () => {
   test('não deve criar tipos_certificados com codigo fora do padrão', async () => {
     await expect(
       TiposCertificados.create({
+        evento_id: eventoId,
         codigo: '123',
         descricao: 'Oficina',
         campo_destaque: 'material',
@@ -72,6 +97,7 @@ describe('TiposCertificados Model', () => {
     ).rejects.toThrow()
     await expect(
       TiposCertificados.create({
+        evento_id: eventoId,
         codigo: 'A',
         descricao: 'Oficina',
         campo_destaque: 'material',
@@ -81,6 +107,7 @@ describe('TiposCertificados Model', () => {
     ).rejects.toThrow()
     await expect(
       TiposCertificados.create({
+        evento_id: eventoId,
         codigo: 'ABC',
         descricao: 'Oficina',
         campo_destaque: 'material',
@@ -90,6 +117,7 @@ describe('TiposCertificados Model', () => {
     ).rejects.toThrow()
     await expect(
       TiposCertificados.create({
+        evento_id: eventoId,
         codigo: '1A',
         descricao: 'Oficina',
         campo_destaque: 'material',
@@ -103,6 +131,7 @@ describe('TiposCertificados Model', () => {
     // campo_destaque não existe em dados_dinamicos nem é 'nome' do certificado
     await expect(
       TiposCertificados.create({
+        evento_id: eventoId,
         codigo: 'OF',
         descricao: 'Oficina',
         campo_destaque: 'campo_invalido',
@@ -114,6 +143,7 @@ describe('TiposCertificados Model', () => {
     // campo_destaque válido: 'nome' do certificado
     await expect(
       TiposCertificados.create({
+        evento_id: eventoId,
         codigo: 'OA',
         descricao: 'Oficina',
         campo_destaque: 'nome',
@@ -125,6 +155,7 @@ describe('TiposCertificados Model', () => {
     // campo_destaque válido: campo em dados_dinamicos
     await expect(
       TiposCertificados.create({
+        evento_id: eventoId,
         codigo: 'OB',
         descricao: 'Oficina',
         campo_destaque: 'instrutor',
@@ -134,8 +165,9 @@ describe('TiposCertificados Model', () => {
     ).resolves.toBeDefined()
   })
 
-  test('não deve criar tipos_certificados com codigo duplicado', async () => {
+  test('não deve criar tipos_certificados com codigo duplicado no mesmo evento', async () => {
     await TiposCertificados.create({
+      evento_id: eventoId,
       codigo: 'PA',
       descricao: 'Palestra',
       campo_destaque: 'tema',
@@ -144,6 +176,7 @@ describe('TiposCertificados Model', () => {
     })
     await expect(
       TiposCertificados.create({
+        evento_id: eventoId,
         codigo: 'PA',
         descricao: 'Outra palestra',
         campo_destaque: 'tema',
@@ -153,8 +186,30 @@ describe('TiposCertificados Model', () => {
     ).rejects.toThrow()
   })
 
+  test('deve permitir o mesmo codigo em eventos diferentes', async () => {
+    await TiposCertificados.create({
+      evento_id: eventoId,
+      codigo: 'ZZ',
+      descricao: 'Tipo A',
+      campo_destaque: 'nome',
+      texto_base: 'Texto',
+      dados_dinamicos: {},
+    })
+    await expect(
+      TiposCertificados.create({
+        evento_id: outroEventoId,
+        codigo: 'ZZ',
+        descricao: 'Tipo B',
+        campo_destaque: 'nome',
+        texto_base: 'Texto',
+        dados_dinamicos: {},
+      }),
+    ).resolves.toBeDefined()
+  })
+
   test('soft delete deve funcionar', async () => {
     const tipo = await TiposCertificados.create({
+      evento_id: eventoId,
       codigo: 'MC',
       descricao: 'Minicurso',
       campo_destaque: 'instrutor',
@@ -173,6 +228,7 @@ describe('TiposCertificados Model', () => {
 
   test('deve permitir restaurar tipos_certificados deletado', async () => {
     const tipo = await TiposCertificados.create({
+      evento_id: eventoId,
       codigo: 'MC',
       descricao: 'Minicurso',
       campo_destaque: 'instrutor',

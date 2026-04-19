@@ -3,6 +3,7 @@ const tiposCertificadosSchema = require('../../src/validators/tipos_certificados
 describe('Validação Zod - TiposCertificados', () => {
   it('valida um tipo de certificado válido', () => {
     const valido = {
+      evento_id: 1,
       codigo: 'AB',
       descricao: 'Certificado de Participação',
       campo_destaque: 'nome',
@@ -34,6 +35,7 @@ describe('Validação Zod - TiposCertificados', () => {
 
   it('aceita dados_dinamicos ausente', () => {
     const valido = {
+      evento_id: 2,
       codigo: 'EF',
       descricao: 'Outro',
       campo_destaque: 'nome',

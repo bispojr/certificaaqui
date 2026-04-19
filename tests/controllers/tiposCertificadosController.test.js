@@ -35,6 +35,7 @@ describe('TiposCertificadosController', () => {
       nome: 'Tipo Teste',
     })
     const payload = {
+      evento_id: 1,
       codigo: 'AB',
       descricao: 'Descrição teste',
       campo_destaque: 'campo',
@@ -86,6 +87,7 @@ describe('TiposCertificadosController', () => {
 
   it('deve atualizar um tipo de certificado', async () => {
     const payload = {
+      evento_id: 1,
       codigo: 'CD',
       descricao: 'Atualizado',
       campo_destaque: 'campo',

@@ -2,9 +2,11 @@
 const { TiposCertificados } = require('../../src/models')
 
 module.exports = {
-  async findAll({ page = 1, perPage = 20 } = {}) {
+  async findAll({ page = 1, perPage = 20, eventoId } = {}) {
     const offset = (page - 1) * perPage
+    const where = eventoId ? { evento_id: eventoId } : {}
     const { count, rows } = await TiposCertificados.findAndCountAll({
+      where,
       offset,
       limit: perPage,
     })

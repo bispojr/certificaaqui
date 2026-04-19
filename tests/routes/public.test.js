@@ -24,6 +24,7 @@ describe('Rotas públicas de certificados', () => {
       updated_at: new Date(),
     })
     tipo = await TiposCertificados.create({
+      evento_id: evento.id,
       codigo: 'CT',
       descricao: 'Tipo Teste',
       campo_destaque: 'nomeCompleto',

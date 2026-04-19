@@ -27,6 +27,7 @@ async function setupDb() {
   await sequelize.models.TiposCertificados.destroy({ where: {}, force: true })
   await sequelize.models.TiposCertificados.create({
     id: 1,
+    evento_id: 1,
     codigo: 'TP',
     descricao: 'Tipo Padrão',
     campo_destaque: 'nome',

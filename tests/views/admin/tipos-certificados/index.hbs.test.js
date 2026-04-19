@@ -33,6 +33,8 @@ describe('views/admin/tipos-certificados/index.hbs', () => {
           descricao: 'Desc',
           campo_destaque: 'nome',
           numCertificados: 2,
+          podeEditar: true,
+          evento: { id: 1, nome: 'Evento Teste' },
         },
       ],
       arquivados: [],
@@ -46,6 +48,27 @@ describe('views/admin/tipos-certificados/index.hbs', () => {
     expect(html).toContain('Editar')
     expect(html).toContain('Arquivar')
     expect(html).not.toContain('Arquivados')
+  })
+
+  it('exibe somente-leitura quando não tem ownership', () => {
+    const html = template({
+      tipos: [
+        {
+          id: 2,
+          codigo: 'B',
+          descricao: 'Outro',
+          campo_destaque: 'nome',
+          numCertificados: 0,
+          podeEditar: false,
+          evento: { id: 2, nome: 'Evento Alheio' },
+        },
+      ],
+      arquivados: [],
+      flash: {},
+    })
+    expect(html).toContain('Somente leitura')
+    expect(html).not.toContain('Editar')
+    expect(html).not.toContain('Arquivar')
   })
 
   it('renderiza mensagem de nenhum tipo cadastrado', () => {

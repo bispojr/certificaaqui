@@ -46,6 +46,7 @@ beforeAll(async () => {
   })
   eventoId = evento.id
   const tipoCertificado = await TiposCertificados.create({
+    evento_id: eventoId,
     nome: 'Tipo Cert',
     codigo: 'AB',
     descricao: 'Descrição teste',

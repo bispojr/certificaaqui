@@ -3,7 +3,7 @@ const router = express.Router()
 const tiposCertificadosController = require('../controllers/tiposCertificadosController')
 const auth = require('../middlewares/auth')
 const rbac = require('../middlewares/rbac')
-const scopedEvento = require('../middlewares/scopedEvento')
+const tiposCertificadosOwnership = require('../middlewares/tiposCertificadosOwnership')
 const validate = require('../middlewares/validate')
 const tiposCertificadosSchema = require('../validators/tipos_certificados')
 
@@ -140,48 +140,39 @@ const tiposCertificadosSchema = require('../validators/tipos_certificados')
  *         description: Tipo de certificado não encontrado
  */
 
+// Leitura: qualquer usuário autenticado (monitor+) pode visualizar
+router.get('/', auth, rbac('monitor'), tiposCertificadosController.findAll)
+router.get('/:id', auth, rbac('monitor'), tiposCertificadosController.findById)
+
+// Mutações: somente gestores do evento proprietário do tipo
 router.post(
   '/',
   auth,
-  rbac('monitor'),
-  scopedEvento,
+  rbac('gestor'),
+  tiposCertificadosOwnership,
   validate(tiposCertificadosSchema),
   tiposCertificadosController.create,
-)
-router.get(
-  '/',
-  auth,
-  rbac('monitor'),
-  scopedEvento,
-  tiposCertificadosController.findAll,
-)
-router.get(
-  '/:id',
-  auth,
-  rbac('monitor'),
-  scopedEvento,
-  tiposCertificadosController.findById,
 )
 router.put(
   '/:id',
   auth,
-  rbac('monitor'),
-  scopedEvento,
+  rbac('gestor'),
+  tiposCertificadosOwnership,
   validate(tiposCertificadosSchema),
   tiposCertificadosController.update,
 )
 router.delete(
   '/:id',
   auth,
-  rbac('monitor'),
-  scopedEvento,
+  rbac('gestor'),
+  tiposCertificadosOwnership,
   tiposCertificadosController.delete,
 )
 router.post(
   '/:id/restore',
   auth,
-  rbac('monitor'),
-  scopedEvento,
+  rbac('gestor'),
+  tiposCertificadosOwnership,
   tiposCertificadosController.restore,
 )
 

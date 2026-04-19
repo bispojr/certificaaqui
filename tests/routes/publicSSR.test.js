@@ -30,6 +30,7 @@ describe('SSR Público - POST', () => {
       data_fim: '2026-04-02',
     })
     tipo = await TiposCertificados.create({
+      evento_id: evento.id,
       codigo: 'TP',
       descricao: 'Tipo Público',
       campo_destaque: 'nome',

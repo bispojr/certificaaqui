@@ -1,9 +1,11 @@
 const tiposCertificadosSSRController = require('../../src/controllers/tiposCertificadosSSRController')
-const { TiposCertificados, Certificado } = require('../../src/models')
+const { TiposCertificados, Certificado, Evento } = require('../../src/models')
 const httpMocks = require('node-mocks-http')
 const { Op } = require('sequelize')
 
 jest.mock('../../src/models')
+
+const adminUsuario = { perfil: 'admin' }
 
 function mockRes() {
   const res = httpMocks.createResponse()
@@ -23,18 +25,23 @@ describe('tiposCertificadosSSRController', () => {
         .fn()
         .mockResolvedValueOnce([
           {
-            toJSON: () => ({ id: 1, certificados: [{ id: 1 }, { id: 2 }] }),
+            toJSON: () => ({
+              id: 1,
+              evento_id: 1,
+              certificados: [{ id: 1 }, { id: 2 }],
+            }),
             certificados: [{ id: 1 }, { id: 2 }],
           },
         ])
         .mockResolvedValueOnce([
           {
-            toJSON: () => ({ id: 2, certificados: [{ id: 3 }] }),
+            toJSON: () => ({ id: 2, evento_id: 1, certificados: [{ id: 3 }] }),
             certificados: [{ id: 3 }],
           },
         ])
       const req = httpMocks.createRequest()
       req.flash = jest.fn()
+      req.usuario = adminUsuario
       const res = mockRes()
       await tiposCertificadosSSRController.index(req, res)
       expect(res.render).toHaveBeenCalledWith(
@@ -49,6 +56,7 @@ describe('tiposCertificadosSSRController', () => {
       TiposCertificados.findAll = jest.fn().mockRejectedValue(new Error('erro'))
       const req = httpMocks.createRequest()
       req.flash = jest.fn()
+      req.usuario = adminUsuario
       const res = mockRes()
       await tiposCertificadosSSRController.index(req, res)
       expect(req.flash).toHaveBeenCalledWith('error', 'erro')
@@ -57,8 +65,12 @@ describe('tiposCertificadosSSRController', () => {
   })
 
   describe('novo', () => {
-    it('deve renderizar form com tipo null', async () => {
+    it('deve renderizar form com tipo null e lista de eventos', async () => {
+      Evento.findAll = jest
+        .fn()
+        .mockResolvedValue([{ id: 1, nome: 'Evento A' }])
       const req = httpMocks.createRequest()
+      req.usuario = adminUsuario
       const res = mockRes()
       await tiposCertificadosSSRController.novo(req, res)
       expect(res.render).toHaveBeenCalledWith(
@@ -67,6 +79,7 @@ describe('tiposCertificadosSSRController', () => {
           tipo: null,
           actionUrl: '/admin/tipos-certificados',
           opcoesCampoDestaque: [{ value: 'nome', selected: true }],
+          opcoesEvento: [{ value: 1, label: 'Evento A' }],
         }),
       )
     })
@@ -74,17 +87,19 @@ describe('tiposCertificadosSSRController', () => {
 
   describe('editar', () => {
     it('deve renderizar form com tipo', async () => {
-      TiposCertificados.findByPk = jest
-        .fn()
-        .mockResolvedValue({ toJSON: () => ({ id: 1 }) })
+      TiposCertificados.findByPk = jest.fn().mockResolvedValue({
+        toJSON: () => ({ id: 1, evento_id: 1 }),
+        evento_id: 1,
+      })
       const req = httpMocks.createRequest({ params: { id: 1 } })
       req.flash = jest.fn()
+      req.usuario = adminUsuario
       const res = mockRes()
       await tiposCertificadosSSRController.editar(req, res)
       expect(res.render).toHaveBeenCalledWith(
         'admin/tipos-certificados/form',
         expect.objectContaining({
-          tipo: { id: 1 },
+          tipo: { id: 1, evento_id: 1 },
           actionUrl: '/admin/tipos-certificados/1',
           opcoesCampoDestaque: [{ value: 'nome', selected: true }],
         }),
@@ -94,6 +109,7 @@ describe('tiposCertificadosSSRController', () => {
       TiposCertificados.findByPk = jest.fn().mockResolvedValue(null)
       const req = httpMocks.createRequest({ params: { id: 1 } })
       req.flash = jest.fn()
+      req.usuario = adminUsuario
       const res = mockRes()
       await tiposCertificadosSSRController.editar(req, res)
       expect(req.flash).toHaveBeenCalledWith(
@@ -108,6 +124,7 @@ describe('tiposCertificadosSSRController', () => {
         .mockRejectedValue(new Error('erro'))
       const req = httpMocks.createRequest({ params: { id: 1 } })
       req.flash = jest.fn()
+      req.usuario = adminUsuario
       const res = mockRes()
       await tiposCertificadosSSRController.editar(req, res)
       expect(req.flash).toHaveBeenCalledWith('error', 'erro')
@@ -120,6 +137,7 @@ describe('tiposCertificadosSSRController', () => {
       TiposCertificados.create = jest.fn().mockResolvedValue({})
       const req = httpMocks.createRequest({
         body: {
+          evento_id: '1',
           codigo: 'A',
           descricao: 'desc',
           campo_destaque: 'nome',
@@ -128,9 +146,11 @@ describe('tiposCertificadosSSRController', () => {
         },
       })
       req.flash = jest.fn()
+      req.usuario = adminUsuario
       const res = mockRes()
       await tiposCertificadosSSRController.criar(req, res)
       expect(TiposCertificados.create).toHaveBeenCalledWith({
+        evento_id: 1,
         codigo: 'A',
         descricao: 'desc',
         campo_destaque: 'nome',
@@ -145,8 +165,9 @@ describe('tiposCertificadosSSRController', () => {
     })
     it('deve redirecionar para novo em caso de erro', async () => {
       TiposCertificados.create = jest.fn().mockRejectedValue(new Error('erro'))
-      const req = httpMocks.createRequest({ body: {} })
+      const req = httpMocks.createRequest({ body: { evento_id: '1' } })
       req.flash = jest.fn()
+      req.usuario = adminUsuario
       const res = mockRes()
       await tiposCertificadosSSRController.criar(req, res)
       expect(req.flash).toHaveBeenCalledWith('error', 'erro')
@@ -158,7 +179,7 @@ describe('tiposCertificadosSSRController', () => {
 
   describe('atualizar', () => {
     it('deve atualizar tipo e redirecionar com sucesso', async () => {
-      const tipo = { update: jest.fn().mockResolvedValue({}) }
+      const tipo = { update: jest.fn().mockResolvedValue({}), evento_id: 1 }
       TiposCertificados.findByPk = jest.fn().mockResolvedValue(tipo)
       const req = httpMocks.createRequest({
         params: { id: 1 },
@@ -171,6 +192,7 @@ describe('tiposCertificadosSSRController', () => {
         },
       })
       req.flash = jest.fn()
+      req.usuario = adminUsuario
       const res = mockRes()
       await tiposCertificadosSSRController.atualizar(req, res)
       expect(tipo.update).toHaveBeenCalledWith({
@@ -190,6 +212,7 @@ describe('tiposCertificadosSSRController', () => {
       TiposCertificados.findByPk = jest.fn().mockResolvedValue(null)
       const req = httpMocks.createRequest({ params: { id: 1 }, body: {} })
       req.flash = jest.fn()
+      req.usuario = adminUsuario
       const res = mockRes()
       await tiposCertificadosSSRController.atualizar(req, res)
       expect(req.flash).toHaveBeenCalledWith(
@@ -204,6 +227,7 @@ describe('tiposCertificadosSSRController', () => {
         .mockRejectedValue(new Error('erro'))
       const req = httpMocks.createRequest({ params: { id: 1 }, body: {} })
       req.flash = jest.fn()
+      req.usuario = adminUsuario
       const res = mockRes()
       await tiposCertificadosSSRController.atualizar(req, res)
       expect(req.flash).toHaveBeenCalledWith('error', 'erro')
@@ -215,10 +239,11 @@ describe('tiposCertificadosSSRController', () => {
 
   describe('deletar', () => {
     it('deve deletar tipo e redirecionar com sucesso', async () => {
-      const tipo = { destroy: jest.fn().mockResolvedValue({}) }
+      const tipo = { destroy: jest.fn().mockResolvedValue({}), evento_id: 1 }
       TiposCertificados.findByPk = jest.fn().mockResolvedValue(tipo)
       const req = httpMocks.createRequest({ params: { id: 1 } })
       req.flash = jest.fn()
+      req.usuario = adminUsuario
       const res = mockRes()
       await tiposCertificadosSSRController.deletar(req, res)
       expect(tipo.destroy).toHaveBeenCalled()
@@ -232,6 +257,7 @@ describe('tiposCertificadosSSRController', () => {
       TiposCertificados.findByPk = jest.fn().mockResolvedValue(null)
       const req = httpMocks.createRequest({ params: { id: 1 } })
       req.flash = jest.fn()
+      req.usuario = adminUsuario
       const res = mockRes()
       await tiposCertificadosSSRController.deletar(req, res)
       expect(req.flash).toHaveBeenCalledWith(
@@ -246,6 +272,7 @@ describe('tiposCertificadosSSRController', () => {
         .mockRejectedValue(new Error('erro'))
       const req = httpMocks.createRequest({ params: { id: 1 } })
       req.flash = jest.fn()
+      req.usuario = adminUsuario
       const res = mockRes()
       await tiposCertificadosSSRController.deletar(req, res)
       expect(req.flash).toHaveBeenCalledWith('error', 'erro')
@@ -255,10 +282,11 @@ describe('tiposCertificadosSSRController', () => {
 
   describe('restaurar', () => {
     it('deve restaurar tipo e redirecionar com sucesso', async () => {
-      const tipo = { restore: jest.fn().mockResolvedValue({}) }
+      const tipo = { restore: jest.fn().mockResolvedValue({}), evento_id: 1 }
       TiposCertificados.findByPk = jest.fn().mockResolvedValue(tipo)
       const req = httpMocks.createRequest({ params: { id: 1 } })
       req.flash = jest.fn()
+      req.usuario = adminUsuario
       const res = mockRes()
       await tiposCertificadosSSRController.restaurar(req, res)
       expect(tipo.restore).toHaveBeenCalled()
@@ -272,6 +300,7 @@ describe('tiposCertificadosSSRController', () => {
       TiposCertificados.findByPk = jest.fn().mockResolvedValue(null)
       const req = httpMocks.createRequest({ params: { id: 1 } })
       req.flash = jest.fn()
+      req.usuario = adminUsuario
       const res = mockRes()
       await tiposCertificadosSSRController.restaurar(req, res)
       expect(req.flash).toHaveBeenCalledWith(
@@ -286,6 +315,7 @@ describe('tiposCertificadosSSRController', () => {
         .mockRejectedValue(new Error('erro'))
       const req = httpMocks.createRequest({ params: { id: 1 } })
       req.flash = jest.fn()
+      req.usuario = adminUsuario
       const res = mockRes()
       await tiposCertificadosSSRController.restaurar(req, res)
       expect(req.flash).toHaveBeenCalledWith('error', 'erro')

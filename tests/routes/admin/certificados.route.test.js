@@ -26,8 +26,9 @@ describe('Admin SSR Certificados - Ordem e RBAC', () => {
       defaults: { nome: 'Evento Rota Teste', codigo_base: 'RTA', ano: 2026 },
     })
     const [tipo] = await TiposCertificados.findOrCreate({
-      where: { codigo: 'RT' },
+      where: { codigo: 'RT', evento_id: evento.id },
       defaults: {
+        evento_id: evento.id,
         codigo: 'RT',
         descricao: 'Tipo Rota Teste',
         campo_destaque: 'nome',
@@ -147,6 +148,7 @@ describe('Admin SSR Certificados - Ordem e RBAC', () => {
       codigo_base: 'FST',
     })
     const tipo = await TiposCertificados.create({
+      evento_id: evento.id,
       codigo: 'NP',
       descricao: 'Na pista',
       campo_destaque: 'nome',

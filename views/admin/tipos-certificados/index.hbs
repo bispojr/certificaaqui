@@ -8,6 +8,7 @@
   <thead>
     <tr>
       <th>Código</th>
+      <th>Evento</th>
       <th>Descrição</th>
       <th>Campo Destaque</th>
       <th>Certificados</th>
@@ -18,10 +19,12 @@
     {{#each tipos}}
       <tr>
         <td>{{codigo}}</td>
+        <td>{{evento.nome}}</td>
         <td>{{descricao}}</td>
         <td><code>{{campo_destaque}}</code></td>
         <td>{{numCertificados}}</td>
         <td>
+          {{#if podeEditar}}
           <a
             href='/admin/tipos-certificados/{{id}}/editar'
             class='btn btn-sm btn-secondary'
@@ -37,6 +40,9 @@
               class='btn btn-sm btn-warning'
             >Arquivar</button>
           </form>
+          {{else}}
+          <span class='text-muted small'>Somente leitura</span>
+          {{/if}}
         </td>
       </tr>
     {{else}}

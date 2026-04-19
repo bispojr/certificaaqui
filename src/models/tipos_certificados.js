@@ -8,15 +8,23 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'tipo_certificado_id',
         as: 'certificados',
       })
+      TiposCertificados.belongsTo(models.Evento, {
+        foreignKey: 'evento_id',
+        as: 'evento',
+      })
     }
   }
 
   TiposCertificados.init(
     {
+      evento_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: 'eventos', key: 'id' },
+      },
       codigo: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
         validate: {
           is: /^[A-Za-z]{2}$/,
         },
@@ -52,6 +60,14 @@ module.exports = (sequelize, DataTypes) => {
       createdAt: 'created_at',
       updatedAt: 'updated_at',
       deletedAt: 'deleted_at',
+      indexes: [
+        {
+          unique: true,
+          fields: ['codigo', 'evento_id'],
+          where: { deleted_at: null },
+          name: 'tipos_certificados_codigo_evento_id_key',
+        },
+      ],
     },
   )
 

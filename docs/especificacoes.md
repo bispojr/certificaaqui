@@ -59,7 +59,9 @@ FR-44: O campo `url_template_base` do evento é opcional e, quando informado, de
 ## Gestão de Tipos de Certificados
 
 FR-10: O sistema deve permitir criar, listar, atualizar e remover tipos de certificados (CRUD completo).  
-FR-11: O campo `codigo` do tipo de certificado é obrigatório, deve ser único e conter exatamente duas letras alfabéticas (ex.: `PA`, `MC`, `OF`).  
+FR-11: O campo `codigo` do tipo de certificado é obrigatório, deve conter exatamente duas letras alfabéticas (ex.: `PA`, `MC`, `OF`) e deve ser único dentro do mesmo evento (unicidade composta `codigo + evento_id`).  
+FR-45: Cada tipo de certificado deve estar vinculado a um evento (`evento_id` obrigatório). O campo `evento_id` define o contexto do tipo de certificado e é imutável após a criação.  
+FR-46: Gestores podem criar, editar e remover apenas tipos de certificados vinculados aos seus próprios eventos. Gestores e monitores podem visualizar tipos de certificados de qualquer evento, mas não podem modificá-los.  
 FR-12: O campo `descricao` do tipo de certificado é obrigatório.  
 FR-13: O campo `texto_base` é obrigatório e pode conter expressões de interpolação no formato `${nome_campo}`, que serão substituídas pelos valores correspondentes ao emitir um certificado (ex.: `"Certificamos que ${nome_completo} participou na condição de ${funcao}."`).  
 FR-14: O campo `campo_destaque` é obrigatório e deve referenciar ou o campo `nome` do certificado ou uma chave presente em `dados_dinamicos` do mesmo tipo.  

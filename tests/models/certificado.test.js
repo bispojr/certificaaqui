@@ -10,8 +10,8 @@ describe('Certificado Model', () => {
   beforeEach(async () => {
     await Certificado.destroy({ where: {}, force: true })
     await Participante.destroy({ where: {}, force: true })
-    await Evento.destroy({ where: {}, force: true })
     await TiposCertificados.destroy({ where: {}, force: true })
+    await Evento.destroy({ where: {}, force: true })
     participante = await Participante.create({
       nomeCompleto: 'João Silva',
       email: 'joao_certificado@email.com',
@@ -23,6 +23,7 @@ describe('Certificado Model', () => {
       ano: 2026,
     })
     tipoCertificado = await TiposCertificados.create({
+      evento_id: evento.id,
       codigo: 'PA',
       descricao: 'Palestra',
       campo_destaque: 'tema',

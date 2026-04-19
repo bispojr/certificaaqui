@@ -41,6 +41,7 @@ describe('tiposCertificadosService', () => {
     const perPage = 5
     const result = await tiposCertificadosService.findAll({ page, perPage })
     expect(TiposCertificados.findAndCountAll).toHaveBeenCalledWith({
+      where: {},
       offset: 5,
       limit: 5,
     })
@@ -60,9 +61,19 @@ describe('tiposCertificadosService', () => {
       .mockResolvedValue({ count: 0, rows: [] })
     await tiposCertificadosService.findAll()
     expect(TiposCertificados.findAndCountAll).toHaveBeenCalledWith({
+      where: {},
       offset: 0,
       limit: 20,
     })
+  })
+  it('findAll filtra por eventoId quando fornecido', async () => {
+    TiposCertificados.findAndCountAll = jest
+      .fn()
+      .mockResolvedValue({ count: 1, rows: [{ id: 2, evento_id: 5 }] })
+    await tiposCertificadosService.findAll({ eventoId: 5 })
+    expect(TiposCertificados.findAndCountAll).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { evento_id: 5 } }),
+    )
   })
 
   it('findById chama TiposCertificados.findByPk', async () => {

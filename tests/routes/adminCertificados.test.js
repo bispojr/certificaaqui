@@ -64,6 +64,7 @@ describe('Admin SSR - certificados', () => {
       data_fim: '2026-04-02',
     })
     tipo = await TiposCertificados.create({
+      evento_id: evento.id,
       codigo: 'TP',
       descricao: 'Tipo',
       campo_destaque: 'nome',
