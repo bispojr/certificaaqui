@@ -83,4 +83,27 @@ describe('admin/certificados/form.hbs', () => {
     expect($('.alert-success').length).toBe(0)
     expect($('.alert-danger').length).toBe(0)
   })
+
+  it('embute dados_dinamicos dos tipos no HTML sem usar fetch', () => {
+    const html = render({
+      participantes: [],
+      eventos: [],
+      tipos: [
+        { id: 10, descricao: 'Palestra', dados_dinamicos: { tema: 'Tema', palestrante: 'Palestrante' } },
+        { id: 11, descricao: 'Minicurso', dados_dinamicos: { instrutor: 'Instrutor' } },
+      ],
+      certificado: null,
+      flash: {},
+    })
+
+    // Garante que os dados estão embutidos diretamente no HTML
+    expect(html).toContain("tiposData['10']")
+    expect(html).toContain("tiposData['11']")
+    expect(html).toContain('"tema"')
+    expect(html).toContain('"instrutor"')
+
+    // Garante que NÃO há chamada fetch para a API de tipos
+    expect(html).not.toContain("fetch('/tipos-certificados/")
+    expect(html).not.toContain('fetch("/tipos-certificados/')
+  })
 })
