@@ -8,12 +8,14 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:3000'
  * @param {string} senha
  */
 async function loginAs(page, email, senha) {
+  // Limpa cookies para evitar loop de redirecionamento com token expirado/anterior
+  await page.context().clearCookies()
   await page.goto(`${BASE_URL}/auth/login`)
   await page.fill('input[name="email"]', email)
   await page.fill('input[name="senha"]', senha)
   await page.click('button[type="submit"]')
-  // Aguarda redirecionamento para o painel
-  await page.waitForURL(/\/admin\/dashboard|\/auth\/login/)
+  // Aguarda redirecionamento para o painel no novo padrão /:papel/:id
+  await page.waitForURL(/\/(admin|gestor|monitor)\/\d+/)
 }
 
 /**

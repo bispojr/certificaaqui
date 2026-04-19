@@ -18,7 +18,7 @@ test.describe('Admin - Cadastro de Evento', () => {
     page,
   }) => {
     await loginAs(page, 'admin.e2e@test.com', 'senha123')
-    await expect(page).toHaveURL(/\/admin\/dashboard/, {
+    await expect(page).toHaveURL(/\/admin\/\d+/, {
       message: 'Login falhou — verificar seed no banco E2E',
     })
     await page.goto('/admin/eventos/novo')
@@ -38,7 +38,7 @@ test.describe('Admin - Cadastro de Evento', () => {
     page,
   }) => {
     await loginAs(page, 'admin.e2e@test.com', 'senha123')
-    await expect(page).toHaveURL(/\/admin\/dashboard/, {
+    await expect(page).toHaveURL(/\/admin\/\d+/, {
       message: 'Login falhou — verificar seed no banco E2E',
     })
     await page.goto('/admin/eventos/novo')

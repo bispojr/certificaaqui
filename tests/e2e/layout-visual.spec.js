@@ -36,7 +36,7 @@ test.describe('Layout admin usa tema Brite e navbar com texto preto', () => {
 
   test('navbar admin com tema e links corretos', async ({ page }) => {
     await loginAs(page, 'admin.e2e@test.com', 'senha123')
-    await page.goto('/admin/dashboard')
+    // Após login, já está na rota correta /admin/:id
     // Verifica se o link do tema Brite está presente
     const bootswatchLink = page.locator(
       'link[href*="bootswatch@5.3.8/dist/brite/bootstrap.min.css"]',
@@ -52,7 +52,7 @@ test.describe('Layout admin usa tema Brite e navbar com texto preto', () => {
       'nav.navbar.navbar-expand-lg.navbar-light.bg-light',
     )
     await expect(navbar).toBeVisible()
-    // Os links devem ter texto preto (5 links: Certificados, Participantes, Eventos, Tipos, Usuários)
+    // Os links devem ter texto preto (Certificação, Eventos, Administração)
     const navLinks = navbar.locator('a.nav-link.text-black')
     await expect(navLinks).toHaveCount(3)
   })

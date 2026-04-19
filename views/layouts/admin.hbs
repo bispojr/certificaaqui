@@ -66,7 +66,7 @@
   <body>
     <nav class='navbar navbar-expand-lg navbar-light bg-light'>
       <div class='container-fluid'>
-        <a class='navbar-brand text-black d-flex align-items-center gap-2' href='/admin/dashboard'>
+        <a class='navbar-brand text-black d-flex align-items-center gap-2' href='/{{usuario.perfil}}/{{usuario.id}}'>
           <img src="/images/logo.svg" alt="Logo CertificaAqui" style="height:28px;width:auto;">
           <span>CertificaAqui</span>
           <span style="color: #adb5bd; margin: 0 7px; font-weight: 400;">|</span>
@@ -83,11 +83,11 @@
                 <i class="fa-solid fa-certificate me-1 text-success"></i> Certificação
               </a>
               <ul class="dropdown-menu" aria-labelledby="navbarCertificacao">
-                <li><a class="dropdown-item" href="/admin/certificados"><i class="fa-solid fa-file-lines me-1 text-info"></i> Certificados</a></li>
+                <li><a class="dropdown-item" href="/{{usuario.perfil}}/{{usuario.id}}/certificados"><i class="fa-solid fa-file-lines me-1 text-info"></i> Certificados</a></li>
                 {{#if (or usuario.isAdmin usuario.isGestor)}}
-                  <li><a class="dropdown-item" href="/admin/tipos-certificados"><i class="fa-solid fa-certificate me-1 text-success"></i> Tipos</a></li>
+                  <li><a class="dropdown-item" href="/{{usuario.perfil}}/{{usuario.id}}/tipos-certificados"><i class="fa-solid fa-certificate me-1 text-success"></i> Tipos</a></li>
                 {{/if}}
-                <li><a class="dropdown-item" href="/admin/certificados?status=pendente"><i class="fa-solid fa-clock me-1 text-warning"></i> Pendentes</a></li>
+                <li><a class="dropdown-item" href="/{{usuario.perfil}}/{{usuario.id}}/certificados?status=pendente"><i class="fa-solid fa-clock me-1 text-warning"></i> Pendentes</a></li>
               </ul>
             </li>
             <!-- Gestão de eventos -->
@@ -96,8 +96,8 @@
                 <i class="fa-solid fa-calendar-days me-1 text-primary"></i> Eventos
               </a>
               <ul class="dropdown-menu" aria-labelledby="navbarEventos">
-                <li><a class="dropdown-item" href="/admin/eventos"><i class="fa-solid fa-calendar-days me-1 text-primary"></i> Eventos</a></li>
-                <li><a class="dropdown-item" href="/admin/participantes"><i class="fa-solid fa-users me-1 text-success"></i> Participantes</a></li>
+                <li><a class="dropdown-item" href="/{{usuario.perfil}}/{{usuario.id}}/eventos"><i class="fa-solid fa-calendar-days me-1 text-primary"></i> Eventos</a></li>
+                <li><a class="dropdown-item" href="/{{usuario.perfil}}/{{usuario.id}}/participantes"><i class="fa-solid fa-users me-1 text-success"></i> Participantes</a></li>
               </ul>
             </li>
             <!-- Administração -->
@@ -107,7 +107,7 @@
                 <i class="fa-solid fa-user-shield me-1 text-danger"></i> Administração
               </a>
               <ul class="dropdown-menu" aria-labelledby="navbarAdminDrop">
-                <li><a class="dropdown-item" href="/admin/usuarios"><i class="fa-solid fa-user-shield me-1 text-danger"></i> Usuários</a></li>
+                <li><a class="dropdown-item" href="/{{usuario.perfil}}/{{usuario.id}}/usuarios"><i class="fa-solid fa-user-shield me-1 text-danger"></i> Usuários</a></li>
               </ul>
             </li>
             {{/if}}

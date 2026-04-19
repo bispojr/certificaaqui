@@ -8,10 +8,26 @@ const {
 
 async function dashboard(req, res) {
   try {
+    // Suporte ao novo padrão de rota: /:papel/:id
+    const papelParam = req.params.papel || req.usuario?.perfil
+    const idParam = req.params.id || req.usuario?.id
+
     if (!req.usuario) {
       return res.redirect('/auth/login')
     }
-    const { perfil } = req.usuario
+
+    // Validação de acesso
+    if (
+      req.usuario.perfil !== papelParam ||
+      req.usuario.id !== Number(idParam)
+    ) {
+      // Admin pode acessar qualquer dashboard
+      if (req.usuario.perfil !== 'admin') {
+        return res.status(403).render('error', { message: 'Acesso negado' })
+      }
+    }
+
+    const perfil = papelParam
 
     if (perfil === 'admin') {
       const [

@@ -68,8 +68,8 @@ router.post(
  *       302:
  *         description: Redirect para /auth/login se não autenticado
  */
-// Dashboard
-router.get('/dashboard', dashboardController.dashboard)
+
+// (rota /admin/dashboard removida, dashboard agora em /:papel/:id)
 
 // Gestão de eventos (somente admin)
 router.get('/eventos', rbac('gestor'), eventoSSRController.index)

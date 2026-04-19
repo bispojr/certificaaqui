@@ -40,7 +40,7 @@ const JWT_SECRET = process.env.JWT_SECRET
  */
 // GET /auth/login
 router.get('/login', authSSR, (req, res) => {
-  if (req.usuario) return res.redirect('/admin/dashboard')
+  if (req.usuario) return res.redirect(`/${req.usuario.perfil}/${req.usuario.id}`)
   res.render('auth/login', { title: 'Login', layout: 'layout' })
 })
 
@@ -64,7 +64,7 @@ router.post('/login', async (req, res) => {
       { expiresIn: '1h' },
     )
     res.cookie('token', token, { httpOnly: true, sameSite: 'lax' })
-    return res.redirect('/admin/dashboard')
+    return res.redirect(`/${usuario.perfil}/${usuario.id}`)
   } catch {
     req.flash('error', 'Erro interno. Tente novamente.')
     return res.redirect('/auth/login')

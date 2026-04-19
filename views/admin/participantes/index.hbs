@@ -1,10 +1,10 @@
 <div class='d-flex justify-content-between align-items-center mb-3'>
   <h1>Participantes</h1>
-  <a href='/admin/participantes/novo' class='btn btn-primary'>+ Novo
+  <a href='/{{usuario.perfil}}/{{usuario.id}}/participantes/novo' class='btn btn-primary'>+ Novo
     Participante</a>
 </div>
 
-<form method='GET' action='/admin/participantes' class='mb-3 d-flex gap-2'>
+<form method='GET' action='/{{usuario.perfil}}/{{usuario.id}}/participantes' class='mb-3 d-flex gap-2'>
   <input
     type='text'
     class='form-control'
@@ -14,7 +14,7 @@
   />
   <button type='submit' class='btn btn-outline-secondary'>Buscar</button>
   {{#if q}}
-    <a href='/admin/participantes' class='btn btn-outline-danger'>Limpar</a>
+    <a href='/{{usuario.perfil}}/{{usuario.id}}/participantes' class='btn btn-outline-danger'>Limpar</a>
   {{/if}}
 </form>
 
@@ -37,12 +37,12 @@
         <td>{{numCertificados}}</td>
         <td>
           <a
-            href='/admin/participantes/{{id}}/editar'
+            href='/{{../usuario.perfil}}/{{../usuario.id}}/participantes/{{id}}/editar'
             class='btn btn-sm btn-warning'
           >Editar</a>
           <form
             method='POST'
-            action='/admin/participantes/{{id}}/deletar'
+            action='/{{../usuario.perfil}}/{{../usuario.id}}/participantes/{{id}}/deletar'
             class='d-inline'
             onsubmit="return confirm('Remover este participante?')"
           >
@@ -78,7 +78,7 @@
             <td>
               <form
                 method='POST'
-                action='/admin/participantes/{{id}}/restaurar'
+                action='/{{../usuario.perfil}}/{{../usuario.id}}/participantes/{{id}}/restaurar'
                 class='d-inline'
               >
                 <button

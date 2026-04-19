@@ -20,8 +20,12 @@ test.describe('auth helpers', () => {
   })
 
   test('loginAs falha com senha errada', async ({ page }) => {
-    await loginAs(page, adminEmail, 'errada')
-    expect(await isAuthenticated(page)).toBe(false)
-    expect(page.url()).toContain('/auth/login')
+    // Não usar loginAs para login inválido
+    await page.goto('/auth/login')
+    await page.fill('input[name="email"]', adminEmail)
+    await page.fill('input[name="senha"]', 'errada')
+    await page.click('button[type="submit"]')
+    await expect(page).toHaveURL(/\/auth\/login/)
+    await expect(page.locator('text=Credenciais inválidas')).toBeVisible()
   })
 })

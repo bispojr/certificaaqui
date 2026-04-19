@@ -14,11 +14,16 @@ test.describe('Dashboard Admin — cards de certificados', () => {
 
   test.beforeEach(async ({ page }) => {
     await loginAs(page, 'admin.e2e@test.com', 'senha123')
-    await expect(page).toHaveURL(/\/admin\/dashboard/)
+    // Após login, redireciona para /admin/:id
+    await expect(page).toHaveURL(/\/admin\/[0-9]+/)
   })
 
   test('Exibe card Certificados', async ({ page }) => {
-    const card = page.locator('a[href="/admin/certificados"] .card-label', {
+    // Descobre id do admin pela URL
+    const url = page.url()
+    const match = url.match(/\/admin\/(\d+)/)
+    const id = match ? match[1] : '1'
+    const card = page.locator(`a[href="/admin/${id}/certificados"] .card-label`, {
       hasText: 'Certificados',
     })
     await expect(card).toBeVisible()
@@ -28,7 +33,10 @@ test.describe('Dashboard Admin — cards de certificados', () => {
   })
 
   test('Exibe card Pendentes', async ({ page }) => {
-    const card = page.locator('.card-label', { hasText: 'Pendentes' })
+    const url = page.url()
+    const match = url.match(/\/admin\/(\d+)/)
+    const id = match ? match[1] : '1'
+    const card = page.locator(`a[href="/admin/${id}/certificados?status=pendente"] .card-label`, { hasText: 'Pendentes' })
     await expect(card).toBeVisible()
     // O número deve ser visível
     const value = card.locator('..').locator('.card-value.text-warning')
@@ -36,15 +44,12 @@ test.describe('Dashboard Admin — cards de certificados', () => {
   })
 
   test('Links dos cards estão corretos', async ({ page }) => {
-    const totalLink = page.locator(
-      'a[href="/admin/certificados"] .card-label',
-      { hasText: 'Certificados' },
-    )
+    const url = page.url()
+    const match = url.match(/\/admin\/(\d+)/)
+    const id = match ? match[1] : '1'
+    const totalLink = page.locator(`a[href="/admin/${id}/certificados"] .card-label`, { hasText: 'Certificados' })
     await expect(totalLink).toBeVisible()
-    const pendentesLink = page.locator(
-      'a[href="/admin/certificados?status=pendente"] .card-label',
-      { hasText: 'Pendentes' },
-    )
+    const pendentesLink = page.locator(`a[href="/admin/${id}/certificados?status=pendente"] .card-label`, { hasText: 'Pendentes' })
     await expect(pendentesLink).toBeVisible()
   })
 
@@ -57,7 +62,9 @@ test.describe('Dashboard Admin — cards de certificados', () => {
   test('Layout não quebra em telas sm (responsivo)', async ({ page }) => {
     // Simula viewport de celular
     await page.setViewportSize({ width: 575, height: 900 })
-    await page.goto('/admin/dashboard')
+    // Vai para a rota correta do dashboard
+    const url = page.url()
+    await page.goto(url)
     // Todos os cards devem continuar visíveis
     const cards = page.locator('.row.g-4 > div.col-12.col-sm-6.col-xl-4')
     await expect(cards).toHaveCount(6)

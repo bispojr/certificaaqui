@@ -8,7 +8,7 @@
 </h5>
 <div class="row g-4">
   <div class="col-12 col-sm-6 col-xl-4">
-    <a href="/admin/certificados" class="text-decoration-none">
+    <a href="/{{usuario.perfil}}/{{usuario.id}}/certificados" class="text-decoration-none">
       <div class="card dashboard-card bg-soft-info h-100">
         <div class="card-body d-flex justify-content-between align-items-center">
           <div>
@@ -22,7 +22,7 @@
   </div>
   {{#if (or usuario.isAdmin usuario.isGestor)}}
   <div class="col-12 col-sm-6 col-xl-4">
-    <a href="/admin/tipos-certificados" class="text-decoration-none">
+    <a href="/{{usuario.perfil}}/{{usuario.id}}/tipos-certificados" class="text-decoration-none">
       <div class="card dashboard-card bg-soft-success h-100">
         <div class="card-body d-flex justify-content-between align-items-center">
           <div>
@@ -36,7 +36,7 @@
   </div>
   {{/if}}
   <div class="col-12 col-sm-6 col-xl-4">
-    <a href="/admin/certificados?status=pendente" class="text-decoration-none">
+    <a href="/{{usuario.perfil}}/{{usuario.id}}/certificados?status=pendente" class="text-decoration-none">
       <div class="card dashboard-card bg-soft-warning h-100">
         <div class="card-body d-flex justify-content-between align-items-center">
           <div>
@@ -57,7 +57,7 @@
 </h5>
 <div class="row g-4">
   <div class="col-12 col-sm-6 col-xl-4">
-    <a href="/admin/eventos" class="text-decoration-none">
+    <a href="/{{usuario.perfil}}/{{usuario.id}}/eventos" class="text-decoration-none">
       <div class="card dashboard-card bg-soft-primary h-100">
         <div class="card-body d-flex justify-content-between align-items-center">
           <div>
@@ -70,7 +70,7 @@
     </a>
   </div>
   <div class="col-12 col-sm-6 col-xl-4">
-    <a href="/admin/participantes" class="text-decoration-none">
+    <a href="/{{usuario.perfil}}/{{usuario.id}}/participantes" class="text-decoration-none">
       <div class="card dashboard-card bg-soft-warning h-100">
         <div class="card-body d-flex justify-content-between align-items-center">
           <div>
@@ -92,7 +92,7 @@
 <div class="row g-4">
   {{#if usuario.isAdmin}}
   <div class="col-12 col-sm-6 col-xl-4">
-    <a href="/admin/usuarios" class="text-decoration-none">
+    <a href="/{{usuario.perfil}}/{{usuario.id}}/usuarios" class="text-decoration-none">
       <div class="card dashboard-card bg-soft-danger h-100">
         <div class="card-body d-flex justify-content-between align-items-center">
           <div>

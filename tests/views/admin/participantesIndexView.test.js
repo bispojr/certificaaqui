@@ -14,7 +14,7 @@ describe('admin/participantes/index.hbs', () => {
   })
 
   it('renderiza campo de busca GET com name="q"', () => {
-    const html = template({ participantes: [], arquivados: [], q: 'abc' })
+    const html = template({ participantes: [], arquivados: [], q: 'abc', usuario: { perfil: 'admin', id: 1 } })
     expect(html).toMatch(/<form[^>]+method='GET'/i)
     expect(html).toMatch(/name='q'/)
     expect(html).toMatch(/value='abc'/)
@@ -30,23 +30,23 @@ describe('admin/participantes/index.hbs', () => {
         numCertificados: 3,
       },
     ]
-    const html = template({ participantes, arquivados: [], q: '' })
+    const html = template({ participantes, arquivados: [], q: '', usuario: { perfil: 'admin', id: 1 } })
     expect(html).toMatch(/<th>Certificados<\/th>/)
     expect(html).toMatch(/<td>3<\/td>/)
   })
 
   it('exibe mensagem Nenhum participante encontrado', () => {
-    const html = template({ participantes: [], arquivados: [], q: '' })
+    const html = template({ participantes: [], arquivados: [], q: '', usuario: { perfil: 'admin', id: 1 } })
     expect(html).toMatch(/Nenhum participante\s*encontrado/)
   })
 
   it('renderiza seção arquivados em <details> com forms POST', () => {
     const arquivados = [{ id: 2, nomeCompleto: 'Zé', email: 'z@x.com' }]
-    const html = template({ participantes: [], arquivados, q: '' })
+    const html = template({ participantes: [], arquivados, q: '', usuario: { perfil: 'admin', id: 1 } })
     expect(html).toMatch(/<details/)
     expect(html).toMatch(/Participantes arquivados/)
     expect(html).toMatch(
-      /<form[^>]+method='POST'[^>]+action='\/admin\/participantes\/2\/restaurar'/,
+      /<form[^>]+method='POST'[^>]+action='\/admin\/1\/participantes\/2\/restaurar'/,
     )
     expect(html).toMatch(/Restaurar/)
   })

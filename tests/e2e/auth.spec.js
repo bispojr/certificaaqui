@@ -22,13 +22,16 @@ test('UC-A02 — login com credenciais válidas (admin) redireciona para dashboa
   page,
 }) => {
   await loginAs(page, 'admin.e2e@test.com', 'senha123')
-  await expect(page).toHaveURL(/\/admin\/dashboard/)
+  await expect(page).toHaveURL(/\/admin\/\d+/)
 })
 
 test('UC-A03 — login com credenciais inválidas permanece em /auth/login', async ({
   page,
 }) => {
-  await loginAs(page, 'admin.e2e@test.com', 'senhaerrada')
+  await page.goto('/auth/login')
+  await page.fill('input[name="email"]', 'admin.e2e@test.com')
+  await page.fill('input[name="senha"]', 'senhaerrada')
+  await page.click('button[type="submit"]')
   await expect(page).toHaveURL(/\/auth\/login/)
 })
 
@@ -55,14 +58,14 @@ test('UC-A06 — login com gestor redireciona para dashboard', async ({
   page,
 }) => {
   await loginAs(page, 'gestor.e2e@test.com', 'senha123')
-  await expect(page).toHaveURL(/\/admin\/dashboard/)
+  await expect(page).toHaveURL(/\/gestor\/\d+/)
 })
 
 test('UC-A07 — logout limpa sessão e redireciona para /auth/login', async ({
   page,
 }) => {
   await loginAs(page, 'admin.e2e@test.com', 'senha123')
-  await expect(page).toHaveURL(/\/admin\/dashboard/)
+  await expect(page).toHaveURL(/\/admin\/\d+/)
   // Submete o formulário de logout (POST /auth/logout)
   await page.click(
     'button[data-action="logout"], form[action="/auth/logout"] button',

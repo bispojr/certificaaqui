@@ -13,7 +13,7 @@ const jwt = require('jsonwebtoken')
 process.env.JWT_SECRET = 'jwt_secret_teste'
 const JWT_SECRET = process.env.JWT_SECRET
 
-describe('Rota GET /admin/dashboard', () => {
+describe('Rota GET /:papel/:id (dashboard)', () => {
   let agent
   beforeAll(async () => {
     await sequelize.sync({ force: true })
@@ -35,7 +35,8 @@ describe('Rota GET /admin/dashboard', () => {
   })
 
   it('deve exigir autenticação SSR', async () => {
-    const res = await agent.get('/admin/dashboard')
+    // id fictício
+    const res = await agent.get('/admin/1')
     expect(res.status).toBe(302)
     expect(res.headers.location).toBe('/auth/login')
   })
@@ -46,7 +47,7 @@ describe('Rota GET /admin/dashboard', () => {
     })
     const token = jwt.sign({ id: usuario.id }, JWT_SECRET)
     const res = await agent
-      .get('/admin/dashboard')
+      .get(`/admin/${usuario.id}`)
       .set('Cookie', `token=${token}`)
     expect(res.status).toBe(200)
     expect(res.text).toMatch(/Dashboard/)
@@ -62,7 +63,7 @@ describe('Rota GET /admin/dashboard', () => {
     })
     const token = jwt.sign({ id: usuario.id }, JWT_SECRET)
     const res = await agent
-      .get('/admin/dashboard')
+      .get(`/gestor/${usuario.id}`)
       .set('Cookie', `token=${token}`)
     expect(res.status).toBe(200)
     expect(res.text).toMatch(/Dashboard/)
@@ -70,7 +71,7 @@ describe('Rota GET /admin/dashboard', () => {
     expect(res.text).toMatch(/Participantes/)
     // O link 'Eventos' deve aparecer na navbar para gestor
     expect(res.text).toMatch(
-      /<a[^>]*href=['"]\/admin\/eventos['"][^>]*>[\s\S]*Eventos[\s\S]*<\/a>/,
+      new RegExp(`<a[^>]*href=['"]/${usuario.perfil}/${usuario.id}/eventos['"][^>]*>[\\s\\S]*Eventos[\\s\\S]*<\\/a>`),
     )
     // Mas o card de eventos NÃO deve aparecer no dashboard do gestor
     expect(res.text).not.toMatch(/Eventos \(todos\)/)

@@ -38,14 +38,14 @@ describe('GET /admin/dashboard', () => {
   })
 
   it('redireciona para /auth/login se não autenticado', async () => {
-    const res = await request(app).get('/admin/dashboard')
+    const res = await request(app).get(`/admin/${admin.id}`)
     expect(res.status).toBe(302)
     expect(res.headers.location).toBe('/auth/login')
   })
 
   it('renderiza dashboard para admin', async () => {
     const res = await request(app)
-      .get('/admin/dashboard')
+      .get(`/admin/${admin.id}`)
       .set('Cookie', adminCookie)
     expect(res.status).toBe(200)
     expect(res.text).toMatch(/Dashboard/i)
@@ -53,7 +53,7 @@ describe('GET /admin/dashboard', () => {
 
   it('renderiza dashboard para gestor (escopo reduzido)', async () => {
     const res = await request(app)
-      .get('/admin/dashboard')
+      .get(`/gestor/${gestor.id}`)
       .set('Cookie', gestorCookie)
     expect(res.status).toBe(200)
     expect(res.text).toMatch(/Dashboard/i)

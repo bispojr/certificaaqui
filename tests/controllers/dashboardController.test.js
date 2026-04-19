@@ -8,8 +8,8 @@ const {
 } = require('../../src/models')
 
 // Utilitário para mockar req/res
-function mockReqRes(usuario) {
-  const req = { usuario }
+function mockReqRes(usuario, params = { papel: 'admin', id: '1' }) {
+  const req = { usuario, params }
   const res = {
     render: jest.fn(),
     status: jest.fn().mockReturnThis(),
@@ -41,7 +41,7 @@ describe('dashboardController.dashboard', () => {
     jest
       .spyOn(Certificado, 'findAll')
       .mockResolvedValue(ultimosCertificadosFake)
-    const { req, res } = mockReqRes({ perfil: 'admin' })
+    const { req, res } = mockReqRes({ perfil: 'admin' }, { papel: 'admin', id: '1' })
     await dashboard(req, res)
     expect(res.render).toHaveBeenCalledWith(
       'admin/dashboard',
@@ -87,7 +87,10 @@ describe('dashboardController.dashboard', () => {
         if (distinct) return Promise.resolve(7) // participantes distintos
         return Promise.resolve(15) // total certificados
       })
-    const { req, res } = mockReqRes({ perfil: 'gestor', id: 42 })
+    const { req, res } = mockReqRes(
+      { perfil: 'gestor', id: 42 },
+      { papel: 'gestor', id: 42 }
+    )
     await dashboard(req, res)
     expect(res.render).toHaveBeenCalledWith(
       'admin/dashboard',
@@ -102,7 +105,10 @@ describe('dashboardController.dashboard', () => {
     const usuarioFake = { eventos: [] }
     jest.spyOn(Usuario, 'findByPk').mockResolvedValue(usuarioFake)
     const certificadoCount = jest.spyOn(Certificado, 'count')
-    const { req, res } = mockReqRes({ perfil: 'monitor', id: 99 })
+    const { req, res } = mockReqRes(
+      { perfil: 'monitor', id: 99 },
+      { papel: 'monitor', id: 99 }
+    )
     await dashboard(req, res)
     expect(res.render).toHaveBeenCalledWith(
       'admin/dashboard',

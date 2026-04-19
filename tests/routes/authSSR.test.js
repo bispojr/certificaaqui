@@ -28,13 +28,13 @@ describe('SSR Auth rotas', () => {
   })
 
   describe('POST /auth/login', () => {
-    it('redireciona para /admin/dashboard com credenciais válidas', async () => {
+    it('redireciona para /admin/:id com credenciais válidas', async () => {
       const res = await request(app)
         .post('/auth/login')
         .send('email=admin.ssr@test.com&senha=senha123')
         .set('Content-Type', 'application/x-www-form-urlencoded')
       expect(res.status).toBe(302)
-      expect(res.header.location).toBe('/admin/dashboard')
+      expect(res.header.location).toBe('/admin/1')
       expect(res.header['set-cookie']).toBeDefined()
       expect(res.header['set-cookie'].some((c) => c.startsWith('token='))).toBe(
         true,
