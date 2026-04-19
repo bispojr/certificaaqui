@@ -139,26 +139,50 @@ const participanteSchema = require('../validators/participante')
  *         description: Participante não encontrado
  */
 
+const authorizeUser = require('../middlewares/authorizeUser')
+
+// Novo padrão: /:papel/:id/participantes
 router.post(
-  '/',
+  '/:papel/:id/participantes',
   auth,
+  authorizeUser,
   rbac('monitor'),
   validate(participanteSchema),
   participanteController.create,
 )
-router.get('/', auth, rbac('monitor'), participanteController.findAll)
-router.get('/:id', auth, rbac('monitor'), participanteController.findById)
-router.put(
-  '/:id',
+router.get(
+  '/:papel/:id/participantes',
   auth,
+  authorizeUser,
+  rbac('monitor'),
+  participanteController.findAll,
+)
+router.get(
+  '/:papel/:id/participantes/:participanteId',
+  auth,
+  authorizeUser,
+  rbac('monitor'),
+  participanteController.findById,
+)
+router.put(
+  '/:papel/:id/participantes/:participanteId',
+  auth,
+  authorizeUser,
   rbac('monitor'),
   validate(participanteSchema.partial()),
   participanteController.update,
 )
-router.delete('/:id', auth, rbac('monitor'), participanteController.delete)
-router.post(
-  '/:id/restore',
+router.delete(
+  '/:papel/:id/participantes/:participanteId',
   auth,
+  authorizeUser,
+  rbac('monitor'),
+  participanteController.delete,
+)
+router.post(
+  '/:papel/:id/participantes/:participanteId/restore',
+  auth,
+  authorizeUser,
   rbac('monitor'),
   participanteController.restore,
 )

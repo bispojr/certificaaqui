@@ -25,6 +25,7 @@ async function createUserAndToken(perfil, eventoId = null) {
 
 describe('Proteção das rotas de gestão', () => {
   let adminToken, gestorToken, monitorToken, evento1Id, evento2Id
+  let adminUser, gestorUser, monitorUser
   beforeAll(async () => {
     // Limpa tabelas
     await sequelize.query('TRUNCATE TABLE usuarios RESTART IDENTITY CASCADE')
@@ -46,50 +47,74 @@ describe('Proteção das rotas de gestão', () => {
     const admin = await createUserAndToken('admin')
     const gestor = await createUserAndToken('gestor', evento1Id)
     const monitor = await createUserAndToken('monitor', evento1Id)
+    adminUser = admin.user
+    gestorUser = gestor.user
+    monitorUser = monitor.user
     adminToken = admin.token
     gestorToken = gestor.token
     monitorToken = monitor.token
   })
 
-  test('admin pode acessar todas as rotas', async () => {
+  test('admin pode acessar rotas de participantes com seu próprio papel/id', async () => {
     const res = await request(app)
-      .get('/participantes')
+      .get(`/admin/${adminUser.id}/participantes`)
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.status).not.toBe(403)
   })
 
-  test('gestor só acessa rotas do seu evento', async () => {
+  test('gestor pode acessar rotas de participantes com seu próprio papel/id', async () => {
     const res = await request(app)
-      .get('/participantes')
+      .get(`/gestor/${gestorUser.id}/participantes`)
       .set('Authorization', `Bearer ${gestorToken}`)
     expect(res.status).not.toBe(403)
   })
 
-  test('monitor só acessa rotas do seu evento', async () => {
+  test('monitor pode acessar rotas de participantes com seu próprio papel/id', async () => {
     const res = await request(app)
-      .get('/participantes')
+      .get(`/monitor/${monitorUser.id}/participantes`)
       .set('Authorization', `Bearer ${monitorToken}`)
     expect(res.status).not.toBe(403)
   })
 
-  test('gestor de outro evento ainda acessa lista de participantes (sem restrição por evento)', async () => {
+  test('gestor de outro evento acessa lista de participantes com seu próprio papel/id', async () => {
     const gestorOutroEvento = await createUserAndToken('gestor', evento2Id)
     const res = await request(app)
-      .get('/participantes')
+      .get(`/gestor/${gestorOutroEvento.user.id}/participantes`)
       .set('Authorization', `Bearer ${gestorOutroEvento.token}`)
     expect(res.status).toBe(200)
   })
 
-  test('monitor de outro evento ainda acessa lista de participantes (sem restrição por evento)', async () => {
+  test('monitor de outro evento acessa lista de participantes com seu próprio papel/id', async () => {
     const monitorOutroEvento = await createUserAndToken('monitor', evento2Id)
     const res = await request(app)
-      .get('/participantes')
+      .get(`/monitor/${monitorOutroEvento.user.id}/participantes`)
       .set('Authorization', `Bearer ${monitorOutroEvento.token}`)
     expect(res.status).toBe(200)
   })
 
   test('usuário sem token não acessa rotas protegidas', async () => {
-    const res = await request(app).get('/participantes')
+    const res = await request(app).get(`/admin/${adminUser.id}/participantes`)
     expect(res.status).toBe(401)
+  })
+
+  test('gestor não pode acessar rota com papel diferente do seu (admin)', async () => {
+    const res = await request(app)
+      .get(`/admin/${adminUser.id}/participantes`)
+      .set('Authorization', `Bearer ${gestorToken}`)
+    expect(res.status).toBe(403)
+  })
+
+  test('gestor não pode acessar rota com id diferente do seu', async () => {
+    const res = await request(app)
+      .get(`/gestor/99999/participantes`)
+      .set('Authorization', `Bearer ${gestorToken}`)
+    expect(res.status).toBe(403)
+  })
+
+  test('admin pode acessar rota de outro papel (gestor)', async () => {
+    const res = await request(app)
+      .get(`/gestor/${gestorUser.id}/participantes`)
+      .set('Authorization', `Bearer ${adminToken}`)
+    expect(res.status).toBe(200)
   })
 })

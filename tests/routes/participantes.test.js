@@ -27,7 +27,7 @@ describe('Rotas de Participantes', () => {
 
   it('deve criar participante com sucesso', async () => {
     const res = await request(app)
-      .post('/participantes')
+      .post(`/admin/${1}/participantes`)
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ nomeCompleto: 'João Teste', email: 'joao@teste.com' })
     expect(res.status).toBe(201)
@@ -37,7 +37,7 @@ describe('Rotas de Participantes', () => {
 
   it('deve listar participantes', async () => {
     const res = await request(app)
-      .get('/participantes')
+      .get(`/admin/${1}/participantes`)
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.status).toBe(200)
     expect(res.body).toHaveProperty('data')
@@ -51,7 +51,7 @@ describe('Rotas de Participantes', () => {
 
   it('deve buscar participante por id', async () => {
     const res = await request(app)
-      .get(`/participantes/${participanteId}`)
+      .get(`/admin/${1}/participantes/${participanteId}`)
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.status).toBe(200)
     expect(res.body).toHaveProperty('id', participanteId)
@@ -59,7 +59,7 @@ describe('Rotas de Participantes', () => {
 
   it('deve atualizar participante', async () => {
     const res = await request(app)
-      .put(`/participantes/${participanteId}`)
+      .put(`/admin/${1}/participantes/${participanteId}`)
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ nomeCompleto: 'João Atualizado' })
     expect(res.status).toBe(200)
@@ -68,14 +68,14 @@ describe('Rotas de Participantes', () => {
 
   it('deve deletar participante', async () => {
     const res = await request(app)
-      .delete(`/participantes/${participanteId}`)
+      .delete(`/admin/${1}/participantes/${participanteId}`)
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.status).toBe(204)
   })
 
   it('deve restaurar participante', async () => {
     const res = await request(app)
-      .post(`/participantes/${participanteId}/restore`)
+      .post(`/admin/${1}/participantes/${participanteId}/restore`)
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.status).toBe(200)
     expect(res.body).toHaveProperty('deleted_at', null)
@@ -83,7 +83,7 @@ describe('Rotas de Participantes', () => {
 
   it('deve retornar 400 ao criar participante com payload inválido', async () => {
     const res = await request(app)
-      .post('/participantes')
+      .post(`/admin/${1}/participantes`)
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ nomeCompleto: '' })
     expect(res.status).toBe(400)
@@ -92,7 +92,7 @@ describe('Rotas de Participantes', () => {
 
   it('deve retornar 404 ao buscar participante inexistente', async () => {
     const res = await request(app)
-      .get('/participantes/99999')
+      .get(`/admin/${1}/participantes/99999`)
       .set('Authorization', `Bearer ${adminToken}`)
     expect(res.status).toBe(404)
     expect(res.body).toHaveProperty('error')
