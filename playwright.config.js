@@ -2,8 +2,10 @@
 process.env.NODE_ENV = 'e2e'
 
 const { defineConfig, devices } = require('@playwright/test')
+require('dotenv').config()
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3000'
+const PORT = process.env.PORT || '3000'
+const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`
 
 module.exports = defineConfig({
   testDir: './tests/e2e',

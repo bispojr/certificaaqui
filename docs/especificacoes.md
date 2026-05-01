@@ -1,8 +1,9 @@
 # Especificação de Requisitos de Software (SRS)
 
 **Sistema:** Certifique-me  
-**Versão:** 1.0  
-**Data:** 2026-03-14  
+**Versão:** 2.0  
+**Data:** 2026-04-30  
+**Atualizado por:** Engenharia reversa do código-fonte  
 **Status:** Em desenvolvimento
 
 ---
@@ -11,7 +12,12 @@
 
 O **Certifique-me** é um sistema web de gestão e emissão de certificados digitais para eventos acadêmicos e técnicos. O sistema permite que organizadores de eventos criem e gerenciem certificados parametrizáveis para os participantes, com controle de acesso por perfil de usuário.
 
-O público em geral pode consultar e validar certificados sem necessidade de autenticação. Usuários internos (gestores e monitores) operam dentro do escopo do evento ao qual estão vinculados, enquanto administradores têm acesso irrestrito a todos os recursos.
+O público em geral pode consultar, validar e baixar certificados em PDF sem necessidade de autenticação. Usuários internos (gestores e monitores) operam dentro do escopo do(s) evento(s) ao qual estão vinculados, enquanto administradores têm acesso irrestrito a todos os recursos.
+
+O sistema dispõe de dois modos de interação:
+
+- **API REST (JSON):** para integrações e acesso programático, autenticada via JWT Bearer token.
+- **Interface SSR (Server-Side Rendering):** interface web completa renderizada pelo servidor com Handlebars, autenticada via cookie JWT HTTP-only.
 
 ---
 
@@ -19,10 +25,11 @@ O público em geral pode consultar e validar certificados sem necessidade de aut
 
 - Centralizar a emissão e o gerenciamento de certificados digitais de eventos.
 - Oferecer tipos de certificados parametrizáveis com campos dinâmicos e templates de texto.
-- Garantir autenticidade e rastreabilidade dos certificados emitidos.
+- Gerar documentos PDF dos certificados com imagem de fundo e texto interpolado dinâmico.
+- Garantir autenticidade e rastreabilidade dos certificados emitidos via código único de validação.
 - Permitir controle de acesso granular por perfil de usuário (admin, gestor, monitor).
-- Disponibilizar consulta e validação de certificados ao público sem necessidade de login.
-- Suportar importação de dados de planilhas via mapeamento para `valores_dinamicos`.
+- Disponibilizar consulta, validação e download de certificados ao público sem necessidade de login.
+- Armazenar templates de imagem e fontes em objeto de armazenamento compatível com S3 (Cloudflare R2).
 
 ---
 
@@ -31,9 +38,9 @@ O público em geral pode consultar e validar certificados sem necessidade de aut
 | Stakeholder           | Papel no sistema                                                                      |
 | --------------------- | ------------------------------------------------------------------------------------- |
 | **Administrador**     | Gerencia todo o sistema: usuários, eventos, certificados e relatórios.                |
-| **Gestor de Evento**  | Gerencia tipos de certificados, certificados e participantes de um evento específico. |
-| **Monitor de Evento** | Insere dados de certificados de um evento específico.                                 |
-| **Participante**      | Pessoa que recebe certificados; pode consultá-los publicamente pelo código ou ID.     |
+| **Gestor de Evento**  | Gerencia tipos de certificados, certificados e participantes de um ou mais eventos.   |
+| **Monitor de Evento** | Insere dados de certificados de um ou mais eventos.                                   |
+| **Participante**      | Pessoa que recebe certificados; pode consultá-los publicamente pelo código ou e-mail. |
 | **Equipe técnica**    | Responsável pela implantação, manutenção e evolução do sistema.                       |
 
 ---
@@ -44,74 +51,96 @@ O público em geral pode consultar e validar certificados sem necessidade de aut
 
 FR-1: O sistema deve permitir criar, listar, atualizar e remover participantes (CRUD completo).  
 FR-2: O campo `email` do participante deve ser único e ter formato válido.  
-FR-3: O campo `nomeCompleto` do participante é obrigatório.  
+FR-3: O campo `nomeCompleto` do participante é obrigatório e deve ter no mínimo 3 caracteres.  
 FR-4: A remoção de participantes deve ser lógica (soft delete); os registros devem poder ser restaurados.
 
 ## Gestão de Eventos
 
 FR-5: O sistema deve permitir criar, listar, atualizar e remover eventos (CRUD completo).  
-FR-6: O campo `nome` do evento é obrigatório.  
-FR-7: O campo `ano` do evento é obrigatório.  
+FR-6: O campo `nome` do evento é obrigatório e deve ter no mínimo 3 caracteres.  
+FR-7: O campo `ano` do evento é obrigatório e deve ser um inteiro maior ou igual a 2000.  
 FR-8: O campo `codigo_base` do evento é obrigatório, deve ser único e conter exatamente três letras alfabéticas (ex.: `EDU`, `CMP`, `OFC`).  
 FR-9: A remoção de eventos deve ser lógica (soft delete); os registros devem poder ser restaurados.  
-FR-44: O campo `url_template_base` do evento é opcional e, quando informado, deve conter uma URL válida. Esse campo armazena a localização do arquivo de template-base utilizado na geração dos certificados do evento.
+FR-44: O campo `url_template_base` do evento é opcional e, quando informado, deve conter uma URL válida (ou ser `null`). Esse campo armazena a **key** (caminho) do arquivo de template-base no Cloudflare R2.  
+FR-48: O evento pode configurar coordenadas inteiras opcionais para posicionamento do conteúdo no PDF gerado: `texto_x`, `texto_y` (posição do bloco de texto), `validacao_x`, `validacao_y` (posição do código de validação). Se ausentes, são usados valores padrão hardcoded (`texto_x`=270, `texto_y`=200, `validacao_x`=145, `validacao_y`=545).
 
 ## Gestão de Tipos de Certificados
 
 FR-10: O sistema deve permitir criar, listar, atualizar e remover tipos de certificados (CRUD completo).  
-FR-11: O campo `codigo` do tipo de certificado é obrigatório, deve conter exatamente duas letras alfabéticas (ex.: `PA`, `MC`, `OF`) e deve ser único dentro do mesmo evento (unicidade composta `codigo + evento_id`).  
-FR-45: Cada tipo de certificado deve estar vinculado a um evento (`evento_id` obrigatório). O campo `evento_id` define o contexto do tipo de certificado e é imutável após a criação.  
-FR-46: Gestores podem criar, editar e remover apenas tipos de certificados vinculados aos seus próprios eventos. Gestores e monitores podem visualizar tipos de certificados de qualquer evento, mas não podem modificá-los.  
-FR-12: O campo `descricao` do tipo de certificado é obrigatório.  
-FR-13: O campo `texto_base` é obrigatório e pode conter expressões de interpolação no formato `${nome_campo}`, que serão substituídas pelos valores correspondentes ao emitir um certificado (ex.: `"Certificamos que ${nome_completo} participou na condição de ${funcao}."`).  
-FR-14: O campo `campo_destaque` é obrigatório e deve referenciar ou o campo `nome` do certificado ou uma chave presente em `dados_dinamicos` do mesmo tipo.  
-FR-15: O campo `dados_dinamicos` (JSONB) define a estrutura dos campos específicos do tipo de certificado (ex.: palestrante, tema, duração).  
+FR-11: O campo `codigo` do tipo de certificado é obrigatório, deve conter exatamente duas letras alfabéticas (ex.: `PA`, `MC`, `OF`) e deve ser único dentro do mesmo evento (unicidade composta `codigo + evento_id`, excluindo registros soft-deletados).  
+FR-45: Cada tipo de certificado deve estar vinculado a um evento (`evento_id` obrigatório). O campo `evento_id` define o contexto do tipo de certificado.  
+FR-46: Gestores podem criar, editar e remover apenas tipos de certificados vinculados aos eventos de seu escopo. Monitores não podem modificar tipos de certificados — apenas visualizá-los.  
+FR-12: O campo `descricao` do tipo de certificado é obrigatório (mínimo 1 caractere).  
+FR-13: O campo `texto_base` é obrigatório (mínimo 1 caractere) e pode conter expressões de interpolação no formato `${nome_campo}`, que serão substituídas pelos valores correspondentes ao emitir um certificado (ex.: `"Certificamos que ${nome_completo} participou na condição de ${funcao}."`).  
+FR-14: O campo `campo_destaque` é obrigatório (mínimo 1 caractere) e deve referenciar `"nome"` ou uma chave presente em `dados_dinamicos` do mesmo tipo. Essa validação é aplicada via hook `beforeValidate` no modelo Sequelize.  
+FR-15: O campo `dados_dinamicos` (JSONB) define a estrutura dos campos específicos do tipo de certificado.  
 FR-16: A remoção de tipos de certificados deve ser lógica (soft delete); os registros devem poder ser restaurados.
 
 ## Gestão de Certificados
 
-FR-17: O sistema deve permitir emitir, listar, atualizar, cancelar e restaurar certificados.  
-FR-18: O campo `nome` do certificado é obrigatório.  
-FR-19: O campo `status` do certificado deve ser restrito aos valores: `"emitido"`, `"pendente"` ou `"cancelado"`.  
+FR-17: O sistema deve permitir emitir, listar, visualizar, atualizar, cancelar, remover e restaurar certificados.  
+FR-18: O campo `nome` do certificado é obrigatório e deve ter no mínimo 3 caracteres.  
+FR-19: O campo `status` do certificado deve ser restrito aos valores: `"emitido"`, `"pendente"` ou `"cancelado"`. O valor padrão na criação é `"emitido"`.  
 FR-20: O campo `valores_dinamicos` (JSONB) armazena os valores dos campos definidos em `dados_dinamicos` do tipo de certificado associado.  
 FR-21: Cada certificado deve estar associado a um participante (`participante_id`), um evento (`evento_id`) e um tipo de certificado (`tipo_certificado_id`).  
-FR-22: A remoção de certificados deve ser lógica (soft delete); os registros devem poder ser restaurados.
-
-FR-43: A geração do documento PDF do certificado só deve ser permitida se o certificado possuir um valor válido no campo `codigo`. Certificados sem código devem ser rejeitados na geração do documento.
+FR-22: A remoção de certificados deve ser lógica (soft delete); os registros devem poder ser restaurados (apenas admin pode restaurar via SSR).  
+FR-43: A geração do documento PDF do certificado só é permitida se o certificado possuir um código (`codigo`) válido. Certificados sem código são rejeitados com erro.  
+FR-52: O código do certificado é gerado automaticamente na criação pelo serviço, no formato `CODIGO_BASE-YY-TIPO-N`, onde `CODIGO_BASE` é o `codigo_base` do evento (ex.: `EDC`), `YY` são os dois últimos dígitos do ano do evento (ex.: `26`), `TIPO` é o `codigo` do tipo de certificado (ex.: `PT`), e `N` é o número incremental de certificados criados para aquele evento e tipo (1-based). Exemplo: `EDC-26-PT-3`.  
+FR-54: Na criação de um certificado, o serviço deve validar que todos os campos definidos em `dados_dinamicos` do tipo de certificado estejam presentes em `valores_dinamicos`. Campos ausentes resultam em HTTP 422 com lista dos campos faltantes (`camposFaltantes`).
 
 ## Consulta e Validação Pública de Certificados
 
-FR-23: O sistema deve disponibilizar uma rota pública para visualizar ou validar um certificado específico pelo seu ID (`/certificado/:id`).  
-FR-24: O sistema deve disponibilizar uma rota pública para validar um certificado por código (`/validar/:codigo`).  
-FR-25: As rotas de consulta pública não devem exigir autenticação.
+FR-23: O sistema deve disponibilizar uma rota pública JSON para listar certificados por e-mail de participante (`GET /public/certificados?email=...`).  
+FR-24: O sistema deve disponibilizar uma rota pública JSON `GET /public/validar/:codigo` que retorna `{ valido: true, certificado }` ou HTTP 404 `{ valido: false, mensagem }`.  
+FR-25: As rotas de consulta pública não devem exigir autenticação.  
+FR-53: O sistema deve disponibilizar uma rota pública `GET /public/certificados?email=...` que, dado o e-mail de um participante, lista todos os seus certificados.
+
+## Geração de PDF
+
+FR-42: O sistema deve gerar o PDF do certificado sob demanda via `GET /public/certificados/:id/pdf`, sem exigir autenticação.  
+FR-47: A imagem de fundo do PDF é obtida do Cloudflare R2 usando a key em `evento.url_template_base`. Se não definido, usa `"template/padrao.jpg"` como key padrão.  
+FR-47b: A fonte tipográfica (`Lato-Medium.ttf`) é obtida do R2 (key `"fontes/Lato-Medium.ttf"`). Se indisponível, usa `Helvetica` como fallback.  
+FR-47c: O PDF é gerado em formato A4 landscape. As coordenadas de posicionamento dos blocos de texto e do código de validação são configuráveis por evento via campos `texto_x/y` e `validacao_x/y`.  
+FR-47d: O texto de validação no PDF inclui o código do certificado e um link de validação composto pela variável de ambiente `ENDERECO_VALIDACAO` (default: `https://certificaaqui.com/validar`).
+
+## Upload de Template de Evento
+
+FR-51: Ao criar ou editar um evento via interface SSR, um arquivo de imagem (PNG ou JPEG, máx. 2 MB) pode ser enviado como template de fundo do PDF. O sistema realiza upload ao R2 com key gerada a partir do nome e ano do evento no formato `templates/<slug-nome>/<ano>/base.<ext>`, e armazena a key em `url_template_base`.
+
+## Interface SSR / Painel Administrativo
+
+FR-49: O sistema deve prover uma interface web SSR completa para gerenciamento administrativo, acessível a partir de `/admin/*`, incluindo dashboard, CRUD de eventos, participantes, tipos de certificados, certificados e usuários.  
+FR-56: O dashboard (`GET /admin/dashboard`) exibe para admin: total de eventos, tipos, participantes, usuários, certificados, certificados pendentes, e os 5 certificados mais recentes. Para gestor/monitor: total de certificados e participantes únicos filtrados por seus eventos.
 
 ## Gestão de Usuários e Autenticação
 
-FR-26: O sistema deve permitir criar, listar, atualizar e remover usuários (CRUD completo por admin).  
+FR-26: O sistema deve permitir criar, listar, atualizar e remover usuários.  
 FR-27: O campo `email` do usuário deve ser único e ter formato válido.  
 FR-28: O campo `perfil` do usuário deve ser restrito aos valores: `"admin"`, `"gestor"` ou `"monitor"`.  
-FR-29: A senha do usuário deve ser armazenada como hash (bcrypt).  
-FR-30: O sistema deve autenticar usuários via JWT, expondo endpoints de login e logout.  
-FR-31: O endpoint `GET /me` deve retornar os dados do usuário autenticado.  
-FR-32: Gestores e monitores devem estar vinculados a exatamente um evento (`evento_id`); administradores não possuem essa restrição.  
-FR-33: A remoção de usuários deve ser lógica (soft delete); os registros devem poder ser restaurados.
+FR-29: A senha do usuário deve ser armazenada como hash bcrypt (10 rounds), aplicado via hook Sequelize `beforeCreate` e `beforeUpdate` quando a senha for alterada.  
+FR-30: O sistema deve autenticar usuários via JWT com dois fluxos: (a) API: `POST /usuarios/login` retorna `{ token }` no corpo JSON; (b) SSR: `POST /auth/login` define cookie HTTP-only `token` e redireciona para `/admin/dashboard`. Token expira em 1 hora.  
+FR-31: O endpoint `GET /usuarios/me` deve retornar os dados do usuário autenticado (id, nome, email, perfil).  
+FR-32: Gestores e monitores devem estar vinculados a um ou mais eventos via tabela `usuario_eventos` (N:N). Administradores não possuem essa restrição.  
+FR-33: A remoção de usuários deve ser lógica (soft delete); os registros devem poder ser restaurados.  
+FR-55: O endpoint `POST /usuarios/login` deve ser protegido por rate limiting: máximo 10 tentativas em 15 minutos por IP.  
+FR-57: Todo usuário autenticado deve poder alterar sua própria senha via interface SSR (`GET/POST /admin/perfil/alterar-senha`). O formulário exige a senha atual e a nova senha (confirmada). A nova senha deve atender à política de senha forte: mínimo 8 caracteres, com pelo menos uma letra maiúscula, uma letra minúscula, um dígito e um caractere especial. A senha atual deve ser verificada antes da atualização.
 
 ## Controle de Acesso (RBAC)
 
 FR-34: O perfil **admin** deve ter acesso irrestrito a todos os recursos do sistema.  
-FR-35: O perfil **gestor** deve ter permissão para criar tipos de certificados (P1) e inserir/editar certificados (P2) dentro do seu evento.  
-FR-36: O perfil **monitor** deve ter permissão apenas para inserir dados de certificados (P2) dentro do seu evento.  
-FR-37: O middleware de escopo (`scopedEvento`) deve garantir que gestores e monitores operem exclusivamente dentro do evento ao qual estão vinculados.  
-FR-38: Rotas administrativas devem ser protegidas por middleware de autenticação (`auth`) e de autorização (`rbac`).
+FR-35: O perfil **gestor** deve ter permissão para criar, editar e remover tipos de certificados de seus eventos (P1) e inserir/editar/cancelar certificados (P2).  
+FR-36: O perfil **monitor** pode listar e visualizar certificados e participantes dos seus eventos e criar certificados (P2). Não pode criar tipos de certificados.  
+FR-37: O middleware `scopedEvento` deve garantir que gestores e monitores operem exclusivamente dentro dos eventos ao qual estão vinculados. Para listagens (GET sem ID), o filtro de `evento_id` é injetado automaticamente. Para usuários com múltiplos eventos, o filtro aceita array de IDs.  
+FR-38: Rotas administrativas da API REST devem ser protegidas por `auth` (JWT Bearer) e `rbac`.
 
 ## Geração de Texto do Certificado
 
-FR-39: O sistema deve interpolar o `texto_base` do tipo de certificado com os `valores_dinamicos` do certificado para gerar o texto final do documento.
+FR-39: O sistema deve interpolar o `texto_base` do tipo de certificado com os `valores_dinamicos` do certificado. A sintaxe de interpolação é `${nome_campo}`. Placeholders sem correspondência são mantidos sem substituição. O campo `nome` é injetado automaticamente com o valor de `certificado.nome` (ou `participante.nomeCompleto` como fallback).
 
 ## Monitoramento e Operações
 
-FR-40: O sistema deve expor um endpoint `GET /health` que retorne o status da aplicação e da conexão com o banco de dados.  
-FR-41: Se o banco de dados estiver indisponível, o endpoint `/health` deve retornar HTTP 503 com `{ "status": "error", "db": "disconnected" }`.
+FR-40: O sistema deve expor `GET /health` que retorne `{ "status": "ok", "db": "connected", "uptime": N }` quando banco disponível.  
+FR-41: Se o banco de dados estiver indisponível, `GET /health` deve retornar HTTP 503 com `{ "status": "error", "db": "disconnected" }`.
 
 ---
 
@@ -119,14 +148,96 @@ FR-41: Se o banco de dados estiver indisponível, o endpoint `/health` deve reto
 
 NFR-1: **Segurança — Controle de Acesso:** Todas as rotas administrativas devem ser protegidas por autenticação JWT e verificação de perfil (OWASP A01).  
 NFR-2: **Segurança — Armazenamento de Senhas:** Senhas devem ser armazenadas exclusivamente como hash bcrypt; texto plano nunca deve ser persistido (OWASP A02).  
-NFR-3: **Segurança — Configuração:** Credenciais e segredos devem ser fornecidos via variáveis de ambiente; valores default inseguros não são permitidos (OWASP A05).  
-NFR-4: **Confiabilidade — Soft Delete:** Nenhuma entidade principal (`participantes`, `eventos`, `certificados`, `tipos_certificados`, `usuarios`) deve ser removida permanentemente do banco de dados; todas devem suportar restauração.  
-NFR-5: **Confiabilidade — Migrações:** O schema do banco de dados deve ser gerenciado exclusivamente via migrations Sequelize; o uso de `sync({ force: true })` em produção e testes é proibido.  
-NFR-6: **Manutenibilidade — Arquitetura em Camadas:** O código deve seguir separação de responsabilidades: routes → controllers → services → models. Lógica de negócio não deve residir em rotas ou models.  
-NFR-7: **Manutenibilidade — Carregamento Explícito de Modelos:** O arquivo `models/index.js` deve registrar modelos explicitamente, sem uso de `fs.readdirSync`.  
-NFR-8: **Testabilidade:** O sistema deve possuir banco de dados PostgreSQL dedicado para testes, isolado do banco de desenvolvimento e produção.  
-NFR-9: **Portabilidade:** A aplicação deve ser executável via Docker, com ambientes de produção e testes separados por arquivos `docker-compose` distintos.  
-NFR-10: **Rastreabilidade:** Todas as entidades devem registrar timestamps de criação (`created_at`), atualização (`updated_at`) e remoção lógica (`deleted_at`).
+NFR-3: **Segurança — Configuração:** `JWT_SECRET` e `SESSION_SECRET` devem ser fornecidos obrigatoriamente via variáveis de ambiente; a ausência de qualquer um deve lançar erro na inicialização da aplicação. Nenhum fallback inseguro é permitido.  
+NFR-4: **Confiabilidade — Soft Delete:** Nenhuma entidade principal (`participantes`, `eventos`, `certificados`, `tipos_certificados`, `usuarios`) deve ser removida permanentemente do banco. Todas devem suportar restauração.  
+NFR-5: **Confiabilidade — Migrações:** O schema do banco de dados deve ser gerenciado exclusivamente via migrations Sequelize.  
+NFR-6: **Manutenibilidade — Arquitetura em Camadas:** routes → controllers → services → models. Lógica de negócio não deve residir em rotas ou models.  
+NFR-7: **Manutenibilidade — Carregamento Explícito de Modelos:** O `models/index.js` deve registrar modelos explicitamente, sem `fs.readdirSync`.  
+NFR-8: **Testabilidade:** Banco PostgreSQL dedicado para testes, isolado de desenvolvimento e produção. SQLite usado em testes unitários.  
+NFR-9: **Portabilidade:** Executável via Docker com `docker-compose.yml` (produção) e `docker-compose.test.yml` (testes).  
+NFR-10: **Rastreabilidade:** Todos os registros devem ter `created_at`, `updated_at` e `deleted_at`.  
+NFR-11: **Segurança — Upload:** Uploads de template restritos a PNG/JPEG, máx. 2 MB (validado por `multer`).
+
+---
+
+# Arquitetura do Sistema
+
+## Componentes Principais
+
+| Componente                     | Localização                                     | Responsabilidade                                            |
+| ------------------------------ | ----------------------------------------------- | ----------------------------------------------------------- |
+| **Express App**                | `app.js`                                        | Config central, session, flash, Swagger, montagem de rotas  |
+| **Rotas API REST**             | `src/routes/*.js`                               | Endpoints JSON com auth, rbac, validate                     |
+| **Rotas SSR Admin**            | `src/routes/admin.js`                           | Interface web Handlebars para painel admin                  |
+| **Rotas SSR Públicas**         | `src/routes/public.js`                          | Páginas públicas de consulta/download                       |
+| **Rotas Auth SSR**             | `src/routes/auth.js`                            | Formulário de login/logout SSR                              |
+| **Controllers REST**           | `src/controllers/*Controller.js`                | Orquestração de request/response JSON                       |
+| **Controllers SSR**            | `src/controllers/*SSRController.js`             | Renderização de views Handlebars                            |
+| **dashboardController**        | `src/controllers/dashboardController.js`        | Dashboard com estatísticas por perfil                       |
+| **Services**                   | `src/services/*.js`                             | Lógica de negócio, geração de código, PDF, R2, interpolação |
+| **pdfService**                 | `src/services/pdfService.js`                    | Geração de PDF com PDFKit + R2                              |
+| **r2Service**                  | `src/services/r2Service.js`                     | Upload/download/delete no Cloudflare R2 (S3-compat)         |
+| **templateService**            | `src/services/templateService.js`               | Interpolação `${variavel}` no texto_base                    |
+| **Models Sequelize**           | `src/models/*.js`                               | ORM, validações, hooks, associações                         |
+| **Validators Zod**             | `src/validators/*.js`                           | Schemas de validação aplicados pelo middleware `validate`   |
+| **auth**                       | `src/middlewares/auth.js`                       | Verifica JWT Bearer + existência do usuário no banco        |
+| **authSSR**                    | `src/middlewares/authSSR.js`                    | Verifica cookie JWT, popula `req.usuario` e `res.locals`    |
+| **rbac**                       | `src/middlewares/rbac.js`                       | Hierarquia de perfis monitor < gestor < admin               |
+| **scopedEvento**               | `src/middlewares/scopedEvento.js`               | Restringe acesso ao(s) evento(s) do usuário                 |
+| **tiposCertificadosOwnership** | `src/middlewares/tiposCertificadosOwnership.js` | Ownership de tipos por gestor                               |
+| **uploadTemplate**             | `src/middlewares/uploadTemplate.js`             | multer: PNG/JPEG ≤ 2MB em memória                           |
+
+## Fluxo: Geração de PDF
+
+```
+GET /public/certificados/:id/pdf
+  → Certificado.findByPk(id, { include: [Participante, Evento, TiposCertificados] })
+  → pdfService.generateCertificadoPdf(certificado)
+      → r2Service.getFile(evento.url_template_base)    (imagem de fundo)
+      → r2Service.getFile('fontes/Lato-Medium.ttf')    (fonte)
+      → templateService.interpolate(texto_base, valores_dinamicos)
+      → PDFKit: A4 landscape, texto em (texto_x, texto_y), validação em (validacao_x, validacao_y)
+      → Buffer → HTTP 200 Content-Type: application/pdf
+```
+
+## Fluxo: Emissão de Certificado (API)
+
+```
+POST /certificados
+  → auth (JWT Bearer) → rbac('monitor') → scopedEvento → validate(Zod)
+  → certificadoService.create(data)
+      → TiposCertificados.findByPk(tipo_certificado_id)    (valida existência)
+      → Evento.findByPk(evento_id)                          (valida existência)
+      → compara campos de dados_dinamicos vs valores_dinamicos  → HTTP 422 se faltantes
+      → gera codigo = `${codigo_base}-${ano_2d}-${tipo_codigo}-${count+1}`
+      → Certificado.create(data)
+  → HTTP 201 JSON
+```
+
+## Fluxo: Autenticação SSR
+
+```
+POST /auth/login (form: email + senha)
+  → Usuario.findOne({ where: { email } })
+  → bcrypt.compare(senha, usuario.senha)
+  → jwt.sign({ id, perfil }, JWT_SECRET, { expiresIn: '1h' })
+  → res.cookie('token', token, { httpOnly: true, sameSite: 'lax' })
+  → redirect /admin/dashboard
+```
+
+## Fluxo: Alteração de Senha (SSR)
+
+```
+POST /admin/perfil/alterar-senha (form: senhaAtual + novaSenha + confirmarSenha)
+  → authSSR (verifica cookie JWT, popula req.usuario)
+  → perfilSSRController.alterarSenha
+      → verifica novaSenha === confirmarSenha            → redirect c/ flash de erro se diferente
+      → senhaForteSchema.safeParse(novaSenha)            → redirect c/ flash de erro se fraca
+      → Usuario.findByPk(req.usuario.id)
+      → bcrypt.compare(senhaAtual, usuario.senha)        → redirect c/ flash de erro se incorreta
+      → usuario.update({ senha: novaSenha })             (hook beforeUpdate aplica novo hash bcrypt)
+      → redirect /admin/dashboard c/ flash de sucesso
+```
 
 ---
 
@@ -134,73 +245,74 @@ NFR-10: **Rastreabilidade:** Todas as entidades devem registrar timestamps de cr
 
 ## Gestão de Participantes
 
-Permite o cadastro, consulta, atualização e remoção lógica de participantes. Um participante é identificado pelo e-mail único e pode estar associado a múltiplos certificados.
-
-**Requisitos relacionados:** FR-1, FR-2, FR-3, FR-4
+CRUD completo via API REST e Interface SSR. Participante identificado por e-mail único. Associado a múltiplos certificados.  
+**Requisitos:** FR-1, FR-2, FR-3, FR-4
 
 ---
 
 ## Gestão de Eventos
 
-Permite o cadastro e gerenciamento de eventos. Cada evento possui um código base de três letras que é utilizado na geração dos códigos de certificados.
-
-**Requisitos relacionados:** FR-5, FR-6, FR-7, FR-8, FR-9
+CRUD completo. Cada evento possui `codigo_base` (3 letras), template de fundo no R2 (`url_template_base`) e coordenadas de layout do PDF (`texto_x/y`, `validacao_x/y`). Upload de template via SSR com multer.  
+**Requisitos:** FR-5, FR-6, FR-7, FR-8, FR-9, FR-44, FR-48, FR-51
 
 ---
 
 ## Tipos de Certificados Parametrizáveis
 
-Permite definir modelos de certificados com campos dinâmicos (JSONB) e templates de texto com interpolação de variáveis. Essa funcionalidade viabiliza a criação de certificados de diferentes naturezas (palestra, minicurso, oficina, etc.) sem alteração de código.
-
-**Requisitos relacionados:** FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16
+Modelos de certificados com `dados_dinamicos` JSONB e templates com `${variavel}`. Vinculados obrigatoriamente a um evento. Mutações restritas ao gestor do evento por `tiposCertificadosOwnership`.  
+**Requisitos:** FR-10, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16, FR-45, FR-46
 
 ---
 
 ## Emissão e Gestão de Certificados
 
-Permite emitir certificados para participantes de um evento, associando-os a um tipo de certificado. Suporta ciclo de vida completo: pendente → emitido → cancelado, com possibilidade de restauração via soft delete.
+Código de validação único gerado automaticamente (`CODIGO_BASE-YY-TIPO-N`). Validação de campos dinâmicos obrigatórios no service (HTTP 422 se faltantes). Status padrão: `"emitido"`.  
+**Requisitos:** FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-39, FR-43, FR-52, FR-54
 
-**Requisitos relacionados:** FR-17, FR-18, FR-19, FR-20, FR-21, FR-22, FR-39
+---
+
+## Geração de PDF
+
+PDF A4 landscape gerado por PDFKit. Imagem de fundo e fonte Lato-Medium obtidas do R2. Coordenadas configuráveis por evento. Sem autenticação.  
+**Requisitos:** FR-42, FR-43, FR-47, FR-47b, FR-47c, FR-47d
 
 ---
 
 ## Consulta e Validação Pública
 
-Permite que qualquer pessoa (sem login) acesse e valide um certificado pelo ID ou pelo código, garantindo autenticidade do documento.
-
-**Requisitos relacionados:** FR-23, FR-24, FR-25
+- `GET /public/certificados?email=<email>` — lista certificados por e-mail.
+- `GET /public/validar/:codigo` — valida por código único.
+- `GET /public/certificados/:id/pdf` — baixa PDF.
+- Páginas SSR: `/public/pagina/opcoes`, `/public/pagina/obter`, `/public/pagina/validar`, `POST /public/pagina/buscar`.  
+  **Requisitos:** FR-23, FR-24, FR-25, FR-42, FR-53
 
 ---
 
 ## Autenticação e Gestão de Usuários
 
-Gerencia o acesso ao sistema por meio de autenticação JWT. Suporta criação de usuários com diferentes perfis e vinculação de gestores/monitores a eventos específicos.
-
-**Requisitos relacionados:** FR-26, FR-27, FR-28, FR-29, FR-30, FR-31, FR-32, FR-33
+Dois fluxos: JWT Bearer (API) e cookie HTTP-only (SSR). Usuários vinculados a N eventos via `usuario_eventos`. Criação via SSR (admin) ou API protegida. Todo usuário autenticado pode alterar sua própria senha via painel SSR.  
+**Requisitos:** FR-26, FR-27, FR-28, FR-29, FR-30, FR-31, FR-32, FR-33, FR-55, FR-57
 
 ---
 
 ## Controle de Acesso por Perfil (RBAC)
 
-Garante que cada perfil de usuário acesse apenas os recursos e operações para os quais tem permissão, por meio de middlewares de autenticação, autorização e escopo de evento.
-
-**Requisitos relacionados:** FR-34, FR-35, FR-36, FR-37, FR-38
-
----
-
-## Geração de Texto do Certificado
-
-Interpola o template `texto_base` do tipo de certificado com os valores dinâmicos do certificado específico para produzir o texto final exibido no documento.
-
-**Requisitos relacionados:** FR-39
+Hierarquia `monitor < gestor < admin`. `tiposCertificadosOwnership` restringe mutações de tipos ao escopo do gestor.  
+**Requisitos:** FR-34, FR-35, FR-36, FR-37, FR-38
 
 ---
 
-## Monitoramento de Saúde da Aplicação
+## Interface SSR / Painel Administrativo
 
-Expõe um endpoint `/health` para verificação do status da aplicação e da conectividade com o banco de dados.
+Interface web completa Handlebars em `/admin/*`. Autenticação via cookie. Mensagens flash com `connect-flash`. CRUD completo de todos os recursos com controle de acesso por rbac.  
+**Requisitos:** FR-49, FR-56
 
-**Requisitos relacionados:** FR-40, FR-41
+---
+
+## Monitoramento de Saúde
+
+`GET /health` com status de banco e uptime.  
+**Requisitos:** FR-40, FR-41
 
 ---
 
@@ -208,439 +320,483 @@ Expõe um endpoint `/health` para verificação do status da aplicação e da co
 
 ## Admin
 
-- Acesso irrestrito a todos os recursos do sistema.
-- Pode criar, editar e remover gestores, monitores e outros admins.
-- Pode acessar e administrar todos os eventos.
-- Não está vinculado a nenhum evento específico (`evento_id` nulo).
-
-**Rotas exclusivas:**
-
-| Rota                                 | Descrição                                |
-| ------------------------------------ | ---------------------------------------- |
-| `GET /admin/dashboard`               | Painel administrativo global             |
-| `GET/POST /admin/usuarios`           | Gerenciar todos os usuários              |
-| `GET/POST /admin/eventos`            | Gerenciar todos os eventos               |
-| `GET/POST /admin/certificados`       | Gerenciar todos os certificados          |
-| `GET/POST /admin/tipos-certificados` | Gerenciar todos os tipos de certificados |
-| `GET /admin/relatorios`              | Visualizar relatórios e estatísticas     |
-
----
+- Acesso irrestrito. Gerencia todos os recursos, incluindo criação de usuários.
+- Sem vínculo obrigatório a eventos.
 
 ## Gestor
 
-- Obrigado a efetuar login.
-- Vinculado a exatamente um evento.
-- **Permissão P1:** Criar e gerenciar tipos de certificados do seu evento.
-- **Permissão P2:** Inserir e editar dados de certificados do seu evento.
-- Pode gerenciar participantes e monitores do seu evento.
-
-**Rotas disponíveis:**
-
-| Rota                                            | Descrição                                         |
-| ----------------------------------------------- | ------------------------------------------------- |
-| `GET /dashboard`                                | Painel do evento                                  |
-| `GET/POST /evento/:eventoId/tipos-certificados` | Gerenciar tipos de certificados (P1)              |
-| `GET/POST /evento/:eventoId/certificados`       | Listar, criar, editar e deletar certificados (P2) |
-| `GET/POST /evento/:eventoId/participantes`      | Gerenciar participantes                           |
-| `GET/POST /evento/:eventoId/monitor`            | Gerenciar monitores e permissões                  |
-
----
+- Vinculado a um ou mais eventos.
+- Gerencia tipos de certificados, certificados e participantes dos seus eventos.
 
 ## Monitor
 
-- Obrigado a efetuar login.
-- Vinculado a exatamente um evento.
-- **Permissão P2 apenas:** Inserir dados de certificados do seu evento.
-- Não pode criar tipos de certificados.
-- Pode ter acesso de leitura a participantes (dependendo da configuração do gestor).
-
-**Rotas disponíveis:**
-
-| Rota                                  | Descrição                               |
-| ------------------------------------- | --------------------------------------- |
-| `POST /evento/:eventoId/certificados` | Inserir dados de certificados (P2)      |
-| `GET /evento/:eventoId/participantes` | Visualizar participantes (se permitido) |
-
----
+- Vinculado a um ou mais eventos.
+- Pode listar/visualizar e criar certificados e participantes dos seus eventos.
+- Não pode criar/editar/remover tipos de certificados.
 
 ## Público (sem autenticação)
 
-- Não precisa de login.
-- Pode apenas consultar e validar certificados.
+- Consulta, valida e baixa certificados.
 
-**Rotas disponíveis:**
+**Rotas públicas:**
 
-| Rota                   | Descrição                                    |
-| ---------------------- | -------------------------------------------- |
-| `GET /certificado/:id` | Visualizar ou validar um certificado pelo ID |
-| `GET /validar/:codigo` | Validar um certificado por código            |
+| Rota                                 | Descrição                              |
+| ------------------------------------ | -------------------------------------- |
+| `GET /public/certificados?email=...` | Listar certificados por e-mail         |
+| `GET /public/validar/:codigo`        | Validar certificado por código         |
+| `GET /public/certificados/:id/pdf`   | Baixar PDF do certificado              |
+| `GET /public/pagina/opcoes`          | Página SSR de opções                   |
+| `GET /public/pagina/obter`           | Formulário SSR de busca por e-mail     |
+| `GET /public/pagina/validar`         | Formulário SSR de validação por código |
+| `POST /public/pagina/buscar`         | Processar busca por e-mail (SSR)       |
 
 ---
 
 # Modelo de Dados
 
-## Entidades Principais
+## `participantes`
 
-### `participantes`
+| Campo          | Tipo      | Restrições                                 |
+| -------------- | --------- | ------------------------------------------ |
+| `id`           | Integer   | PK, auto-incremento                        |
+| `nomeCompleto` | String    | Obrigatório, mínimo 3 caracteres           |
+| `email`        | String    | Obrigatório, único, e-mail válido          |
+| `instituicao`  | String    | Opcional, mínimo 2 caracteres se fornecido |
+| `created_at`   | Timestamp | Automático                                 |
+| `updated_at`   | Timestamp | Automático                                 |
+| `deleted_at`   | Timestamp | Soft delete (paranoid)                     |
 
-| Campo          | Tipo           | Restrições                         |
-| -------------- | -------------- | ---------------------------------- |
-| `id`           | UUID / Integer | PK, obrigatório                    |
-| `nomeCompleto` | String         | Obrigatório                        |
-| `email`        | String         | Obrigatório, único, formato válido |
-| `instituicao`  | String         | Opcional                           |
-| `created_at`   | Timestamp      | Automático                         |
-| `updated_at`   | Timestamp      | Automático                         |
-| `deleted_at`   | Timestamp      | Soft delete (paranoid)             |
+## `eventos`
 
----
+| Campo               | Tipo      | Restrições                                                      |
+| ------------------- | --------- | --------------------------------------------------------------- |
+| `id`                | Integer   | PK, auto-incremento                                             |
+| `nome`              | String    | Obrigatório, mínimo 3 caracteres                                |
+| `ano`               | Integer   | Obrigatório, ≥ 2000                                             |
+| `codigo_base`       | String(3) | Obrigatório, único, exatamente 3 letras alfabéticas             |
+| `url_template_base` | String    | Opcional (null); key R2 do arquivo de imagem de fundo do PDF    |
+| `texto_x`           | Integer   | Opcional; coord. X do bloco de texto no PDF (default: 270)      |
+| `texto_y`           | Integer   | Opcional; coord. Y do bloco de texto no PDF (default: 200)      |
+| `validacao_x`       | Integer   | Opcional; coord. X do código de validação no PDF (default: 145) |
+| `validacao_y`       | Integer   | Opcional; coord. Y do código de validação no PDF (default: 545) |
+| `created_at`        | Timestamp | Automático                                                      |
+| `updated_at`        | Timestamp | Automático                                                      |
+| `deleted_at`        | Timestamp | Soft delete (paranoid)                                          |
 
-### `eventos`
+## `tipos_certificados`
 
-| Campo         | Tipo           | Restrições                                          |
-| ------------- | -------------- | --------------------------------------------------- |
-| `id`          | UUID / Integer | PK, obrigatório                                     |
-| `nome`        | String         | Obrigatório                                         |
-| `ano`         | Integer        | Obrigatório                                         |
-| `codigo_base` | String(3)      | Obrigatório, único, exatamente 3 letras alfabéticas |
-| `created_at`  | Timestamp      | Automático                                          |
-| `updated_at`  | Timestamp      | Automático                                          |
-| `deleted_at`  | Timestamp      | Soft delete (paranoid)                              |
+| Campo             | Tipo      | Restrições                                                                        |
+| ----------------- | --------- | --------------------------------------------------------------------------------- |
+| `id`              | Integer   | PK, auto-incremento                                                               |
+| `evento_id`       | Integer   | FK → `eventos.id`, obrigatório                                                    |
+| `codigo`          | String(2) | Obrigatório; 2 letras; único por `(codigo, evento_id)` WHERE `deleted_at` IS NULL |
+| `descricao`       | String    | Obrigatório, mínimo 1 caractere                                                   |
+| `campo_destaque`  | String    | Obrigatório; deve ser `"nome"` ou chave de `dados_dinamicos` (hook)               |
+| `texto_base`      | Text      | Obrigatório; pode conter `${variavel}` para interpolação                          |
+| `dados_dinamicos` | JSONB     | Opcional; define campos específicos do tipo                                       |
+| `created_at`      | Timestamp | Automático                                                                        |
+| `updated_at`      | Timestamp | Automático                                                                        |
+| `deleted_at`      | Timestamp | Soft delete (paranoid)                                                            |
 
----
+## `certificados`
 
-### `tipos_certificados`
+| Campo                 | Tipo      | Restrições                                                              |
+| --------------------- | --------- | ----------------------------------------------------------------------- |
+| `id`                  | Integer   | PK, auto-incremento                                                     |
+| `participante_id`     | Integer   | FK → `participantes.id`, obrigatório                                    |
+| `evento_id`           | Integer   | FK → `eventos.id`, obrigatório                                          |
+| `tipo_certificado_id` | Integer   | FK → `tipos_certificados.id`, obrigatório                               |
+| `nome`                | String    | Obrigatório, mínimo 3 caracteres                                        |
+| `status`              | Enum      | `"emitido"` (default), `"pendente"`, `"cancelado"`                      |
+| `codigo`              | String    | Gerado automaticamente na criação; obrigatório; único globalmente       |
+| `valores_dinamicos`   | JSONB     | Valores dos campos de `dados_dinamicos`; validado no service na criação |
+| `created_at`          | Timestamp | Automático                                                              |
+| `updated_at`          | Timestamp | Automático                                                              |
+| `deleted_at`          | Timestamp | Soft delete (paranoid)                                                  |
 
-| Campo             | Tipo           | Restrições                                                   |
-| ----------------- | -------------- | ------------------------------------------------------------ |
-| `id`              | UUID / Integer | PK, obrigatório                                              |
-| `codigo`          | String(2)      | Obrigatório, único, exatamente 2 letras alfabéticas          |
-| `descricao`       | String         | Obrigatório                                                  |
-| `campo_destaque`  | String         | Obrigatório; deve ser `"nome"` ou chave de `dados_dinamicos` |
-| `texto_base`      | Text           | Obrigatório; pode conter `${variavel}`                       |
-| `dados_dinamicos` | JSONB          | Opcional; define campos específicos do tipo                  |
-| `created_at`      | Timestamp      | Automático                                                   |
-| `updated_at`      | Timestamp      | Automático                                                   |
-| `deleted_at`      | Timestamp      | Soft delete (paranoid)                                       |
+## `usuarios`
 
----
+| Campo        | Tipo      | Restrições                               |
+| ------------ | --------- | ---------------------------------------- |
+| `id`         | Integer   | PK, auto-incremento                      |
+| `nome`       | String    | Obrigatório, mínimo 3 caracteres         |
+| `email`      | String    | Obrigatório, único, e-mail válido        |
+| `senha`      | String    | Obrigatório, ≥ 6 caracteres; hash bcrypt |
+| `perfil`     | Enum      | `"admin"`, `"gestor"` ou `"monitor"`     |
+| `created_at` | Timestamp | Automático                               |
+| `updated_at` | Timestamp | Automático                               |
+| `deleted_at` | Timestamp | Soft delete (paranoid)                   |
 
-### `certificados`
+> Sem campo `evento_id`. Associação com eventos via tabela `usuario_eventos` (N:N).
 
-| Campo                 | Tipo           | Restrições                                 |
-| --------------------- | -------------- | ------------------------------------------ |
-| `id`                  | UUID / Integer | PK, obrigatório                            |
-| `participante_id`     | FK             | Referência a `participantes.id`            |
-| `evento_id`           | FK             | Referência a `eventos.id`                  |
-| `tipo_certificado_id` | FK             | Referência a `tipos_certificados.id`       |
-| `nome`                | String         | Obrigatório                                |
-| `status`              | Enum           | `"emitido"`, `"pendente"` ou `"cancelado"` |
-| `valores_dinamicos`   | JSONB          | Valores dos campos de `dados_dinamicos`    |
-| `created_at`          | Timestamp      | Automático                                 |
-| `updated_at`          | Timestamp      | Automático                                 |
-| `deleted_at`          | Timestamp      | Soft delete (paranoid)                     |
+## `usuario_eventos`
 
----
-
-### `usuarios`
-
-| Campo        | Tipo           | Restrições                                  |
-| ------------ | -------------- | ------------------------------------------- |
-| `id`         | UUID / Integer | PK, obrigatório                             |
-| `nome`       | String         | Obrigatório                                 |
-| `email`      | String         | Obrigatório, único, formato válido          |
-| `senha`      | String         | Obrigatório; armazenado como hash bcrypt    |
-| `perfil`     | Enum           | `"admin"`, `"gestor"` ou `"monitor"`        |
-| `evento_id`  | FK             | Referência a `eventos.id`; nulo para admins |
-| `created_at` | Timestamp      | Automático                                  |
-| `updated_at` | Timestamp      | Automático                                  |
-| `deleted_at` | Timestamp      | Soft delete (paranoid)                      |
-
----
+| Campo        | Tipo      | Restrições                      |
+| ------------ | --------- | ------------------------------- |
+| `id`         | Integer   | PK, auto-incremento             |
+| `usuario_id` | Integer   | FK → `usuarios.id`, obrigatório |
+| `evento_id`  | Integer   | FK → `eventos.id`, obrigatório  |
+| `created_at` | Timestamp | Automático                      |
+| `updated_at` | Timestamp | Automático                      |
+| `deleted_at` | Timestamp | Soft delete (paranoid)          |
 
 ## Relacionamentos
 
 ```
-participantes  1 ──< N  certificados
-eventos        1 ──< N  certificados
+participantes    1 ──< N   certificados
+eventos          1 ──< N   certificados
 tipos_certificados  1 ──< N  certificados
-eventos        1 ──< N  usuarios (gestor/monitor)
+eventos          1 ──< N   tipos_certificados
+usuarios         N ──── N  eventos  (via usuario_eventos)
 ```
+
+---
+
+# APIs / Interfaces
+
+## API REST (Bearer JWT)
+
+### Participantes
+
+| Método   | Rota                         | Perfil mínimo | Descrição              |
+| -------- | ---------------------------- | ------------- | ---------------------- |
+| `POST`   | `/participantes`             | monitor       | Criar participante     |
+| `GET`    | `/participantes`             | monitor       | Listar participantes   |
+| `GET`    | `/participantes/:id`         | monitor       | Buscar por ID          |
+| `PUT`    | `/participantes/:id`         | monitor       | Atualizar participante |
+| `DELETE` | `/participantes/:id`         | monitor       | Soft delete            |
+| `POST`   | `/participantes/:id/restore` | monitor       | Restaurar              |
+
+### Eventos
+
+| Método   | Rota                   | Perfil mínimo | Descrição        |
+| -------- | ---------------------- | ------------- | ---------------- |
+| `POST`   | `/eventos`             | admin         | Criar evento     |
+| `GET`    | `/eventos`             | monitor       | Listar eventos   |
+| `GET`    | `/eventos/:id`         | monitor       | Buscar por ID    |
+| `PUT`    | `/eventos/:id`         | admin         | Atualizar evento |
+| `DELETE` | `/eventos/:id`         | admin         | Soft delete      |
+| `POST`   | `/eventos/:id/restore` | admin         | Restaurar evento |
+
+### Tipos de Certificados
+
+| Método   | Rota                              | Perfil mínimo | Middleware extra             |
+| -------- | --------------------------------- | ------------- | ---------------------------- |
+| `GET`    | `/tipos-certificados`             | monitor       | —                            |
+| `GET`    | `/tipos-certificados/:id`         | monitor       | —                            |
+| `POST`   | `/tipos-certificados`             | gestor        | `tiposCertificadosOwnership` |
+| `PUT`    | `/tipos-certificados/:id`         | gestor        | `tiposCertificadosOwnership` |
+| `DELETE` | `/tipos-certificados/:id`         | gestor        | `tiposCertificadosOwnership` |
+| `POST`   | `/tipos-certificados/:id/restore` | gestor        | `tiposCertificadosOwnership` |
+
+### Certificados
+
+| Método   | Rota                        | Perfil mínimo | Nota                        |
+| -------- | --------------------------- | ------------- | --------------------------- |
+| `POST`   | `/certificados`             | monitor       | Gera código automaticamente |
+| `GET`    | `/certificados`             | monitor       | Filtrado por scopedEvento   |
+| `GET`    | `/certificados/:id`         | monitor       |                             |
+| `PUT`    | `/certificados/:id`         | monitor       |                             |
+| `DELETE` | `/certificados/:id`         | monitor       | Soft delete                 |
+| `POST`   | `/certificados/:id/restore` | monitor       | Restaurar                   |
+| `POST`   | `/certificados/:id/cancel`  | monitor       | Status → "cancelado"        |
+
+### Usuários / Autenticação
+
+| Método | Rota                                | Auth               | Descrição                                        |
+| ------ | ----------------------------------- | ------------------ | ------------------------------------------------ |
+| `POST` | `/usuarios/login`                   | Não (rate-limited) | Login API → `{ token }`                          |
+| `POST` | `/usuarios/logout`                  | Não                | Logout stateless (orientativo)                   |
+| `GET`  | `/usuarios/me`                      | JWT Bearer         | Dados do usuário autenticado                     |
+| `POST` | `/:papel/:id/usuarios`              | JWT + admin        | Criar usuário (admin com seu próprio id na rota) |
+| `PUT`  | `/:papel/:id/usuarios/:uId/eventos` | JWT + admin        | Atualizar eventos do usuário                     |
+
+### Públicas
+
+| Método | Rota                             | Descrição                      |
+| ------ | -------------------------------- | ------------------------------ |
+| `GET`  | `/public/certificados?email=...` | Listar certificados por e-mail |
+| `GET`  | `/public/validar/:codigo`        | Validar por código             |
+| `GET`  | `/public/certificados/:id/pdf`   | Baixar PDF                     |
+| `GET`  | `/health`                        | Health check                   |
+| `GET`  | `/api-docs`                      | Documentação Swagger/OpenAPI   |
+
+## Interface SSR — Auth
+
+| Método | Rota           | Descrição                                 |
+| ------ | -------------- | ----------------------------------------- |
+| `GET`  | `/auth/login`  | Página de login                           |
+| `POST` | `/auth/login`  | Processar login → cookie + redirect       |
+| `POST` | `/auth/logout` | Limpar cookie → redirect para /auth/login |
+
+## Interface SSR — Admin (requer authSSR + rbac)
+
+| Rota                                        | Perfil mínimo  | Operação                         |
+| ------------------------------------------- | -------------- | -------------------------------- |
+| `GET /admin/dashboard`                      | monitor        | Dashboard com estatísticas       |
+| `GET/POST /admin/eventos`                   | gestor/admin   | CRUD de eventos                  |
+| `GET/POST /admin/participantes`             | monitor        | CRUD de participantes            |
+| `GET/POST /admin/tipos-certificados`        | gestor         | CRUD de tipos de certificados    |
+| `GET/POST /admin/certificados`              | monitor/gestor | CRUD de certificados             |
+| `GET/POST /admin/usuarios`                  | admin          | CRUD de usuários                 |
+| `GET/POST /admin/perfil/alterar-senha`      | monitor        | Alterar própria senha            |
+
+---
+
+# Regras de Negócio
+
+RN-1: Código de validação gerado automaticamente no formato `CODIGO_BASE-YY-TIPO-N`. Único e imutável.
+
+RN-2: Status padrão de novo certificado é `"emitido"`.
+
+RN-3: Gestores e monitores são filtrados aos eventos vinculados. `scopedEvento` injeta o filtro nas listagens.
+
+RN-4: `campo_destaque` só pode ser `"nome"` ou chave de `dados_dinamicos` (hook `beforeValidate`).
+
+RN-5: Hash bcrypt na senha aplicado por hooks Sequelize (`beforeCreate`, `beforeUpdate` se alterada).
+
+RN-6: Ao deletar evento, as associações `usuario_eventos` são soft-deletadas. Ao restaurar, são restauradas.
+
+RN-7: Sintaxe de interpolação do `texto_base` é `${variavel}`. Placeholders sem correspondência são mantidos.
+
+RN-8: Campo `nome` injetado automaticamente na interpolação do PDF (`certificado.nome` ou `participante.nomeCompleto`).
+
+RN-9: Todos os campos de `dados_dinamicos` devem ser fornecidos em `valores_dinamicos` na criação (service layer).
+
+RN-10: Gestores só modificam tipos de certificados cujo `evento_id` pertence a seus eventos (`tiposCertificadosOwnership`).
+
+RN-11: A nova senha informada no formulário de alteração deve atender à política de senha forte: comprimento mínimo de 8 caracteres, contendo ao menos uma letra maiúscula, uma letra minúscula, um dígito e um caractere especial (`!@#$%^&*`). A validação é realizada por schema Zod (`senhaForteSchema`) antes de qualquer alteração no banco.
 
 ---
 
 # Integrações Externas
 
-Atualmente, o sistema não depende de APIs ou serviços externos.
-
-| Integração             | Tipo                                 | Status |
-| ---------------------- | ------------------------------------ | ------ |
-| **PostgreSQL**         | Banco de dados relacional            | Em uso |
-| **Docker**             | Containerização da aplicação e banco | Em uso |
-| **JWT (jsonwebtoken)** | Autenticação stateless               | Em uso |
-| **bcryptjs**           | Hash de senhas                       | Em uso |
-
-> **Questão em aberto:** Geração de PDFs dos certificados foi mencionada como item planejado, porém nenhuma biblioteca foi especificada (ver seção [Questões em Aberto](#questões-em-aberto)).
+| Integração             | Tipo                               | Status | Variáveis de Ambiente requeridas                                       |
+| ---------------------- | ---------------------------------- | ------ | ---------------------------------------------------------------------- |
+| **PostgreSQL**         | Banco relacional                   | Em uso | `DB_*` (via `config/database.js`)                                      |
+| **Docker**             | Containerização                    | Em uso | —                                                                      |
+| **JWT (jsonwebtoken)** | Autenticação stateless             | Em uso | `JWT_SECRET` (obrigatório; sem fallback)                               |
+| **bcryptjs**           | Hash de senhas                     | Em uso | —                                                                      |
+| **Cloudflare R2**      | Armazenamento de objetos S3-compat | Em uso | `R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` |
+| **PDFKit**             | Geração de PDF no servidor         | Em uso | `ENDERECO_VALIDACAO` (URL base do link de validação no PDF)            |
+| **aws-sdk**            | Cliente S3 para R2                 | Em uso | (mesmas que R2)                                                        |
+| **multer**             | Upload de imagens (template)       | Em uso | —                                                                      |
+| **express-session**    | Sessão (flash + auth SSR)          | Em uso | `SESSION_SECRET` (obrigatório; sem fallback)                           |
+| **connect-flash**      | Mensagens flash SSR                | Em uso | —                                                                      |
+| **express-rate-limit** | Rate limiting no login             | Em uso | —                                                                      |
+| **swagger-jsdoc/ui**   | Documentação OpenAPI interativa    | Em uso | —                                                                      |
+| **Zod**                | Validação de requisições           | Em uso | —                                                                      |
 
 ---
 
 # Restrições
 
-- **Banco de dados:** O sistema usa exclusivamente PostgreSQL como banco relacional; outros SGBDs não são suportados.
-- **Autenticação:** O sistema usa JWT stateless; não há suporte a sessões com armazenamento em servidor (ex.: Redis, sessões de banco).
-- **Campos dinâmicos:** A estrutura dos campos dinâmicos é definida por tipo de certificado e não é validada em schema rígido — a consistência depende da aplicação.
-- **Node.js:** O backend é construído sobre Node.js com Express; não há suporte a outros runtimes.
-- **Soft delete:** A deleção permanente de registros não é suportada pela interface da aplicação.
-- **Escopo de evento:** Gestores e monitores só podem operar dentro do evento ao qual estão vinculados — esse escopo é imposto por middleware e não pode ser contornado via parâmetros de rota.
+- **Banco de dados:** PostgreSQL em produção/desenvolvimento. SQLite apenas em testes unitários.
+- **Autenticação API:** JWT stateless, 1 hora, sem refresh tokens.
+- **Autenticação SSR:** Cookie HTTP-only com JWT, mesma expiração.
+- **Soft delete:** Deleção permanente não suportada pela interface.
+- **Escopo de evento:** Gestores/monitores só operam nos eventos vinculados — imposto por middlewares.
+- **Templates:** Upload restrito a PNG/JPEG, máx. 2 MB. Armazenados no R2.
+- **Código de certificado:** Gerado automaticamente na criação; não informável manualmente.
+- **Variáveis obrigatórias:** `JWT_SECRET` e `SESSION_SECRET` devem estar definidas; a ausência causa erro na inicialização.
 
 ---
 
 # Premissas
 
-- Usuários do tipo `admin` existem e são criados diretamente no banco (ou via seed/CLI), sem fluxo de cadastro público.
-- Cada gestor e monitor está associado a exatamente um evento; não é esperado que um mesmo usuário gerencie múltiplos eventos simultaneamente.
-- O código do certificado (`codigo_base` do evento + `codigo` do tipo + identificador) é suficiente para identificação única e validação pública.
-- Dados importados de planilhas externas (ex.: listas de participação) são convertidos manualmente para registros no banco, com campos específicos mapeados para `valores_dinamicos`.
-- O sistema não envia e-mails ou notificações — a distribuição dos certificados ocorre por meio de links ou busca direta na plataforma.
-
----
-
-# Questões em Aberto
-
-QA-1: **Geração de PDF:** Foi mencionada como funcionalidade planejada, mas nenhuma biblioteca foi especificada (ex.: Puppeteer, PDFKit, wkhtmltopdf). Como serão gerados os PDFs dos certificados?
-
-QA-2: **Validação de `campo_destaque`:** A regra exige que `campo_destaque` referencie `"nome"` ou uma chave de `dados_dinamicos`. Como isso deve ser tratado quando `dados_dinamicos` for nulo ou vazio?
-
-QA-3: **Cadastro de admin:** Não há rota pública de cadastro para admins. Qual é o mecanismo oficial para criar o primeiro admin? (seed, CLI, migration?)
-
-QA-4: **Fluxo de transição de status do certificado:** As transições permitidas entre `"pendente"`, `"emitido"` e `"cancelado"` não estão especificadas. Qualquer transição é permitida, ou há uma máquina de estados?
-
-QA-5: **Visibilidade do participante para monitor:** A especificação indica que o monitor pode visualizar participantes "se permitido". Qual é o critério ou mecanismo para liberar essa permissão?
-
-QA-6: **Unicidade do código do certificado:** Como o código único de um certificado (para validação pública) é gerado? É uma combinação de `codigo_base` + `codigo` do tipo + `id`? Qual é o formato esperado?
-
-QA-7: **Relatórios e estatísticas:** A rota `/admin/relatorios` está definida, mas o conteúdo dos relatórios não foi especificado. Quais métricas ou dados devem ser exibidos?
-
-QA-8: **Views Handlebars:** O sistema usa `hbs` como template engine. Quais as views previstas além das de validação pública? Há um frontend completo em Handlebars ou a interface será majoritariamente via API?
-
----
-
-# Melhorias Sugeridas
-
-MS-1: **Máquina de estados para `status` do certificado:** Definir transições explícitas (ex.: `pendente → emitido`, `emitido → cancelado`) e validá-las no service, evitando transições inválidas.
-
-MS-2: **Validação de `valores_dinamicos` contra `dados_dinamicos`:** Ao emitir um certificado, validar se os campos em `valores_dinamicos` correspondem aos campos definidos em `dados_dinamicos` do tipo de certificado associado.
-
-MS-3: **Paginação nas listagens:** Rotas de listagem (participantes, certificados, eventos) devem suportar paginação para evitar sobrecarga em eventos com grande volume de registros.
-
-MS-4: **Rate limiting nas rotas públicas:** Rotas de validação pública (`/validar/:codigo`, `/certificado/:id`) e de login deveriam ter limitação de requisições para mitigar ataques de enumeração e força bruta.
-
-MS-5: **Expiração e renovação de tokens JWT:** Definir tempo de expiração do token e, opcionalmente, implementar refresh tokens para melhorar a segurança sem prejudicar a experiência do usuário.
-
-MS-6: **Auditoria de ações:** Registrar em log quem emitiu, cancelou ou alterou cada certificado, com timestamp e usuário responsável, para fins de auditoria e rastreabilidade.
-
-MS-7: **Importação em lote:** Criar um endpoint ou ferramenta para importação em massa de certificados a partir de planilhas (CSV/XLSX), mapeando colunas para `valores_dinamicos`.
-
-MS-8: **Testes de integração de rotas protegidas:** Expandir a cobertura de testes para incluir cenários de autorização — tentativas de acesso com perfil insuficiente devem retornar HTTP 403.
+- Admins são criados via SSR (por outro admin), seed ou diretamente no banco.
+- Gestores/monitores podem ser vinculados a múltiplos eventos; `scopedEvento` considera todos.
+- O código do certificado (`CODIGO_BASE-YY-TIPO-N`) é suficiente para identificação e validação pública.
+- O sistema não envia e-mails — distribuição ocorre por links ou busca direta na plataforma.
+- `ENDERECO_VALIDACAO` deve ser configurado em produção; default hardcoded é `https://certificaaqui.com/validar`.
 
 ---
 
 # Funcionalidades Identificadas no Código
 
-> Esta seção foi gerada por análise reversa do repositório em 2026-03-14 e descreve comportamentos implementados que não estavam documentados explicitamente no SRS original.
+> Seção gerada por análise reversa do repositório em 2026-04-30.
 
 ---
 
-UF-1: **Relacionamento N:N entre Usuário e Evento via tabela de junção.**  
-O modelo de dados original especificava `evento_id` como chave estrangeira simples na tabela `usuarios`. O código implementa uma relação muitos-para-muitos: um usuário pode ser associado a múltiplos eventos através da tabela de junção `usuario_eventos`.  
-**Evidência:** `src/models/usuario.js` (`belongsToMany`), `src/models/usuario_eventos.js`, migration `20260313190000-create-usuario_eventos.js`, migration `20260313195000-remove-evento_id-from-usuarios.js`
+UF-1: **Relacionamento N:N entre Usuário e Evento via `usuario_eventos`.**  
+Sem `evento_id` em `usuarios`. Usuário pode ter múltiplos eventos.  
+**Evidência:** `src/models/usuario.js`, `src/models/usuario_eventos.js`, migration `20260313190000-create-usuario_eventos.js`
 
 ---
 
-UF-2: **Endpoint REST para associar/reatribuir eventos a um usuário.**  
-Existe uma rota `PUT /usuarios/:id/eventos` que recebe um array de IDs de eventos e atualiza todas as associações do usuário de uma só vez. A rota valida duplicatas no array e a existência dos eventos antes de persistir.  
-**Evidência:** `src/routes/usuarios.js`, `src/controllers/usuarioController.js` (`updateEventos`)
+UF-2: **Endpoint protegido para associar eventos a um usuário via API.**  
+`PUT /:papel/:id/usuarios/:usuarioId/eventos` — requer auth e que o admin logado seja o parâmetro `:id`.  
+**Evidência:** `src/routes/usuarios-crud.js`, `src/controllers/usuarioController.js`
 
 ---
 
-UF-3: **Documentação OpenAPI/Swagger disponível em tempo de execução.**  
-A aplicação serve documentação interativa da API no endpoint `GET /api-docs`, gerada automaticamente a partir de anotações JSDoc nas rotas usando `swagger-jsdoc` e `swagger-ui-express`. Todos os recursos (participantes, eventos, certificados, tipos de certificados, usuários) estão documentados com schemas OpenAPI 3.0.  
-**Evidência:** `app.js` (configuração do `swaggerJsdoc` e `swaggerUi`), comentários `@swagger` em todos os arquivos de rotas em `src/routes/`
+UF-3: **Documentação OpenAPI em `/api-docs`.**  
+Gerada por `swagger-jsdoc` a partir de JSDoc `@swagger` nas rotas.  
+**Evidência:** `app.js`, `src/routes/`
 
 ---
 
-UF-4: **Validação de corpo de requisição via Zod com retorno estruturado de erros.**  
-Todas as rotas de escrita usam um middleware de validação baseado em Zod. Em caso de erro, a resposta retorna HTTP 400 com o payload `{ "error": "Erro de validação", "detalhes": [...] }`, onde `detalhes` é o array de erros do Zod com campo, mensagem e código.  
-**Evidência:** `middleware/validate.js`, uso de `validate(schema)` nas rotas de `src/routes/`
+UF-4: **Validação Zod com retorno estruturado de erros.**  
+HTTP 400 com `{ "error": "Erro de validação", "detalhes": [...] }`.  
+**Evidência:** `src/middlewares/validate.js`
 
 ---
 
-UF-5: **Restrições mínimas de tamanho em campos de validação (não especificadas no SRS).**  
-Os schemas Zod impõem comprimentos mínimos que nunca foram documentados:
+UF-5: **Restrições mínimas de tamanho em campos de validação.**
 
-- `nomeCompleto` (participante): mínimo 3 caracteres
-- `nome` (evento, usuário, certificado): mínimo 3 caracteres
-- `senha` (usuário): mínimo 6 caracteres
-- `instituicao` (participante): mínimo 2 caracteres (quando fornecida)
-- `ano` (evento): mínimo 2000
-
-**Evidência:** `src/validators/participante.js`, `src/validators/evento.js`, `src/validators/usuario.js`, `src/validators/certificado.js`
+- `nomeCompleto`, `nome`: ≥ 3 caracteres
+- `senha`: ≥ 6 caracteres
+- `instituicao`: ≥ 2 caracteres (opcional)
+- `ano`: ≥ 2000
 
 ---
 
-UF-6: **Modelo de herança hierárquica de perfis no RBAC.**  
-O middleware `rbac` não verifica permissões discretas por perfil; em vez disso, define uma hierarquia ordenada `['monitor', 'gestor', 'admin']` onde um perfil de rank superior tem acesso a tudo que um perfil inferior tem. Isso significa que gestores podem acessar rotas protegidas para monitor, e admins podem acessar rotas de gestor e monitor.  
-**Evidência:** `src/middlewares/rbac.js` (array `roles`, comparação por índice)
+UF-6: **Hierarquia de perfis no RBAC.**  
+`['monitor', 'gestor', 'admin']` por índice. Rank maior acessa rotas de rank inferior.  
+**Evidência:** `src/middlewares/rbac.js`
 
 ---
 
-UF-7: **O middleware `scopedEvento` injeta automaticamente o filtro de evento nas consultas GET.**  
-Para gestores e monitores, requisições `GET` sem parâmetro de ID têm `req.query.evento_id` automaticamente preenchido com o `evento_id` do usuário autenticado, restringindo os resultados ao evento vinculado sem que o cliente precise informar o filtro explicitamente. Caso o cliente tente forçar um `evento_id` diferente na query string, a requisição é bloqueada com HTTP 403.  
+UF-7: **`scopedEvento` injeta `evento_id` automático nas listagens.**  
+Para GET sem `:id`, `req.query.evento_id` é preenchido com o(s) evento(s) do usuário. Array quando múltiplos.  
 **Evidência:** `src/middlewares/scopedEvento.js`
 
 ---
 
-UF-8: **Autenticação valida a existência do usuário no banco a cada requisição.**  
-O middleware `auth` não apenas verifica a assinatura e a expiração do JWT — ele também consulta o banco de dados para confirmar que o usuário ainda existe. Isso garante que tokens de usuários removidos (soft deleted) sejam rejeitados imediatamente, sem necessidade de aguardar a expiração do token.  
-**Evidência:** `middleware/auth.js` (`Usuario.findByPk(decoded.id)`)
+UF-8: **Auth valida existência do usuário no banco a cada requisição.**  
+Tokens de usuários soft-deletados são rejeitados imediatamente.  
+**Evidência:** `src/middlewares/auth.js`
 
 ---
 
-UF-9: **JWT com expiração fixa de 1 hora.**  
-Os tokens JWT emitidos no login têm expiração hardcoded de `1h`. Não há suporte a refresh token.  
-**Evidência:** `src/controllers/usuarioController.js` (`expiresIn: '1h'`)
+UF-9: **JWT com expiração fixa de 1 hora. Sem refresh token.**  
+**Evidência:** `src/controllers/usuarioController.js`, `src/routes/auth.js`
 
 ---
 
-UF-10: **Exclusão lógica em cascata de associações `usuario_eventos` ao deletar evento.**  
-O `eventoService.delete()` realiza soft delete do evento e, em seguida, executa `UsuarioEvento.update({ deleted_at: new Date() }, ...)` para marcar como deletadas todas as associações de usuários com aquele evento.  
-**Evidência:** `src/services/eventoService.js` (método `delete`)
+UF-10: **Cascade soft delete/restore em `usuario_eventos` ao operar sobre eventos.**  
+**Evidência:** `src/services/eventoService.js`
 
 ---
 
-UF-11: **Formato de interpolação do `templateService` diverge da especificação.**  
-O `templateService` usa a sintaxe `{{variavel}}` (duplas chaves) para interpolação do `texto_base`, enquanto a especificação original descreve a sintaxe `${variavel}`.  
-**Evidência:** `src/services/templateService.js` (`/\{\{(\w+)\}\}/g`)
+UF-11: **Sintaxe de interpolação `${variavel}` — ALINHADA com a especificação.**  
+O código atual usa regex `\$\{(\w+)\}/g`, consistente com a documentação.  
+**Evidência:** `src/services/templateService.js`
 
 ---
 
-UF-12: **Criação de usuário via `POST /usuarios` não exige autenticação.**  
-A rota de criação de usuários não passa pelo middleware `auth` nem pelo `rbac`, tornando o endpoint público. Qualquer pessoa pode criar um usuário com qualquer perfil, incluindo `admin`.  
-**Evidência:** `src/routes/usuarios.js` (`router.post('/', validate(usuarioSchema), usuarioController.create)` — sem `auth` ou `rbac`)
+UF-12: **Criação de usuário exige autenticação admin — PROTEGIDA.**  
+`POST /usuarios` público foi removido. Criação via SSR (`/admin/usuarios`) ou API protegida.  
+**Evidência:** `src/routes/usuarios.js`, `src/routes/usuarios-crud.js`, `src/routes/admin.js`
 
 ---
 
-UF-13: **`valores_dinamicos` ausente no schema de validação do certificado.**  
-O Zod schema de `certificado` não inclui o campo `valores_dinamicos`, que é parte central da funcionalidade de campos dinâmicos. O campo pode ser enviado livremente no body sem validação de estrutura.  
-**Evidência:** `src/validators/certificado.js`
+UF-13: **`valores_dinamicos` validado no service, não no Zod.**  
+Na criação: verifica campos obrigatórios de `dados_dinamicos` → HTTP 422. Atualizações não validam.  
+**Evidência:** `src/validators/certificado.js`, `src/services/certificadoService.js`
 
 ---
 
-UF-14: **Inconsistência nos segredos JWT entre `auth.js` e `usuarioController.js`.**  
-O middleware `auth.js` usa `process.env.JWT_SECRET || 'segredo-super-seguro'`, enquanto `usuarioController.js` usa `process.env.JWT_SECRET || 'secret'`. Se `JWT_SECRET` não estiver definido, o token será assinado com `'secret'` mas verificado com `'segredo-super-seguro'`, causando falha de autenticação em todos os logins.  
-**Evidência:** `middleware/auth.js` (linha 4), `src/controllers/usuarioController.js` (linha 5)
+UF-14: **`JWT_SECRET` obrigatório sem fallback — inconsistência RESOLVIDA.**  
+Ambos `auth.js` e `usuarioController.js` lançam erro na inicialização se `JWT_SECRET` não definido.  
+**Evidência:** `src/middlewares/auth.js:4`, `src/controllers/usuarioController.js:3-4`
 
 ---
 
-# Possíveis Lacunas na Especificação
+UF-15: **Geração de PDF com PDFKit e imagem/fonte do Cloudflare R2.**  
+Fallback gracioso se R2 indisponível; continua sem fundo/fonte customizada.  
+**Evidência:** `src/services/pdfService.js`, `src/services/r2Service.js`
 
-LAC-1: **Modelo de associação Usuário–Evento não documentado.**  
-O SRS descreve `evento_id` como chave estrangeira simples em `usuarios`, mas o código implementa N:N via `usuario_eventos`. A especificação não menciona a tabela de junção, o endpoint `PUT /usuarios/:id/eventos`, nem a possibilidade de um usuário gerenciar múltiplos eventos.  
-**Relacionado a:** UF-1, UF-2
+---
 
-LAC-2: **Documentação Swagger/OpenAPI não mencionada.**  
-A existência de documentação interativa em `/api-docs` não está descrita em nenhuma seção do SRS, incluindo a seção de rotas ou integrações.  
-**Relacionado a:** UF-3
+UF-16: **Interface SSR completa com Handlebars em `/admin/*`.**  
+Autenticada via cookie HTTP-only. Mensagens flash via `connect-flash`.  
+**Evidência:** `src/routes/admin.js`, `src/controllers/*SSRController.js`, `views/`
 
-LAC-3: **Regras de comprimento mínimo de campos ausentes.**  
-O SRS descreve os campos e seus tipos, mas omite todas as restrições de comprimento mínimo aplicadas pelos validadores Zod. Isso cria divergência entre especificação e implementação.  
-**Relacionado a:** UF-5
+---
 
-LAC-4: **Comportamento de herança de perfis no RBAC não especificado.**  
-O SRS descreve permissões discretas por perfil (admin, gestor, monitor), mas não define se os perfis são hierárquicos. O código implementa herança ascendente, o que implica que gestores podem exercer todas as ações de monitores e admins podem exercer todas as ações de gestores.  
-**Relacionado a:** UF-6
+UF-17: **Rate limiting no endpoint de login API.**  
+Máx. 10 tentativas/15 min por IP. HTTP 429 se excedido.  
+**Evidência:** `src/routes/usuarios.js`
 
-LAC-5: **Filtragem automática por evento nas listagens não documentada.**  
-O comportamento do `scopedEvento` de injetar automaticamente o filtro de evento nas consultas GET é uma regra de negócio relevante que não consta na especificação.  
-**Relacionado a:** UF-7
+---
 
-LAC-6: **Tempo de expiração do token JWT não especificado.**  
-O SRS menciona autenticação JWT, mas não define a duração de validade do token.  
-**Relacionado a:** UF-9
+UF-18: **`GET /certificados` redireciona para SSR sem Bearer token.**  
+Se acessado por browser (sem `Authorization: Bearer`), redireciona para `/public/pagina/opcoes`.  
+**Evidência:** `app.js` (middleware condicional)
 
-LAC-7: **Cascade de soft delete ao remover evento não documentado.**  
-O SRS não menciona o que ocorre com as associações de usuários quando um evento é removido.  
-**Relacionado a:** UF-10
+---
 
-LAC-8: **Sintaxe de interpolação do `texto_base` não corresponde ao código.**  
-O SRS usa `${variavel}` como exemplo, mas o código usa `{{variavel}}`. A sintaxe oficial não está definida.  
-**Relacionado a:** UF-11
+UF-19: **`authSSR` popula `res.locals.usuario` para templates Handlebars.**  
+Inclui flags `isAdmin` e `isGestor` para condicional nas views.  
+**Evidência:** `src/middlewares/authSSR.js`
 
-LAC-9: **Criação de usuário admin é pública e irrestrita.**  
-Não há especificação sobre como o primeiro admin deve ser criado, e o código não restringe a criação de usuários por perfil, permitindo que qualquer pessoa crie um admin via API.  
-**Relacionado a:** UF-12, QA-3 (Questões em Aberto)
+---
+
+UF-20: **Dashboard com estatísticas diferenciadas por perfil.**  
+Admin: estatísticas globais + 5 últimos certificados. Gestor/monitor: filtrado por eventos vinculados.  
+**Evidência:** `src/controllers/dashboardController.js`
 
 ---
 
 # Inconsistências Detectadas
 
-INC-1: **`evento_id` vs. N:N — modelo de dados divergente.**
+**INC-2 — RESOLVIDA:** Sintaxe de interpolação agora é `${variavel}` no código e na spec.
 
-- **Especificação:** Tabela `usuarios` possui campo `evento_id` (FK simples) — um usuário pertence a um evento.
-- **Código:** Não há `evento_id` em `usuarios`; a associação é feita via tabela `usuario_eventos` (N:N) — um usuário pode pertencer a múltiplos eventos.
+**INC-3 — RESOLVIDA:** Ambos `auth.js` e `usuarioController.js` lançam erro sem `JWT_SECRET`. Sem fallbacks.
 
-INC-2: **Sintaxe de interpolação do `texto_base`.**
+**INC-4 — RESOLVIDA:** Criação de usuário via API protegida. Sem endpoint público de criação.
 
-- **Especificação:** Exemplo usa `${nome_completo}`, sugerindo template literals estilo ES6.
-- **Código:** `templateService.js` usa regex `\{\{(\w+)\}\}`, ou seja, sintaxe `{{nome_completo}}` (estilo Mustache/Handlebars).
+**INC-5 — MITIGADA:** `valores_dinamicos` não validado pelo Zod, mas validado no service na criação. Updates não validam.
 
-INC-3: **Segredos JWT inconsistentes entre módulos.**
+**INC-6 — CONFIRMADA:** `GET /eventos` é rota protegida (monitor+). Comportamento intencional.
 
-- **`middleware/auth.js`:** Fallback é `'segredo-super-seguro'`.
-- **`src/controllers/usuarioController.js`:** Fallback é `'secret'`.
-- Se `JWT_SECRET` não estiver definido no ambiente, tokens serão assinados e verificados com segredos diferentes, quebrando toda autenticação.
+**INC-NOVA-1:** `eventoService.delete()` usa `UsuarioEvento.destroy()` para cascade. Com `paranoid: true`, deve resultar em soft delete. Confirmar comportamento em produção.
 
-INC-4: **Criação de usuário não protegida por autenticação.**
-
-- **Especificação:** Perfil admin gerencia todos os usuários (criação inclusa), implicando que criação de usuários é uma operação restrita.
-- **Código:** `POST /usuarios` não possui middleware `auth` ou `rbac` — qualquer requisição pode criar usuários com qualquer perfil.
-
-INC-5: **`valores_dinamicos` ausente no validator de certificado.**
-
-- **Especificação:** `valores_dinamicos` é descrito como campo central para armazenar os dados dinâmicos de um certificado.
-- **Código:** O Zod schema em `src/validators/certificado.js` não inclui `valores_dinamicos`, tornando o campo invisível para a camada de validação.
-
-INC-6: **Rota `GET /eventos` exige autenticação; especificação não deixa isso claro.**
-
-- **Especificação:** A especificação lista rotas públicas apenas para `/certificado/:id` e `/validar/:codigo`, mas não explicita se listagem de eventos é pública ou protegida.
-- **Código:** `GET /eventos` usa middleware `auth` + `rbac('monitor')` + `scopedEvento`, sendo portanto uma rota protegida.
+**INC-NOVA-2:** Endpoint `POST /:papel/:id/usuarios` verifica `req.usuario.id === Number(id)`. Admin só pode criar usuários passando sua própria ID na URL. Parece limitação de design — necessita confirmação.
 
 ---
 
-# Recomendações de Atualização da Especificação
+# Pontos de Atenção
 
-REC-1: **Atualizar o Modelo de Dados — substituir `evento_id` em `usuarios` pela tabela de junção `usuario_eventos`.**  
-Adicionar a entidade `usuario_eventos` com os campos `usuario_id`, `evento_id` e soft delete. Remover `evento_id` da tabela `usuarios`. Documentar o endpoint `PUT /usuarios/:id/eventos`.
+PA-1: `valores_dinamicos` não é validado em updates (`PUT /certificados/:id`). Dados podem ficar inconsistentes após atualização.
 
-REC-2: **Documentar o endpoint `GET /api-docs`** na seção de Integrações ou em uma nova seção "Documentação da API", incluindo que é gerado automaticamente a partir das anotações `@swagger` nas rotas.
+PA-2: Geração do código de certificado usa `Certificado.count({ where: { evento_id, tipo_certificado_id } })` incluindo soft-deletados. Após deletar e recriar certificados, o contador pode colidir com o `UNIQUE` constraint do campo `codigo`.
 
-REC-3: **Adicionar restrições de comprimento mínimo** na seção de Modelo de Dados e/ou nos Requisitos Funcionais, conforme os validators Zod:
+PA-3: `scopedEvento` injeta `req.query.evento_id` como array quando o usuário tem múltiplos eventos. Os services precisam suportar array de IDs como filtro `WHERE evento_id IN [...]`.
 
-- `nomeCompleto`, `nome`: ≥ 3 caracteres
-- `senha`: ≥ 6 caracteres
-- `instituicao`: ≥ 2 caracteres (quando informada)
-- `ano`: ≥ 2000
+PA-4: `GET /certificados` sem Bearer redireciona para SSR — pode surpreender clientes que esperam JSON.
 
-REC-4: **Documentar o modelo de herança de perfis no RBAC** — esclarecer que admin ≥ gestor ≥ monitor em termos de permissões e que não se trata de permissões discretas e isoladas.
+PA-5: `SESSION_SECRET` deve ser configurado para SSR funcionar. A ausência causa erro na inicialização.
 
-REC-5: **Padronizar e documentar a sintaxe de interpolação do `texto_base`** — definir oficialmente se usa `${variavel}` ou `{{variavel}}` e atualizar tanto o código quanto a especificação para usar o mesmo formato.
+---
 
-REC-6: **Corrigir a inconsistência nos segredos JWT** — garantir que `auth.js` e `usuarioController.js` usem a mesma variável de ambiente e o mesmo fallback (ou, preferencialmente, nenhum fallback, lançando erro explícito se `JWT_SECRET` não estiver definido).
+# Itens que Necessitam Validação Humana
 
-REC-7: **Proteger `POST /usuarios` com autenticação e RBAC** — apenas admins devem poder criar usuários com qualquer perfil; ou definir explicitamente na especificação qual é o fluxo de cadastro público (se existir).
+VAL-1: **Lógica `req.usuario.id !== Number(id)` no controller.** Admin só gerencia usuários via API passando sua própria ID na rota. É intencional ou bug? Referência: `src/controllers/usuarioController.js`.
 
-REC-8: **Adicionar `valores_dinamicos` ao schema Zod do certificado** — incluir validação do campo na criação e atualização de certificados, definindo o tipo esperado (`object` ou `record`).
+VAL-2: **Validação de `valores_dinamicos` em updates.** Os updates de certificado não revalidam os campos dinâmicos. É intencional (suportar atualizações parciais) ou falta de implementação?
 
-REC-9: **Documentar o comportamento de cascade no soft delete de eventos** — incluir na especificação que ao deletar um evento, as associações em `usuario_eventos` também são marcadas como deletadas.
+VAL-3: **Contagem incremental do código de certificado.** O `count` inclui soft-deletados? Qual o comportamento esperado após restauração?
 
-REC-10: **Documentar o tempo de expiração do JWT** (`1h`) como requisito funcional ou não funcional, e avaliar a necessidade de refresh tokens (ver MS-5).
+VAL-4: **Suporte a array de `evento_id` nos services.** Confirmar que `certificadoService`, `participanteService` e demais services suportam `WHERE evento_id IN [...]` corretamente.
+
+---
+
+# Melhorias Sugeridas
+
+MS-1: Validar `valores_dinamicos` também em updates de certificados.
+
+MS-2: Padronizar endpoint de criação de usuário via API para REST convencional.
+
+MS-3: Adicionar `valores_dinamicos` ao schema Zod como `z.record(z.any()).optional()`.
+
+MS-4: Rate limiting nas rotas públicas `/public/validar/:codigo` e `/public/certificados?email=...`.
+
+MS-5: Refresh tokens JWT para melhorar experiência na SSR.
+
+MS-6: Auditoria de ações — registrar quem emitiu, cancelou e editou certificados.
+
+MS-7: Máquina de estados explícita para `status` do certificado.
+
+MS-8: Importação em lote via CSV/XLSX com mapeamento para `valores_dinamicos`.

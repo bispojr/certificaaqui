@@ -1,6 +1,6 @@
 const http = require('http')
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3000'
+const BASE_URL = process.env.BASE_URL || `http://localhost:${process.env.PORT || '3000'}`
 
 /**
  * Faz POST na API REST autenticada e retorna o corpo JSON da resposta.

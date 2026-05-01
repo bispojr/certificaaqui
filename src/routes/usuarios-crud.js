@@ -7,7 +7,12 @@ const usuarioSchema = require('../validators/usuario')
 
 // Rotas protegidas por papel e id — apenas admin pode gerenciar usuários
 // Exemplo: POST /admin/42/usuarios
-router.post('/:papel/:id/usuarios', auth, validate(usuarioSchema), usuarioController.create)
+router.post(
+  '/:papel/:id/usuarios',
+  auth,
+  validate(usuarioSchema),
+  usuarioController.create,
+)
 // Exemplo: PUT /admin/42/usuarios/7/eventos
 router.put(
   '/:papel/:id/usuarios/:usuarioId/eventos',

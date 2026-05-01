@@ -158,7 +158,9 @@ async function criar(req, res) {
     let nome = req.body.nome
     // Se não houver campos dinâmicos, preenche nome com nomeCompleto do participante
     if (!nome || nome.trim() === '') {
-      const participante = await Participante.findByPk(Number(req.body.participante_id))
+      const participante = await Participante.findByPk(
+        Number(req.body.participante_id),
+      )
       if (participante) {
         nome = participante.nomeCompleto
       }
@@ -192,7 +194,9 @@ async function atualizar(req, res) {
     // Preenche nome automaticamente se não informado
     let nome = req.body.nome
     if (!nome || nome.trim() === '') {
-      const participante = await Participante.findByPk(Number(req.body.participante_id))
+      const participante = await Participante.findByPk(
+        Number(req.body.participante_id),
+      )
       if (participante) {
         nome = participante.nomeCompleto
       }

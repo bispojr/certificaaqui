@@ -112,10 +112,17 @@
             </li>
             {{/if}}
           </ul>
-          <div class='navbar-nav'>
-            <span class='navbar-text text-black me-3'>{{usuario.nome}} ({{usuario.perfil}})</span>
+          <div class='navbar-nav d-flex align-items-center gap-2'>
+            <li class='nav-item dropdown list-unstyled'>
+              <a class='nav-link dropdown-toggle text-black' href='#' id='navbarUserMenu' role='button' data-bs-toggle='dropdown' aria-expanded='false'>
+                <i class='fa-solid fa-circle-user me-1'></i>{{usuario.nome}} <span class='text-muted'>({{usuario.perfil}})</span>
+              </a>
+              <ul class='dropdown-menu dropdown-menu-end' aria-labelledby='navbarUserMenu'>
+                <li><a class='dropdown-item' href='/admin/perfil/alterar-senha'><i class='fa-solid fa-key me-1 text-warning'></i> Alterar senha</a></li>
+              </ul>
+            </li>
             <form action='/auth/logout' method='POST' class='d-inline'>
-              <button type='submit' class='btn btn-sm btn-outline-dark'>Sair</button>
+              <button type='submit' class='btn btn-sm btn-outline-dark' data-action='logout'>Sair</button>
             </form>
           </div>
         </div>

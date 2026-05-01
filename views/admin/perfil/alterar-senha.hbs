@@ -1,0 +1,117 @@
+<div class='row justify-content-center mt-5'>
+  <div class='col-12 col-md-6 col-lg-5'>
+    <div class='card shadow-sm'>
+      <div class='card-header'>
+        <h5 class='mb-0'><i class='fa-solid fa-key me-2 text-warning'></i>Alterar Senha</h5>
+      </div>
+      <div class='card-body'>
+        <form action='/admin/perfil/alterar-senha' method='POST' novalidate>
+          <div class='mb-3'>
+            <label for='senhaAtual' class='form-label'>Senha atual</label>
+            <input
+              type='password'
+              class='form-control'
+              id='senhaAtual'
+              name='senhaAtual'
+              required
+              autocomplete='current-password'
+            />
+          </div>
+
+          <div class='mb-3'>
+            <label for='novaSenha' class='form-label'>Nova senha</label>
+            <input
+              type='password'
+              class='form-control'
+              id='novaSenha'
+              name='novaSenha'
+              required
+              autocomplete='new-password'
+            />
+            <div id='senhaForca' class='mt-2'></div>
+            <ul class='list-unstyled mt-2 small text-muted' id='senhaRequisitos'>
+              <li id='req-tamanho'><i class='fa-solid fa-circle-xmark text-danger me-1'></i> Mínimo 8 caracteres</li>
+              <li id='req-maiuscula'><i class='fa-solid fa-circle-xmark text-danger me-1'></i> Ao menos uma letra maiúscula</li>
+              <li id='req-minuscula'><i class='fa-solid fa-circle-xmark text-danger me-1'></i> Ao menos uma letra minúscula</li>
+              <li id='req-numero'><i class='fa-solid fa-circle-xmark text-danger me-1'></i> Ao menos um número</li>
+              <li id='req-especial'><i class='fa-solid fa-circle-xmark text-danger me-1'></i> Ao menos um caractere especial (!@#$%^&* etc.)</li>
+            </ul>
+          </div>
+
+          <div class='mb-4'>
+            <label for='confirmarSenha' class='form-label'>Confirmar nova senha</label>
+            <input
+              type='password'
+              class='form-control'
+              id='confirmarSenha'
+              name='confirmarSenha'
+              required
+              autocomplete='new-password'
+            />
+            <div id='confirmarFeedback' class='mt-1 small'></div>
+          </div>
+
+          <div class='d-flex gap-2'>
+            <button type='submit' class='btn btn-primary' id='btnSalvar' disabled>
+              <i class='fa-solid fa-floppy-disk me-1'></i> Salvar
+            </button>
+            <a href='/admin/dashboard' class='btn btn-outline-secondary'>Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const novaSenhaInput = document.getElementById('novaSenha')
+  const confirmarSenhaInput = document.getElementById('confirmarSenha')
+  const btnSalvar = document.getElementById('btnSalvar')
+
+  const checks = {
+    tamanho: (v) => v.length >= 8,
+    maiuscula: (v) => /[A-Z]/.test(v),
+    minuscula: (v) => /[a-z]/.test(v),
+    numero: (v) => /[0-9]/.test(v),
+    especial: (v) => /[^A-Za-z0-9]/.test(v),
+  }
+
+  function atualizarRequisitos() {
+    const valor = novaSenhaInput.value
+    let total = 0
+    for (const [chave, fn] of Object.entries(checks)) {
+      const ok = fn(valor)
+      const el = document.getElementById('req-' + chave)
+      el.innerHTML = ok
+        ? '<i class="fa-solid fa-circle-check text-success me-1"></i>' + el.textContent.trim()
+        : '<i class="fa-solid fa-circle-xmark text-danger me-1"></i>' + el.textContent.trim()
+      if (ok) total++
+    }
+    validarFormulario(total === 5)
+  }
+
+  function validarFormulario(senhaValida) {
+    const confirmacao = confirmarSenhaInput.value
+    const novaSenha = novaSenhaInput.value
+    const feedback = document.getElementById('confirmarFeedback')
+    const coincidem = confirmacao.length > 0 && confirmacao === novaSenha
+
+    if (confirmacao.length > 0) {
+      if (coincidem) {
+        feedback.innerHTML = '<span class="text-success"><i class="fa-solid fa-check me-1"></i>Senhas coincidem</span>'
+      } else {
+        feedback.innerHTML = '<span class="text-danger"><i class="fa-solid fa-xmark me-1"></i>Senhas não coincidem</span>'
+      }
+    } else {
+      feedback.innerHTML = ''
+    }
+
+    btnSalvar.disabled = !(senhaValida && coincidem)
+  }
+
+  novaSenhaInput.addEventListener('input', atualizarRequisitos)
+  confirmarSenhaInput.addEventListener('input', () => {
+    const senhaValida = Object.values(checks).every((fn) => fn(novaSenhaInput.value))
+    validarFormulario(senhaValida)
+  })
+</script>

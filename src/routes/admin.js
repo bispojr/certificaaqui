@@ -9,9 +9,14 @@ const dashboardController = require('../controllers/dashboardController')
 const tiposCertificadosSSRController = require('../controllers/tiposCertificadosSSRController')
 const usuarioSSRController = require('../controllers/usuarioSSRController')
 const certificadoSSRController = require('../controllers/certificadoSSRController')
+const perfilSSRController = require('../controllers/perfilSSRController')
 
 // Todas as rotas admin exigem sessão SSR válida
 router.use(authSSR)
+
+// Perfil do usuário logado
+router.get('/perfil/alterar-senha', perfilSSRController.formulario)
+router.post('/perfil/alterar-senha', perfilSSRController.alterarSenha)
 
 // Tipos de Certificados (após autenticação SSR)
 router.get(

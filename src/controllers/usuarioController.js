@@ -7,32 +7,39 @@ if (!JWT_SECRET) throw new Error('JWT_SECRET não configurado')
 
 module.exports = {
   async updateEventos(req, res) {
-    const { papel, id, usuarioId } = req.params;
+    const { papel, id, usuarioId } = req.params
     // Só admin pode acessar/gerenciar usuários
-    if (!req.usuario || req.usuario.perfil !== 'admin' || req.usuario.id !== Number(id) || papel !== 'admin') {
-      return res.status(403).json({ error: 'Acesso negado' });
+    if (
+      !req.usuario ||
+      req.usuario.perfil !== 'admin' ||
+      req.usuario.id !== Number(id) ||
+      papel !== 'admin'
+    ) {
+      return res.status(403).json({ error: 'Acesso negado' })
     }
     try {
-      const usuario = await Usuario.findByPk(usuarioId);
+      const usuario = await Usuario.findByPk(usuarioId)
       if (!usuario)
-        return res.status(404).json({ error: 'Usuário não encontrado' });
-      const { eventos } = req.body;
+        return res.status(404).json({ error: 'Usuário não encontrado' })
+      const { eventos } = req.body
       if (!Array.isArray(eventos))
-        return res.status(400).json({ error: 'Eventos deve ser um array' });
+        return res.status(400).json({ error: 'Eventos deve ser um array' })
       // Checa duplicidade
       if (new Set(eventos).size !== eventos.length)
-        return res.status(400).json({ error: 'Eventos duplicados não são permitidos' });
+        return res
+          .status(400)
+          .json({ error: 'Eventos duplicados não são permitidos' })
       // Checa existência dos eventos
       const eventosExistentes = await usuario.sequelize.models.Evento.findAll({
         where: { id: eventos },
-      });
+      })
       if (eventosExistentes.length !== eventos.length)
-        return res.status(400).json({ error: 'Um ou mais eventos não existem' });
-      await usuario.setEventos(eventos);
-      await usuario.reload({ include: 'eventos' });
-      return res.status(200).json(usuario);
+        return res.status(400).json({ error: 'Um ou mais eventos não existem' })
+      await usuario.setEventos(eventos)
+      await usuario.reload({ include: 'eventos' })
+      return res.status(200).json(usuario)
     } catch (error) {
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({ error: error.message })
     }
   },
   async login(req, res) {
@@ -69,34 +76,43 @@ module.exports = {
   },
 
   async create(req, res) {
-    const { papel, id } = req.params;
+    const { papel, id } = req.params
     // Só admin pode acessar/gerenciar usuários
-    if (!req.usuario || req.usuario.perfil !== 'admin' || req.usuario.id !== Number(id) || papel !== 'admin') {
-      return res.status(403).json({ error: 'Acesso negado' });
+    if (
+      !req.usuario ||
+      req.usuario.perfil !== 'admin' ||
+      req.usuario.id !== Number(id) ||
+      papel !== 'admin'
+    ) {
+      return res.status(403).json({ error: 'Acesso negado' })
     }
     try {
-      const { nome, email, senha, perfil, eventos } = req.body;
+      const { nome, email, senha, perfil, eventos } = req.body
       if (Array.isArray(eventos)) {
         // Checa duplicidade
         if (new Set(eventos).size !== eventos.length) {
-          return res.status(400).json({ error: 'Eventos duplicados não são permitidos' });
+          return res
+            .status(400)
+            .json({ error: 'Eventos duplicados não são permitidos' })
         }
         // Checa existência dos eventos
         const eventosExistentes = await Usuario.sequelize.models.Evento.findAll(
           { where: { id: eventos } },
-        );
+        )
         if (eventosExistentes.length !== eventos.length) {
-          return res.status(400).json({ error: 'Um ou mais eventos não existem' });
+          return res
+            .status(400)
+            .json({ error: 'Um ou mais eventos não existem' })
         }
       }
-      const usuario = await Usuario.create({ nome, email, senha, perfil });
+      const usuario = await Usuario.create({ nome, email, senha, perfil })
       if (Array.isArray(eventos) && eventos.length > 0) {
-        await usuario.setEventos(eventos);
+        await usuario.setEventos(eventos)
       }
-      await usuario.reload({ include: 'eventos' });
-      return res.status(201).json(usuario);
+      await usuario.reload({ include: 'eventos' })
+      return res.status(201).json(usuario)
     } catch (error) {
-      return res.status(400).json({ error: error.message });
+      return res.status(400).json({ error: error.message })
     }
   },
 }

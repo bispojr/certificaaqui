@@ -89,8 +89,16 @@ describe('admin/certificados/form.hbs', () => {
       participantes: [],
       eventos: [],
       tipos: [
-        { id: 10, descricao: 'Palestra', dados_dinamicos: { tema: 'Tema', palestrante: 'Palestrante' } },
-        { id: 11, descricao: 'Minicurso', dados_dinamicos: { instrutor: 'Instrutor' } },
+        {
+          id: 10,
+          descricao: 'Palestra',
+          dados_dinamicos: { tema: 'Tema', palestrante: 'Palestrante' },
+        },
+        {
+          id: 11,
+          descricao: 'Minicurso',
+          dados_dinamicos: { instrutor: 'Instrutor' },
+        },
       ],
       certificado: null,
       flash: {},
@@ -106,5 +114,4 @@ describe('admin/certificados/form.hbs', () => {
     expect(html).not.toContain("fetch('/tipos-certificados/")
     expect(html).not.toContain('fetch("/tipos-certificados/')
   })
-
 })
