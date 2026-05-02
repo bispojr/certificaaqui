@@ -1,7 +1,8 @@
-const http = require('http')
+const { request: playwrightRequest } = require('@playwright/test')
 
 const BASE_URL =
-  process.env.BASE_URL || `http://localhost:${process.env.PORT || '3000'}`
+  process.env.BASE_URL ||
+  `http://localhost:${process.env.PORT_E2E || process.env.PORT || '3000'}`
 
 /**
  * Faz POST na API REST autenticada e retorna o corpo JSON da resposta.
@@ -10,36 +11,17 @@ const BASE_URL =
  * @param {string} token - JWT Bearer
  * @returns {Promise<object>}
  */
-function createViaApi(endpoint, payload, token) {
-  return new Promise((resolve, reject) => {
-    const body = JSON.stringify(payload)
-    const url = new URL(endpoint, BASE_URL)
-    const options = {
-      hostname: url.hostname,
-      port: url.port || 80,
-      path: url.pathname,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body),
-        Authorization: `Bearer ${token}`,
-      },
-    }
-    const req = http.request(options, (res) => {
-      let data = ''
-      res.on('data', (chunk) => (data += chunk))
-      res.on('end', () => {
-        try {
-          resolve(JSON.parse(data))
-        } catch {
-          resolve(data)
-        }
-      })
+async function createViaApi(endpoint, payload, token) {
+  const context = await playwrightRequest.newContext({ baseURL: BASE_URL })
+  try {
+    const response = await context.post(endpoint, {
+      data: payload,
+      headers: { Authorization: `Bearer ${token}` },
     })
-    req.on('error', reject)
-    req.write(body)
-    req.end()
-  })
+    return response.json()
+  } finally {
+    await context.dispose()
+  }
 }
 
 module.exports = { createViaApi }

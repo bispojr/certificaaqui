@@ -1,5 +1,4 @@
-const BASE_URL =
-  process.env.BASE_URL || `http://localhost:${process.env.PORT || '3000'}`
+
 
 /**
  * Realiza login SSR via formulário de /auth/login.
@@ -9,7 +8,7 @@ const BASE_URL =
  * @param {string} senha
  */
 async function loginAs(page, email, senha) {
-  await page.goto(`${BASE_URL}/auth/login`)
+  await page.goto('/auth/login')
   await page.fill('input[name="email"]', email)
   await page.fill('input[name="senha"]', senha)
   await page.click('button[type="submit"]')

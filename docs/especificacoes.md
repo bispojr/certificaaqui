@@ -579,7 +579,7 @@ RN-11: A nova senha informada no formulário de alteração deve atender à pol�
 | **bcryptjs**           | Hash de senhas                     | Em uso | —                                                                      |
 | **Cloudflare R2**      | Armazenamento de objetos S3-compat | Em uso | `R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` |
 | **PDFKit**             | Geração de PDF no servidor         | Em uso | `ENDERECO_VALIDACAO` (URL base do link de validação no PDF)            |
-| **aws-sdk**            | Cliente S3 para R2                 | Em uso | (mesmas que R2)                                                        |
+| **@aws-sdk/client-s3**, **@aws-sdk/lib-storage** | Cliente S3 para R2 (SDK v3) | Em uso | (mesmas que R2)                                                        |
 | **multer**             | Upload de imagens (template)       | Em uso | —                                                                      |
 | **express-session**    | Sessão (flash + auth SSR)          | Em uso | `SESSION_SECRET` (obrigatório; sem fallback)                           |
 | **connect-flash**      | Mensagens flash SSR                | Em uso | —                                                                      |

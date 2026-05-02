@@ -94,7 +94,10 @@ describe('tiposCertificadosSSRController', () => {
       req.usuario = gestorUsuario
       const res = mockRes()
       await tiposCertificadosSSRController.novo(req, res)
-      expect(req.flash).toHaveBeenCalledWith('error', expect.stringContaining('Nenhum evento'))
+      expect(req.flash).toHaveBeenCalledWith(
+        'error',
+        expect.stringContaining('Nenhum evento'),
+      )
       expect(res.redirect).toHaveBeenCalledWith('/admin/tipos-certificados')
     })
   })

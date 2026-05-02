@@ -13,6 +13,14 @@ describe('Admin SSR Certificados - Ordem e RBAC', () => {
   let certId
 
   beforeAll(async () => {
+    // Limpa dados residuais de execuções anteriores
+    await Certificado.destroy({ where: { codigo: 'RTA-26-RT-1' }, force: true })
+    await Certificado.destroy({ where: { codigo: 'FST-26-NP-1' }, force: true })
+    await Participante.destroy({
+      where: { email: ['participante_rota@certifique.me', 'fulano-auto@ex.com'] },
+      force: true,
+    })
+
     const [participante] = await Participante.findOrCreate({
       where: { email: 'participante_rota@certifique.me' },
       defaults: {
@@ -36,14 +44,17 @@ describe('Admin SSR Certificados - Ordem e RBAC', () => {
         dados_dinamicos: {},
       },
     })
-    const cert = await Certificado.create({
-      nome: 'Certificado Rota Teste',
-      status: 'emitido',
-      participante_id: participante.id,
-      evento_id: evento.id,
-      tipo_certificado_id: tipo.id,
-      valores_dinamicos: {},
-      codigo: 'RTA-26-RT-1',
+    const [cert] = await Certificado.findOrCreate({
+      where: { codigo: 'RTA-26-RT-1' },
+      defaults: {
+        nome: 'Certificado Rota Teste',
+        status: 'emitido',
+        participante_id: participante.id,
+        evento_id: evento.id,
+        tipo_certificado_id: tipo.id,
+        valores_dinamicos: {},
+        codigo: 'RTA-26-RT-1',
+      },
     })
     certId = cert.id
   })
@@ -138,22 +149,24 @@ describe('Admin SSR Certificados - Ordem e RBAC', () => {
 
   it('preenche nome automaticamente se tipo não tem campos dinâmicos', async () => {
     // Cria participante e tipo de certificado sem campos dinâmicos
-    const participante = await Participante.create({
-      nomeCompleto: 'Fulano',
-      email: 'fulano-auto@ex.com',
+    const [participante] = await Participante.findOrCreate({
+      where: { email: 'fulano-auto@ex.com' },
+      defaults: { nomeCompleto: 'Fulano', email: 'fulano-auto@ex.com' },
     })
-    const evento = await Evento.create({
-      nome: 'Festa Auto',
-      ano: 2026,
-      codigo_base: 'FST',
+    const [evento] = await Evento.findOrCreate({
+      where: { codigo_base: 'FST', ano: 2026 },
+      defaults: { nome: 'Festa Auto', ano: 2026, codigo_base: 'FST' },
     })
-    const tipo = await TiposCertificados.create({
-      evento_id: evento.id,
-      codigo: 'NP',
-      descricao: 'Na pista',
-      campo_destaque: 'nome',
-      texto_base: 'Certificamos ${nome}',
-      dados_dinamicos: {},
+    const [tipo] = await TiposCertificados.findOrCreate({
+      where: { codigo: 'NP', evento_id: evento.id },
+      defaults: {
+        evento_id: evento.id,
+        codigo: 'NP',
+        descricao: 'Na pista',
+        campo_destaque: 'nome',
+        texto_base: 'Certificamos ${nome}',
+        dados_dinamicos: {},
+      },
     })
 
     await mockLogin(agent, 'gestor')
@@ -170,5 +183,18 @@ describe('Admin SSR Certificados - Ordem e RBAC', () => {
     })
     expect(cert).toBeTruthy()
     expect(cert.nome).toBe('Fulano')
+  })
+
+  afterAll(async () => {
+    await Certificado.destroy({
+      where: { codigo: ['RTA-26-RT-1', 'FST-26-NP-1'] },
+      force: true,
+    })
+    await TiposCertificados.destroy({ where: { codigo: ['RT', 'NP'] }, force: true })
+    await Evento.destroy({ where: { codigo_base: ['RTA', 'FST'] }, force: true })
+    await Participante.destroy({
+      where: { email: ['participante_rota@certifique.me', 'fulano-auto@ex.com'] },
+      force: true,
+    })
   })
 })
