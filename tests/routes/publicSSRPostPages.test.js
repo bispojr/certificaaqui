@@ -17,14 +17,14 @@ describe('SSR POST rotas públicas de certificados', () => {
     const hbs = require('hbs')
     hbs.handlebars.registerHelper('eq', (a, b) => a === b)
     app.use(express.urlencoded({ extended: false }))
-    app.use('/public', publicRouter)
+    app.use('/', publicRouter)
   })
 
   afterEach(() => {
     jest.clearAllMocks()
   })
 
-  it('POST /public/pagina/buscar com email válido renderiza obter-lista', async () => {
+  it('POST /obter com email válido renderiza obter-lista', async () => {
     Participante.findOne.mockResolvedValue({
       id: 1,
       email: 'teste@exemplo.com',
@@ -38,7 +38,7 @@ describe('SSR POST rotas públicas de certificados', () => {
       },
     ])
     const res = await request(app)
-      .post('/public/pagina/buscar')
+      .post('/obter')
       .send('email=teste@exemplo.com')
     expect(res.status).toBe(200)
     expect(res.text).toMatch(/Seus certificados/)
@@ -46,22 +46,22 @@ describe('SSR POST rotas públicas de certificados', () => {
     expect(res.text).toMatch(/teste@exemplo.com/)
   })
 
-  it('POST /public/pagina/buscar sem email re-renderiza form-obter com mensagem', async () => {
-    const res = await request(app).post('/public/pagina/buscar').send('email=')
+  it('POST /obter sem email re-renderiza form-obter com mensagem', async () => {
+    const res = await request(app).post('/obter').send('email=')
     expect(res.status).toBe(200)
     expect(res.text).toMatch(/Informe um e-mail válido/)
   })
 
-  it('POST /public/pagina/buscar com email inexistente re-renderiza form-obter com mensagem', async () => {
+  it('POST /obter com email inexistente re-renderiza form-obter com mensagem', async () => {
     Participante.findOne.mockResolvedValue(null)
     const res = await request(app)
-      .post('/public/pagina/buscar')
+      .post('/obter')
       .send('email=naoexiste@exemplo.com')
     expect(res.status).toBe(200)
     expect(res.text).toMatch(/Nenhum participante encontrado/)
   })
 
-  it('POST /public/pagina/validar com código válido renderiza validar-resultado (valido: true)', async () => {
+  it('POST /validar com código válido renderiza validar-resultado (valido: true)', async () => {
     Certificado.findOne.mockResolvedValue({
       id: 1,
       codigo: 'ABC123',
@@ -72,7 +72,7 @@ describe('SSR POST rotas públicas de certificados', () => {
       created_at: '2026-03-26',
     })
     const res = await request(app)
-      .post('/public/pagina/validar')
+      .post('/validar')
       .send('codigo=ABC123')
     expect(res.status).toBe(200)
     expect(res.text).toMatch(/Certificado Válido/)
@@ -81,18 +81,18 @@ describe('SSR POST rotas públicas de certificados', () => {
     expect(res.text).toMatch(/ABC123/)
   })
 
-  it('POST /public/pagina/validar com código inválido renderiza validar-resultado (valido: false)', async () => {
+  it('POST /validar com código inválido renderiza validar-resultado (valido: false)', async () => {
     Certificado.findOne.mockResolvedValue(null)
     const res = await request(app)
-      .post('/public/pagina/validar')
+      .post('/validar')
       .send('codigo=ERR')
     expect(res.status).toBe(200)
     expect(res.text).toMatch(/Certificado Inválido/)
   })
 
-  it('POST /public/pagina/validar sem código re-renderiza form-validar com mensagem', async () => {
+  it('POST /validar sem código re-renderiza form-validar com mensagem', async () => {
     const res = await request(app)
-      .post('/public/pagina/validar')
+      .post('/validar')
       .send('codigo=')
     expect(res.status).toBe(200)
     expect(res.text).toMatch(/Informe o código do certificado/)

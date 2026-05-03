@@ -4,7 +4,7 @@
       <div class='alert alert-danger'>{{mensagem}}</div>
     {{/if}}
     <h2>Validar certificado</h2>
-    <form method='POST' action='/public/pagina/validar' id='form-validar'>
+    <form method='POST' action='/validar' id='form-validar'>
       <div class='mb-3'>
         <label for='codigo' class='form-label'>Código do certificado</label>
         <input
@@ -22,7 +22,7 @@
       <div class='spinner-border' role='status'></div>
       <p>Validando certificado...</p>
     </div>
-    <a href='/public/pagina/opcoes' class='btn btn-link mt-3'>← Voltar</a>
+    <a href='/opcoes' class='btn btn-link mt-3'>← Voltar</a>
     <script>
       document.getElementById('form-validar').addEventListener('submit', function () {
         document.getElementById('btn-validar').disabled = true;

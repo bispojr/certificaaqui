@@ -90,14 +90,14 @@ FR-54: Na criação de um certificado, o serviço deve validar que todos os camp
 
 ## Consulta e Validação Pública de Certificados
 
-FR-23: O sistema deve disponibilizar uma rota pública JSON para listar certificados por e-mail de participante (`GET /public/certificados?email=...`).  
-FR-24: O sistema deve disponibilizar uma rota pública JSON `GET /public/validar/:codigo` que retorna `{ valido: true, certificado }` ou HTTP 404 `{ valido: false, mensagem }`.  
+FR-23: O sistema deve disponibilizar uma rota pública JSON para listar certificados por e-mail de participante (`GET /api/certificados?email=...`).  
+FR-24: O sistema deve disponibilizar uma rota pública JSON `GET /api/validar/:codigo` que retorna `{ valido: true, certificado }` ou HTTP 404 `{ valido: false, mensagem }`.  
 FR-25: As rotas de consulta pública não devem exigir autenticação.  
-FR-53: O sistema deve disponibilizar uma rota pública `GET /public/certificados?email=...` que, dado o e-mail de um participante, lista todos os seus certificados.
+FR-53: O sistema deve disponibilizar uma rota pública `GET /api/certificados?email=...` que, dado o e-mail de um participante, lista todos os seus certificados.
 
 ## Geração de PDF
 
-FR-42: O sistema deve gerar o PDF do certificado sob demanda via `GET /public/certificados/:id/pdf`, sem exigir autenticação.  
+FR-42: O sistema deve gerar o PDF do certificado sob demanda via `GET /api/certificados/:id/pdf`, sem exigir autenticação.  
 FR-47: A imagem de fundo do PDF é obtida do Cloudflare R2 usando a key em `evento.url_template_base`. Se não definido, usa `"template/padrao.jpg"` como key padrão.  
 FR-47b: A fonte tipográfica (`Lato-Medium.ttf`) é obtida do R2 (key `"fontes/Lato-Medium.ttf"`). Se indisponível, usa `Helvetica` como fallback.  
 FR-47c: O PDF é gerado em formato A4 landscape. As coordenadas de posicionamento dos blocos de texto e do código de validação são configuráveis por evento via campos `texto_x/y` e `validacao_x/y`.  
@@ -190,7 +190,7 @@ NFR-11: **Segurança — Upload:** Uploads de template restritos a PNG/JPEG, má
 ## Fluxo: Geração de PDF
 
 ```
-GET /public/certificados/:id/pdf
+GET /api/certificados/:id/pdf
   → Certificado.findByPk(id, { include: [Participante, Evento, TiposCertificados] })
   → pdfService.generateCertificadoPdf(certificado)
       → r2Service.getFile(evento.url_template_base)    (imagem de fundo)
@@ -280,10 +280,10 @@ PDF A4 landscape gerado por PDFKit. Imagem de fundo e fonte Lato-Medium obtidas 
 
 ## Consulta e Validação Pública
 
-- `GET /public/certificados?email=<email>` — lista certificados por e-mail.
-- `GET /public/validar/:codigo` — valida por código único.
-- `GET /public/certificados/:id/pdf` — baixa PDF.
-- Páginas SSR: `/public/pagina/opcoes`, `/public/pagina/obter`, `/public/pagina/validar`, `POST /public/pagina/buscar`.  
+- `GET /api/certificados?email=<email>` — lista certificados por e-mail.
+- `GET /api/validar/:codigo` — valida por código único.
+- `GET /api/certificados/:id/pdf` — baixa PDF.
+- Páginas SSR: `/opcoes`, `/obter`, `/validar`, `POST /obter`.  
   **Requisitos:** FR-23, FR-24, FR-25, FR-42, FR-53
 
 ---
@@ -342,13 +342,14 @@ Interface web completa Handlebars em `/admin/*`. Autenticação via cookie. Mens
 
 | Rota                                 | Descrição                              |
 | ------------------------------------ | -------------------------------------- |
-| `GET /public/certificados?email=...` | Listar certificados por e-mail         |
-| `GET /public/validar/:codigo`        | Validar certificado por código         |
-| `GET /public/certificados/:id/pdf`   | Baixar PDF do certificado              |
-| `GET /public/pagina/opcoes`          | Página SSR de opções                   |
-| `GET /public/pagina/obter`           | Formulário SSR de busca por e-mail     |
-| `GET /public/pagina/validar`         | Formulário SSR de validação por código |
-| `POST /public/pagina/buscar`         | Processar busca por e-mail (SSR)       |
+| `GET /api/certificados?email=...`    | Listar certificados por e-mail (JSON)  |
+| `GET /api/validar/:codigo`           | Validar certificado por código (JSON)  |
+| `GET /api/certificados/:id/pdf`      | Baixar PDF do certificado              |
+| `GET /opcoes`                        | Página SSR de opções                   |
+| `GET /obter`                         | Formulário SSR de busca por e-mail     |
+| `GET /validar`                       | Formulário SSR de validação por código |
+| `POST /obter`                        | Processar busca por e-mail (SSR)       |
+| `POST /validar`                      | Processar validação por código (SSR)   |
 
 ---
 
@@ -515,9 +516,9 @@ usuarios         N ──── N  eventos  (via usuario_eventos)
 
 | Método | Rota                             | Descrição                      |
 | ------ | -------------------------------- | ------------------------------ |
-| `GET`  | `/public/certificados?email=...` | Listar certificados por e-mail |
-| `GET`  | `/public/validar/:codigo`        | Validar por código             |
-| `GET`  | `/public/certificados/:id/pdf`   | Baixar PDF                     |
+| `GET`  | `/api/certificados?email=...`    | Listar certificados por e-mail |
+| `GET`  | `/api/validar/:codigo`           | Validar por código             |
+| `GET`  | `/api/certificados/:id/pdf`      | Baixar PDF                     |
 | `GET`  | `/health`                        | Health check                   |
 | `GET`  | `/api-docs`                      | Documentação Swagger/OpenAPI   |
 

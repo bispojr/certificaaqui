@@ -1,3 +1,6 @@
+Por que não renomear a url https://certificaaqui.com/public/pagina/validar para apenas
+https://certificaaqui.com/validar
+
 Em /public/pagina/buscar, é preciso aparecer tanto o nome de evento quanto o tipo de certificado. Também se pode tirar o link "buscar novamente".
 
 Fazer com que a rota https://certificaaqui.com/validar/EDC-25-PT-109 mostre a validação do certificado.
@@ -7,9 +10,6 @@ Na página https://certificaaqui.com/public/pagina/validar (depois que a valida�
 Garantir que, quando informar o código para validação em https://certificaaqui.com/public/pagina/validar, mesmo com espaços no fim ou no início, a busca se realize da maneira correta.
 
 Na página https://certificaaqui.com/public/pagina/validar, esse botão voltar não tem nada a ver. Tem que tirar ele.
-
-Por que não renomear a url https://certificaaqui.com/public/pagina/validar para apenas
-https://certificaaqui.com/validar
 
 Por que não remover esse link "Meus Certificados" dessa página https://certificaaqui.com/public/pagina/validar?
 

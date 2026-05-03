@@ -51,6 +51,6 @@ describe('View: certificados/obter-lista.hbs', () => {
   it('renderiza link para buscar novamente', () => {
     const html = template({ email: 'x@x.com', certificados: [] })
     expect(html).toMatch(/Buscar novamente/)
-    expect(html).toMatch(/\/public\/pagina\/obter/)
+    expect(html).toMatch(/\/obter/)
   })
 })

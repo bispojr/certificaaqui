@@ -29,7 +29,7 @@
             <dd class='col-sm-8'>{{certificado.created_at}}</dd>
           </dl>
           <a
-            href='/public/certificados/{{certificado.id}}/pdf'
+            href='/api/certificados/{{certificado.id}}/pdf'
             class='btn btn-success'
             target='_blank'
           >
@@ -49,7 +49,7 @@
       </div>
     {{/if}}
 
-    <a href='/public/pagina/validar' class='btn btn-link mt-3'>← Validar outro
+    <a href='/validar' class='btn btn-link mt-3'>← Validar outro
       código</a>
   </div>
 </div>

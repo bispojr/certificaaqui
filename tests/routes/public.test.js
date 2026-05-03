@@ -52,38 +52,38 @@ describe('Rotas públicas de certificados', () => {
     )
   })
 
-  it('GET /public/certificados?email retorna certificados do participante', async () => {
+  it('GET /api/certificados?email retorna certificados do participante', async () => {
     const res = await request(app).get(
-      '/public/certificados?email=maria@teste.com',
+      '/api/certificados?email=maria@teste.com',
     )
     expect(res.status).toBe(200)
     expect(Array.isArray(res.body.certificados)).toBe(true)
     expect(res.body.certificados[0].nome).toBe('Certificado Teste')
   })
 
-  it('GET /public/certificados?email retorna 404 para email inexistente', async () => {
+  it('GET /api/certificados?email retorna 404 para email inexistente', async () => {
     const res = await request(app).get(
-      '/public/certificados?email=naoexiste@teste.com',
+      '/api/certificados?email=naoexiste@teste.com',
     )
     expect(res.status).toBe(404)
   })
 
-  it('GET /public/validar/:codigo retorna certificado válido', async () => {
-    const res = await request(app).get('/public/validar/ABC123')
+  it('GET /api/validar/:codigo retorna certificado válido', async () => {
+    const res = await request(app).get('/api/validar/ABC123')
     expect(res.status).toBe(200)
     expect(res.body.valido).toBe(true)
     expect(res.body.certificado.nome).toBe('Certificado Teste')
   })
 
-  it('GET /public/validar/:codigo retorna 404 para código inválido', async () => {
-    const res = await request(app).get('/public/validar/INVALIDO')
+  it('GET /api/validar/:codigo retorna 404 para código inválido', async () => {
+    const res = await request(app).get('/api/validar/INVALIDO')
     expect(res.status).toBe(404)
     expect(res.body.valido).toBe(false)
   })
 
-  it('GET /public/certificados/:id/pdf retorna PDF válido', async () => {
+  it('GET /api/certificados/:id/pdf retorna PDF válido', async () => {
     const res = await request(app).get(
-      `/public/certificados/${certificado.id}/pdf`,
+      `/api/certificados/${certificado.id}/pdf`,
     )
     expect(res.status).toBe(200)
     expect(res.headers['content-type']).toBe('application/pdf')

@@ -11,25 +11,25 @@ describe('SSR rotas públicas de certificados', () => {
     app.set('view engine', 'hbs')
     app.engine('hbs', require('hbs').__express)
     app.use(express.urlencoded({ extended: false }))
-    app.use('/public', publicRouter)
+    app.use('/', publicRouter)
   })
 
-  it('GET /public/pagina/opcoes renderiza HTML', async () => {
-    const res = await request(app).get('/public/pagina/opcoes')
+  it('GET /opcoes renderiza HTML', async () => {
+    const res = await request(app).get('/opcoes')
     expect(res.status).toBe(200)
     expect(res.headers['content-type']).toMatch(/html/)
     expect(res.text).toMatch(/certificados/i)
   })
 
-  it('GET /public/pagina/obter renderiza HTML', async () => {
-    const res = await request(app).get('/public/pagina/obter')
+  it('GET /obter renderiza HTML', async () => {
+    const res = await request(app).get('/obter')
     expect(res.status).toBe(200)
     expect(res.headers['content-type']).toMatch(/html/)
     expect(res.text).toMatch(/certificado/i)
   })
 
-  it('GET /public/pagina/validar renderiza HTML', async () => {
-    const res = await request(app).get('/public/pagina/validar')
+  it('GET /validar renderiza HTML', async () => {
+    const res = await request(app).get('/validar')
     expect(res.status).toBe(200)
     expect(res.headers['content-type']).toMatch(/html/)
     expect(res.text).toMatch(/validar/i)

@@ -1,6 +1,6 @@
 # Guia de Execução — Testes e Servidor Local
 
-> Última atualização: 2026-04-17 10:51 (BRT)
+> Última atualização: 2026-05-02 21:47 (BRT)
 
 Este guia descreve como executar os testes (Jest e Playwright) e como subir o servidor local com dados de seed para inspeção visual. Também explica os **conflitos de banco** que surgem quando essas atividades se misturam.
 
@@ -24,10 +24,14 @@ Este guia descreve como executar os testes (Jest e Playwright) e como subir o se
 Antes de rodar o servidor local, seed ou testes, suba os containers necessários:
 
 ```bash
-docker-compose up -d
+# Para testes (Jest e Playwright) — sobe todos os serviços necessários:
+docker-compose -f docker-compose.test.yml up -d
+
+# Para inspeção visual local (servidor development) — sobe apenas o banco:
+docker-compose up -d postgres
 ```
 
-Isso garante que o PostgreSQL estará disponível nas portas corretas para todos os ambientes.
+> **Atenção:** `docker-compose up -d` (sem arquivo explícito) sobe também o serviço `app`, que ocupa a porta 3001 e impede o `npm start` de funcionar. Use `docker-compose up -d postgres` para subir apenas o banco ao rodar o servidor localmente.
 
 ---
 
@@ -116,6 +120,12 @@ Use este fluxo quando quiser **ver a aplicação com os olhos** — navegar pela
 
 ### Passo a passo
 
+**Terminal 1 — subir o banco (se ainda não estiver rodando):**
+
+```bash
+docker-compose up -d postgres
+```
+
 **Terminal 1 — subir o servidor:**
 
 ```bash
@@ -124,7 +134,9 @@ NODE_ENV=development node ./bin/www
 npm start
 ```
 
-O servidor ficará disponível em: **http://localhost:3000**
+O servidor ficará disponível em: **http://localhost:3001**
+
+> A porta é definida pela variável `PORT` no arquivo `.env`. Se você alterou esse valor, use a porta correspondente.
 
 **Terminal 2 — popular o banco com dados de seed:**
 
@@ -147,7 +159,7 @@ cleanE2E().then(() => seedE2E()).then(() => {
 | Gestor  | `gestor.e2e@test.com`  | `senha123` |
 | Monitor | `monitor.e2e@test.com` | `senha123` |
 
-Acesse **http://localhost:3000/auth/login** e entre com qualquer uma dessas credenciais.
+Acesse **http://localhost:3001/auth/login** e entre com qualquer uma dessas credenciais.
 
 ### Limpar o banco após a inspeção
 
@@ -165,13 +177,30 @@ cleanE2E().then(() => { console.log('Banco limpo.'); process.exit(0); });
 
 ### Conflito: servidor manual + Playwright (aba Testing ou CLI)
 
-O Playwright usa `reuseExistingServer: true` fora de CI. Se a porta 3000 já tiver um servidor `development` rodando, o Playwright **vai usá-lo** — mas com banco `development` em vez de `e2e`. Resultado: dados errados, testes falham.
+O Playwright usa `reuseExistingServer: true` fora de CI. Se a porta 3001 já tiver um servidor `development` rodando, o Playwright **vai usá-lo** — mas com banco `development` em vez de `e2e`. Resultado: dados errados, testes falham.
 
 **Regra:** Antes de rodar Playwright, pare o servidor `development`.
 
 ```bash
-# Parar qualquer processo na porta 3000
-kill $(lsof -t -i:3000) 2>/dev/null || true
+# Parar qualquer processo na porta 3001
+kill $(lsof -t -i:3001) 2>/dev/null || true
+```
+
+### Conflito: container `app` do docker-compose ocupando a porta 3001
+
+O `docker-compose up -d` (sem arquivo explícito) sobe o serviço `app` mapeado para a porta 3001. Isso impede o `npm start` de funcionar.
+
+**Solução:** Pare o container antes de subir o servidor local:
+
+```bash
+docker stop certifique-me-app_test-1 2>/dev/null || docker-compose stop app
+npm start
+```
+
+Ou evite o problema subindo apenas o banco:
+
+```bash
+docker-compose up -d postgres
 ```
 
 ### Conflito: banco sujo entre execuções de Playwright
@@ -194,6 +223,6 @@ Não há conflito de banco (bancos separados), mas ambos podem tentar subir um s
 | Rodar Playwright completo     | `npx playwright test`                                 |
 | Ver Playwright com browser    | `npx playwright test --headed`                        |
 | Depurar um spec passo a passo | `npx playwright test --debug tests/e2e/admin.spec.js` |
-| Subir servidor + seed visual  | `npm start` + seed no Terminal 2                      |
-| Parar servidor na porta 3000  | `kill $(lsof -t -i:3000)`                             |
+| Subir servidor + seed visual  | `docker-compose up -d postgres` + `npm start` + seed  |
+| Parar servidor na porta 3001  | `kill $(lsof -t -i:3001)`                             |
 | Limpar banco E2E manualmente  | `cleanE2E()` via node (ver acima)                     |

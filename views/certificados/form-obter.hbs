@@ -4,7 +4,7 @@
     {{#if mensagem}}
       <div class='alert alert-danger'>{{mensagem}}</div>
     {{/if}}
-    <form method='POST' action='/public/pagina/buscar' id='form-obter'>
+    <form method='POST' action='/obter' id='form-obter'>
       <div class='mb-3'>
         <label for='email' class='form-label'>E-mail</label>
         <input
@@ -18,6 +18,6 @@
       </div>
       <button type='submit' class='btn btn-primary'>Buscar certificados</button>
     </form>
-    <a href='/public/pagina/opcoes' class='btn btn-link mt-3'>← Voltar</a>
+    <a href='/opcoes' class='btn btn-link mt-3'>← Voltar</a>
   </div>
 </div>

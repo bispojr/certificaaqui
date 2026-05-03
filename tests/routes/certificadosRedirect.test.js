@@ -2,10 +2,10 @@ const request = require('supertest')
 const app = require('../../app')
 
 describe('GET /certificados redirect', () => {
-  it('deve redirecionar para /public/pagina/opcoes', async () => {
+  it('deve redirecionar para /opcoes', async () => {
     const res = await request(app).get('/certificados')
     expect(res.status).toBe(302)
-    expect(res.headers.location).toBe('/public/pagina/opcoes')
+    expect(res.headers.location).toBe('/opcoes')
   })
 
   it('não afeta rotas REST /certificados/:id', async () => {

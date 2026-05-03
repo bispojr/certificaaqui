@@ -65,31 +65,31 @@ describe('SSR Público - POST', () => {
     )
   })
 
-  it('POST /public/pagina/buscar - sucesso', async () => {
+  it('POST /obter - sucesso', async () => {
     const res = await request(app)
-      .post('/public/pagina/buscar')
+      .post('/obter')
       .type('form')
       .send({ email: 'fulano@teste.com' })
     expect(res.status).toBe(200)
     expect(res.text).toMatch(/Seus certificados/i)
     expect(res.text).toMatch(/Fulano/)
     expect(res.text).toMatch(
-      /href=['"]?\/public\/certificados\/[0-9]+\/pdf['"]?/,
+      /href=['"]\/api\/certificados\/[0-9]+\/pdf['"]?/,
     )
   })
 
-  it('POST /public/pagina/buscar - não encontrado', async () => {
+  it('POST /obter - não encontrado', async () => {
     const res = await request(app)
-      .post('/public/pagina/buscar')
+      .post('/obter')
       .type('form')
       .send({ email: 'naoexiste@teste.com' })
     expect(res.status).toBe(200)
     expect(res.text).toMatch(/Nenhum participante encontrado com este e-mail/i)
   })
 
-  it('POST /public/pagina/validar - sucesso', async () => {
+  it('POST /validar - sucesso', async () => {
     const res = await request(app)
-      .post('/public/pagina/validar')
+      .post('/validar')
       .type('form')
       .send({ codigo: 'ABC123' })
     expect(res.status).toBe(200)
@@ -97,9 +97,9 @@ describe('SSR Público - POST', () => {
     expect(res.text).toMatch(/ABC123/)
   })
 
-  it('POST /public/pagina/validar - código inválido', async () => {
+  it('POST /validar - código inválido', async () => {
     const res = await request(app)
-      .post('/public/pagina/validar')
+      .post('/validar')
       .type('form')
       .send({ codigo: 'ZZZ999' })
     expect(res.status).toBe(200)

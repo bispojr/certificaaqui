@@ -34,7 +34,7 @@ describe('View: certificados/validar-resultado.hbs', () => {
     expect(html).toMatch(/Evento Teste/)
     expect(html).toMatch(/emitido/)
     expect(html).toMatch(/2026-03-26/)
-    expect(html).toMatch(/href='\/public\/certificados\/42\/pdf'/)
+    expect(html).toMatch(/href='\/api\/certificados\/42\/pdf'/)
     expect(html).not.toMatch(/Inválido/)
   })
 
@@ -49,6 +49,6 @@ describe('View: certificados/validar-resultado.hbs', () => {
     const html = template({ valido: false })
     // Aceita quebras de linha e espaços extras entre as palavras
     expect(html).toMatch(/Validar\s*outro\s*código/)
-    expect(html).toMatch(/href='\/public\/pagina\/validar'/)
+    expect(html).toMatch(/href='\/validar'/)
   })
 })

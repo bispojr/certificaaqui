@@ -30,7 +30,7 @@ test('UC-P02 — busca de certificados por e-mail', async ({ page }) => {
 })
 
 test('UC-P03 — validação de certificado por código', async ({ page }) => {
-  await page.goto('/public/pagina/validar')
+  await page.goto('/validar')
   await page.fill('input[name="codigo"]', 'E2E-2026-001')
   await Promise.all([
     page.waitForNavigation(),
@@ -41,7 +41,7 @@ test('UC-P03 — validação de certificado por código', async ({ page }) => {
 })
 
 test('UC-P04 — exibe mensagem para certificado inválido', async ({ page }) => {
-  await page.goto('/public/pagina/validar')
+  await page.goto('/validar')
   await page.fill('input[name="codigo"]', 'CODIGO-INVALIDO')
   await Promise.all([
     page.waitForNavigation(),

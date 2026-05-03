@@ -23,6 +23,7 @@ var usuariosRouter = require('./src/routes/usuarios')
 var healthRouter = require('./src/routes/health')
 var adminRouter = require('./src/routes/admin')
 var publicRouter = require('./src/routes/public')
+var apiRouter = require('./src/routes/api')
 
 var app = express()
 
@@ -173,7 +174,7 @@ app.use('/eventos', eventosRouter)
 app.get('/certificados', (req, res, next) => {
   const auth = req.headers['authorization']
   if (auth && auth.startsWith('Bearer ')) return next()
-  return res.redirect('/public/pagina/opcoes')
+  return res.redirect('/opcoes')
 })
 app.use('/certificados', certificadosRouter)
 app.use('/tipos-certificados', tiposCertificadosRouter)
@@ -181,7 +182,8 @@ app.use('/usuarios', usuariosRouter)
 const usuariosCrudRouter = require('./src/routes/usuarios-crud')
 app.use('/', usuariosCrudRouter)
 app.use('/admin', adminRouter)
-app.use('/public', publicRouter)
+app.use('/api', apiRouter)
+app.use('/', publicRouter)
 app.use(healthRouter)
 
 // catch 404 and forward to error handler
