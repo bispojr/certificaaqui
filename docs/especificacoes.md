@@ -723,7 +723,7 @@ Máx. 10 tentativas/15 min por IP. HTTP 429 se excedido.
 ---
 
 UF-18: **`GET /certificados` redireciona para SSR sem Bearer token.**  
-Se acessado por browser (sem `Authorization: Bearer`), redireciona para `/public/pagina/opcoes`.  
+Se acessado por browser (sem `Authorization: Bearer`), redireciona para a página pública inicial (ver rota configurada em `app.js`).  
 **Evidência:** `app.js` (middleware condicional)
 
 ---
