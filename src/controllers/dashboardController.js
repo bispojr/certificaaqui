@@ -6,6 +6,9 @@ const {
   Certificado,
 } = require('../models')
 
+
+const resourceMeta = require('../resourceMeta')
+
 async function dashboard(req, res) {
   try {
     if (!req.usuario) {
@@ -50,6 +53,7 @@ async function dashboard(req, res) {
         totalCertificados,
         totalCertificadosPendentes,
         ultimosCertificados,
+        resourceMeta,
       })
     }
 
@@ -77,6 +81,7 @@ async function dashboard(req, res) {
       title: 'Dashboard',
       totalCertificados,
       totalParticipantes,
+      resourceMeta,
     })
   } catch (error) {
     return res.status(500).render('error', { message: error.message })

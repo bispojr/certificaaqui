@@ -3,8 +3,8 @@
 <div data-testid="admin-dashboard-root">
 <!-- Certificação -->
 <h5 class="mt-4 mb-3 text-muted">
-  <i class="fa-solid fa-certificate me-2 text-success"></i>
-  Certificação
+  <i class="fa-solid {{resourceMeta.grupos.certificacao.icon}} me-2 text-success"></i>
+  {{resourceMeta.grupos.certificacao.label}}
 </h5>
 <div class="row g-4">
   <div class="col-12 col-sm-6 col-xl-4">
@@ -15,7 +15,7 @@
             <div class="card-label">Certificados{{#if usuario.isGestor}} (seus eventos){{/if}}</div>
             <div class="card-value text-info">{{totalCertificados}}</div>
           </div>
-          <i class="fa-solid fa-file-lines card-icon text-info"></i>
+          <i class="fa-solid {{resourceMeta.certificados.icon}} card-icon text-info"></i>
         </div>
       </div>
     </a>
@@ -29,7 +29,7 @@
             <div class="card-label">Tipos</div>
             <div class="card-value text-success">{{totalTipos}}</div>
           </div>
-          <i class="fa-solid fa-certificate card-icon text-success"></i>
+          <i class="fa-solid {{resourceMeta.tiposCertificados.icon}} card-icon text-success"></i>
         </div>
       </div>
     </a>
@@ -52,8 +52,8 @@
 
 <!-- Gestão de eventos -->
 <h5 class="mt-5 mb-3 text-muted">
-  <i class="fa-solid fa-calendar-days me-2 text-primary"></i>
-  Eventos
+  <i class="fa-solid {{resourceMeta.grupos.eventos.icon}} me-2 text-primary"></i>
+  {{resourceMeta.grupos.eventos.label}}
 </h5>
 <div class="row g-4">
   <div class="col-12 col-sm-6 col-xl-4">
@@ -64,7 +64,7 @@
             <div class="card-label">Eventos{{#if usuario.isGestor}} (seus eventos){{/if}}</div>
             <div class="card-value text-primary">{{totalEventos}}</div>
           </div>
-          <i class="fa-solid fa-calendar-days card-icon text-primary"></i>
+          <i class="fa-solid {{resourceMeta.eventos.icon}} card-icon text-primary"></i>
         </div>
       </div>
     </a>
@@ -77,7 +77,7 @@
             <div class="card-label">Participantes{{#if usuario.isGestor}} (seus eventos){{/if}}</div>
             <div class="card-value text-warning">{{totalParticipantes}}</div>
           </div>
-          <i class="fa-solid fa-users card-icon text-warning"></i>
+          <i class="fa-solid {{resourceMeta.participantes.icon}} card-icon text-warning"></i>
         </div>
       </div>
     </a>
@@ -86,8 +86,8 @@
 
 <!-- Administração -->
 <h5 class="mt-5 mb-3 text-muted">
-  <i class="fa-solid fa-user-shield me-2 text-danger"></i>
-  Administração
+  <i class="fa-solid {{resourceMeta.grupos.administracao.icon}} me-2 text-danger"></i>
+  {{resourceMeta.grupos.administracao.label}}
 </h5>
 <div class="row g-4">
   {{#if usuario.isAdmin}}
@@ -99,7 +99,7 @@
             <div class="card-label">Usuários</div>
             <div class="card-value text-danger">{{totalUsuarios}}</div>
           </div>
-          <i class="fa-solid fa-user-shield card-icon text-danger"></i>
+          <i class="fa-solid {{resourceMeta.usuarios.icon}} card-icon text-danger"></i>
         </div>
       </div>
     </a>
