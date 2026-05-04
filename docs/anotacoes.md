@@ -1,13 +1,15 @@
-É preciso garantir uma padronização de ícones, como uma identidade visual. Todo evento (ou página associada a ele) tem o mesmo tipo de ícone (e talvez cor, se necessário). Trabalhar isso para todos as páginas principais (e seus grupos com certificação, eventos e administração).
-
-Sempre olhar o link dos certificados, principalmente da função "obterArquivo", para poder garantir a geração correta dos certificados.
-https://github.com/EduCompBR/educompbrasil-site/blob/master/routes/simposio/2025/educomp/pt-BR/certificado.js
-
 Existe essa rota public/pagina/buscar? Precisa?
 
 Em POST /validar, é preciso aparecer o tipo de certificado.
 
 Fazer com que a rota https://certificaaqui.com/validar/EDC-25-PT-109 mostre a validação do certificado.
+
+Padronização de ícones realizadas. Estender para as subpáginas (bebendo de resourceMeta):
+- Eventos
+- Certificados
+- Tipos
+- Usuários
+- etc.
 
 =============================
 Página Inicial
