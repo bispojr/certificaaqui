@@ -185,3 +185,8 @@ Never:
 - Remove tests without a strong justification
 - Introduce breaking changes without updating tests
 - Ignore the backlog or specifications
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->
