@@ -1,0 +1,66 @@
+<div class='row justify-content-center mt-5'>
+  <div class='col-md-6 col-lg-5'>
+    <div class='card shadow-sm'>
+      <div class='card-body'>
+        <h4 class='card-title mb-2 text-center'>Onboarding inicial</h4>
+        <p class='text-muted text-center mb-4'>
+          Configure o primeiro usuário administrador para acessar a área administrativa.
+        </p>
+
+        <form action='/onboarding' method='POST'>
+          <div class='mb-3'>
+            <label for='nome' class='form-label'>Nome</label>
+            <input
+              type='text'
+              class='form-control'
+              id='nome'
+              name='nome'
+              required
+              autocomplete='name'
+            />
+          </div>
+
+          <div class='mb-3'>
+            <label for='email' class='form-label'>E-mail</label>
+            <input
+              type='email'
+              class='form-control'
+              id='email'
+              name='email'
+              required
+              autocomplete='email'
+            />
+          </div>
+
+          <div class='mb-3'>
+            <label for='senha' class='form-label'>Senha</label>
+            <input
+              type='password'
+              class='form-control'
+              id='senha'
+              name='senha'
+              required
+              autocomplete='new-password'
+            />
+          </div>
+
+          <div class='mb-3'>
+            <label for='confirmarSenha' class='form-label'>Confirmar senha</label>
+            <input
+              type='password'
+              class='form-control'
+              id='confirmarSenha'
+              name='confirmarSenha'
+              required
+              autocomplete='new-password'
+            />
+          </div>
+
+          <div class='d-grid'>
+            <button type='submit' class='btn btn-primary'>Criar administrador</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
