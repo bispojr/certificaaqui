@@ -1,13 +1,17 @@
 <div class='row justify-content-center mt-5'>
-  <div class='col-md-6 col-lg-5'>
+  <div class='col-12 col-md-6 col-lg-5'>
     <div class='card shadow-sm'>
+      <div class='card-header'>
+        <h5 class='mb-0'>
+          <i class='fa-solid fa-user-plus me-2 text-success'></i>Onboarding inicial
+        </h5>
+      </div>
       <div class='card-body'>
-        <h4 class='card-title mb-2 text-center'>Onboarding inicial</h4>
-        <p class='text-muted text-center mb-4'>
+        <p class='text-muted mb-4'>
           Configure o primeiro usuário administrador para acessar a área administrativa.
         </p>
 
-        <form action='/onboarding' method='POST'>
+        <form action='/onboarding' method='POST' novalidate>
           <div class='mb-3'>
             <label for='nome' class='form-label'>Nome</label>
             <input
@@ -42,9 +46,26 @@
               required
               autocomplete='new-password'
             />
+            <ul class='list-unstyled mt-2 small text-muted' id='senhaRequisitos'>
+              <li id='req-tamanho'>
+                <i class='fa-solid fa-circle-xmark text-danger me-1'></i> Mínimo 8 caracteres
+              </li>
+              <li id='req-maiuscula'>
+                <i class='fa-solid fa-circle-xmark text-danger me-1'></i> Ao menos uma letra maiúscula
+              </li>
+              <li id='req-minuscula'>
+                <i class='fa-solid fa-circle-xmark text-danger me-1'></i> Ao menos uma letra minúscula
+              </li>
+              <li id='req-numero'>
+                <i class='fa-solid fa-circle-xmark text-danger me-1'></i> Ao menos um número
+              </li>
+              <li id='req-especial'>
+                <i class='fa-solid fa-circle-xmark text-danger me-1'></i> Ao menos um caractere especial (!@#$%^&* etc.)
+              </li>
+            </ul>
           </div>
 
-          <div class='mb-3'>
+          <div class='mb-4'>
             <label for='confirmarSenha' class='form-label'>Confirmar senha</label>
             <input
               type='password'
@@ -54,13 +75,72 @@
               required
               autocomplete='new-password'
             />
+            <div id='confirmarFeedback' class='mt-1 small'></div>
           </div>
 
-          <div class='d-grid'>
-            <button type='submit' class='btn btn-primary'>Criar administrador</button>
+          <div class='d-flex gap-2'>
+            <button type='submit' class='btn btn-primary' id='btnCriar' disabled>
+              <i class='fa-solid fa-floppy-disk me-1'></i> Criar administrador
+            </button>
           </div>
         </form>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+  const senhaInput = document.getElementById('senha')
+  const confirmarSenhaInput = document.getElementById('confirmarSenha')
+  const btnCriar = document.getElementById('btnCriar')
+
+  const checks = {
+    tamanho: (v) => v.length >= 8,
+    maiuscula: (v) => /[A-Z]/.test(v),
+    minuscula: (v) => /[a-z]/.test(v),
+    numero: (v) => /[0-9]/.test(v),
+    especial: (v) => /[^A-Za-z0-9]/.test(v),
+  }
+
+  function atualizarRequisitos() {
+    const valor = senhaInput.value
+    let total = 0
+    for (const [chave, fn] of Object.entries(checks)) {
+      const ok = fn(valor)
+      const el = document.getElementById('req-' + chave)
+      el.innerHTML = ok
+        ? '<i class="fa-solid fa-circle-check text-success me-1"></i>' + el.textContent.trim()
+        : '<i class="fa-solid fa-circle-xmark text-danger me-1"></i>' + el.textContent.trim()
+      if (ok) total++
+    }
+    validarFormulario(total === 5)
+  }
+
+  function validarFormulario(senhaValida) {
+    const confirmacao = confirmarSenhaInput.value
+    const novaSenha = senhaInput.value
+    const feedback = document.getElementById('confirmarFeedback')
+    const coincidem = confirmacao.length > 0 && confirmacao === novaSenha
+
+    if (confirmacao.length > 0) {
+      if (coincidem) {
+        feedback.innerHTML =
+          '<span class="text-success"><i class="fa-solid fa-check me-1"></i>Senhas coincidem</span>'
+      } else {
+        feedback.innerHTML =
+          '<span class="text-danger"><i class="fa-solid fa-xmark me-1"></i>Senhas não coincidem</span>'
+      }
+    } else {
+      feedback.innerHTML = ''
+    }
+
+    btnCriar.disabled = !(senhaValida && coincidem)
+  }
+
+  senhaInput.addEventListener('input', atualizarRequisitos)
+  confirmarSenhaInput.addEventListener('input', () => {
+    const senhaValida = Object.values(checks).every((fn) => fn(senhaInput.value))
+    validarFormulario(senhaValida)
+  })
+</script>
+
