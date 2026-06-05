@@ -76,9 +76,9 @@ app.use(express.static(path.join(__dirname, 'public')))
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
-    title: 'Certifique-me API',
+    title: 'CertificaAqui API',
     version: '1.0.0',
-    description: 'Documentação da API Certifique-me',
+    description: 'Documentação da API CertificaAqui',
   },
   servers: [
     {
