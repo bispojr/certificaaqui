@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     env:
       NODE_ENV: test
     steps:
@@ -33,9 +34,9 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '22'
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Install docker-compose
         run: sudo apt-get update && sudo apt-get install -y docker-compose
       - name: Clean up Docker containers (before)
@@ -68,6 +69,8 @@ jobs:
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: docker-compose -f docker-compose.test.yml exec -T app_test sh -c 'npm run test:coverage'
       - name: Install Playwright browsers
+        env:
+          DEBUG: pw:install
         run: npx playwright install chromium
       - name: Run E2E tests
         env:
