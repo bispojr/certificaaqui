@@ -68,7 +68,7 @@ jobs:
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: docker-compose -f docker-compose.test.yml exec -T app_test sh -c 'npm run test:coverage'
       - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
+        run: npx playwright install chromium
       - name: Run E2E tests
         env:
           DB_USER: postgres
