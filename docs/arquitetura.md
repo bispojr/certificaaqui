@@ -1,4 +1,4 @@
-# Certifique-me — Arquitetura
+# CertificaAqui — Arquitetura
 
 ## Padrão Arquitetural
 
@@ -19,7 +19,7 @@
 
 ```mermaid
 graph TD
-  Usuario --> Sistema[Certifique-me]
+  Usuario --> Sistema[CertificaAqui]
   Sistema --> Banco[(PostgreSQL)]
   Sistema --> Email[Serviço de Email]
 ```

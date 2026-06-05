@@ -1,6 +1,6 @@
 # Especificação de Requisitos de Software (SRS)
 
-**Sistema:** Certifique-me  
+**Sistema:** CertificaAqui  
 **Versão:** 2.0  
 **Data:** 2026-04-30  
 **Atualizado por:** Engenharia reversa do código-fonte  
@@ -10,7 +10,7 @@
 
 # Visão Geral do Sistema
 
-O **Certifique-me** é um sistema web de gestão e emissão de certificados digitais para eventos acadêmicos e técnicos. O sistema permite que organizadores de eventos criem e gerenciem certificados parametrizáveis para os participantes, com controle de acesso por perfil de usuário.
+O **CertificaAqui** é um sistema web de gestão e emissão de certificados digitais para eventos acadêmicos e técnicos. O sistema permite que organizadores de eventos criem e gerenciem certificados parametrizáveis para os participantes, com controle de acesso por perfil de usuário.
 
 O público em geral pode consultar, validar e baixar certificados em PDF sem necessidade de autenticação. Usuários internos (gestores e monitores) operam dentro do escopo do(s) evento(s) ao qual estão vinculados, enquanto administradores têm acesso irrestrito a todos os recursos.
 
@@ -52,11 +52,16 @@ O sistema dispõe de dois modos de interação:
 FR-1: O sistema deve permitir criar, listar, atualizar e remover participantes (CRUD completo).  
 FR-2: O campo `email` do participante deve ser único e ter formato válido.  
 FR-3: O campo `nomeCompleto` do participante é obrigatório e deve ter no mínimo 3 caracteres.  
-FR-4: A remoção de participantes deve ser lógica (soft delete); os registros devem poder ser restaurados.
+FR-4: A remoção de participantes deve ser lógica (soft delete); os registros devem poder ser restaurados.  
+FR-58: Participantes são entidades globais no sistema. O vínculo entre um participante e um evento é armazenado na tabela de junção `participante_eventos` (N:N). Gestores e monitores visualizam e gerenciam apenas participantes vinculados aos seus eventos via `participante_eventos`.  
+FR-59: No momento de criação de participante por gestor ou monitor, o sistema deve executar lookup por `email`: se já existir participante com aquele e-mail, deve criar apenas o vínculo em `participante_eventos`; se não existir, deve criar o participante e o vínculo. O campo `evento_id` é obrigatório no request para gestores e monitores.  
+FR-60: A remoção de participante por gestor ou monitor deve realizar soft delete apenas do vínculo em `participante_eventos`, preservando o registro global do participante e seus certificados em outros eventos. Apenas administradores podem realizar soft delete global do participante.  
+FR-61: O sistema deve exigir aceite de Termo de Responsabilidade de Dados pelo gestor ou monitor antes da primeira inserção de participantes. O aceite deve ser registrado com data, versão do termo e identificação do usuário. O termo declara que os dados inseridos foram coletados de fontes de inscrição sob responsabilidade do gestor/organização e que a base legal de tratamento (LGPD) é de responsabilidade do controlador (gestor/organização), não do operador (CertificaAqui).
 
 ## Gestão de Eventos
 
 FR-5: O sistema deve permitir criar, listar, atualizar e remover eventos (CRUD completo).  
+FR-62: A listagem de eventos (`GET /eventos`) deve retornar apenas os eventos vinculados ao usuário autenticado para gestores e monitores. Administradores visualizam todos os eventos do sistema.  
 FR-6: O campo `nome` do evento é obrigatório e deve ter no mínimo 3 caracteres.  
 FR-7: O campo `ano` do evento é obrigatório e deve ser um inteiro maior ou igual a 2000.  
 FR-8: O campo `codigo_base` do evento é obrigatório, deve ser único e conter exatamente três letras alfabéticas (ex.: `EDU`, `CMP`, `OFC`).  
@@ -130,7 +135,7 @@ FR-57: Todo usuário autenticado deve poder alterar sua própria senha via inter
 FR-34: O perfil **admin** deve ter acesso irrestrito a todos os recursos do sistema.  
 FR-35: O perfil **gestor** deve ter permissão para criar, editar e remover tipos de certificados de seus eventos (P1) e inserir/editar/cancelar certificados (P2).  
 FR-36: O perfil **monitor** pode listar e visualizar certificados e participantes dos seus eventos e criar certificados (P2). Não pode criar tipos de certificados.  
-FR-37: O middleware `scopedEvento` deve garantir que gestores e monitores operem exclusivamente dentro dos eventos ao qual estão vinculados. Para listagens (GET sem ID), o filtro de `evento_id` é injetado automaticamente. Para usuários com múltiplos eventos, o filtro aceita array de IDs.  
+FR-37: Gestores e monitores devem operar exclusivamente sobre os dados dos eventos aos quais estão vinculados. Toda operação de listagem, visualização, criação, atualização e remoção realizada por gestor ou monitor deve ser restrita ao escopo dos seus eventos. Administradores têm acesso irrestrito a todos os recursos.  
 FR-38: Rotas administrativas da API REST devem ser protegidas por `auth` (JWT Bearer) e `rbac`.
 
 ## Geração de Texto do Certificado
@@ -156,7 +161,53 @@ NFR-7: **Manutenibilidade — Carregamento Explícito de Modelos:** O `models/in
 NFR-8: **Testabilidade:** Banco PostgreSQL dedicado para testes, isolado de desenvolvimento e produção. SQLite usado em testes unitários.  
 NFR-9: **Portabilidade:** Executável via Docker com `docker-compose.yml` (produção) e `docker-compose.test.yml` (testes).  
 NFR-10: **Rastreabilidade:** Todos os registros devem ter `created_at`, `updated_at` e `deleted_at`.  
-NFR-11: **Segurança — Upload:** Uploads de template restritos a PNG/JPEG, máx. 2 MB (validado por `multer`).
+NFR-11: **Segurança — Upload:** Uploads de template restritos a PNG/JPEG, máx. 2 MB (validado por `multer`).  
+NFR-12: **Conformidade LGPD — Responsabilidade do Controlador:** O sistema opera como operador de dados (LGPD Art. 5º, VII). Gestores e monitores são os controladores dos dados de participantes que inserem. O aceite do Termo de Responsabilidade (FR-61) é o mecanismo de registro dessa responsabilidade. Nenhum dado de participante deve ser coletado sem aceite prévio do Termo pelo gestor/monitor responsável.
+
+---
+
+# Diretrizes Arquiteturais de Fronteira (Normativas)
+
+Esta seção consolida decisões arquiteturais aprovadas para garantir invariância entre superfícies (API e SSR) e governança de segurança no contexto brownfield.
+
+## Contrato Canônico do Principal Autenticado
+
+1. O principal autenticado deve seguir contrato único e serializável em API e SSR, com os atributos mínimos: `subjectId`, `role`, `authChannel`, `sessionId` ou `tokenId`, `tenantScopeMode`.
+2. Capacidades ORM e métodos de associação não integram o contrato canônico do principal autenticado.
+3. A resolução de escopo de eventos é separada da identidade autenticada e deve resultar em `req.contextoAutorizacao.eventoIds`.
+4. Para `admin`, o modo canônico é escopo global com `eventoIds = null`.
+5. Para `gestor` e `monitor`, falha determinística na resolução de escopo implica negação segura da operação.
+
+## Critério Canônico de Operação de Negócio para RBAC
+
+Uma operação de negócio é definida pelo quíntuplo:
+
+1. Intento funcional.
+2. Recurso de domínio alvo.
+3. Efeito de estado esperado.
+4. Escopo de dados/tenant aplicável.
+5. Classe de risco de segurança e conformidade.
+
+Regras normativas:
+
+1. API e SSR com mesmo quíntuplo representam a mesma operação de negócio e devem ter o mesmo perfil mínimo de RBAC.
+2. Divergência de perfil mínimo para o mesmo quíntuplo é não conformidade arquitetural.
+3. Exceções por superfície só são válidas com justificativa formal em ADR complementar e rastreabilidade explícita neste SRS.
+
+## Taxonomia Canônica de Dados Públicos
+
+Todo atributo exposto em endpoint público deve ser classificado como:
+
+1. `PUBLIC_MIN`: estritamente necessário para validação de autenticidade.
+2. `PUBLIC_COND`: permitido apenas com validação formal de produto e jurídico.
+3. `RESTRICTED`: permitido somente em contexto autenticado e autorizado.
+4. `INTERNAL`: proibido em endpoints públicos.
+
+Regras normativas:
+
+1. Em endpoints públicos, a política padrão é default deny: campo sem classificação explícita não pode ser exposto.
+2. Baseline obrigatório para validação pública: código de validação, nome do tipo de certificado, status e referência temporal relevante quando aplicável.
+3. E-mail, IDs internos/FKs e `valores_dinamicos` completos não integram o baseline público mínimo.
 
 ---
 
