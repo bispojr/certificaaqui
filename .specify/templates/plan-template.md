@@ -31,7 +31,7 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-Verify compliance with the Certifique-me Constitution (`.specify/memory/constitution.md`):
+Verify compliance with the CertificaAqui Constitution (`.specify/memory/constitution.md`):
 
 - [ ] **I. Fonte de Verdade** — `docs/especificacoes.md` and `docs/backlog.md` consulted; feature does not contradict them.
 - [ ] **II. Test-First** — Tests will be written before implementation; `npm run check` must pass at completion.

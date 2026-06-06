@@ -16,7 +16,7 @@ Templates updated:
 Follow-up TODOs: none
 -->
 
-# Certifique-me Constitution
+# CertificaAqui Constitution
 
 ## Core Principles
 
