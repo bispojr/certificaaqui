@@ -5,6 +5,8 @@ description: "Task list template for feature implementation"
 
 # Tasks: [FEATURE NAME]
 
+> Idioma obrigatório para este artefato: português brasileiro (pt-BR), com ortografia oficial, acentuação e cedilha preservadas. Revisar ortografia e nomenclatura antes de finalizar.
+
 **Input**: Design documents from `/specs/[###-feature-name]/`
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 

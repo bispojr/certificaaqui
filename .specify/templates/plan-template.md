@@ -1,5 +1,7 @@
 # Implementation Plan: [FEATURE]
 
+> Idioma obrigatório para este artefato: português brasileiro (pt-BR), com ortografia oficial, acentuação e cedilha preservadas. Revisar ortografia e nomenclatura antes de finalizar.
+
 **Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
 **Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
 

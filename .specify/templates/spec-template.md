@@ -1,5 +1,7 @@
 # Feature Specification: [FEATURE NAME]
 
+> Idioma obrigatório para este artefato: português brasileiro (pt-BR), com ortografia oficial, acentuação e cedilha preservadas. Revisar ortografia e nomenclatura antes de finalizar.
+
 **Feature Branch**: `[###-feature-name]`  
 **Created**: [DATE]  
 **Status**: Draft  

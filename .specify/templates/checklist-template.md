@@ -1,5 +1,7 @@
 # [CHECKLIST TYPE] Checklist: [FEATURE NAME]
 
+> Idioma obrigatório para este artefato: português brasileiro (pt-BR), com ortografia oficial, acentuação e cedilha preservadas. Revisar ortografia e nomenclatura antes de finalizar.
+
 **Purpose**: [Brief description of what this checklist covers]
 **Created**: [DATE]
 **Feature**: [Link to spec.md or relevant documentation]
