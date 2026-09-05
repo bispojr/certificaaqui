@@ -2,9 +2,14 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - 001-auth-scope-convergence
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - 001-auth-scope-convergence
+  workflow_dispatch:
 
 jobs:
   test:
