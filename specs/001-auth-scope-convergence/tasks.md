@@ -68,16 +68,16 @@
 
 **Critério independente de validação**: operações P1 restritas usam apenas canal canônico de escopo; falhas determinísticas de resolução geram negação segura.
 
-- [ ] T020 [US2] Implementar resolvedor canônico de escopo de eventos em src/services/auth/resolveAuthorizationScope.js (depende de T019)
-- [ ] T021 [P] [US2] Aplicar resolvedor de escopo no pipeline API em src/middlewares/scopedEvento.js (depende de T020)
-- [ ] T022 [P] [US2] Aplicar resolvedor de escopo no pipeline SSR em src/middlewares/authSSR.js (depende de T020)
-- [ ] T023 [US2] Introduzir política de negação segura para gestor/monitor em falha determinística em src/services/auth/scopeGuard.js (depende de T021, T022)
-- [ ] T024 [US2] Remover uso de req.query como canal de segurança nos controladores mapeados em src/controllers/certificadoController.js (depende de T023)
-- [ ] T025 [P] [US2] Remover uso de req.query como canal de segurança nos controladores SSR mapeados em src/controllers/certificadoSSRController.js (depende de T023)
-- [ ] T026 [P] [US2] Criar testes unit para resolveAuthorizationScope e scopeGuard em tests/services/authorization-scope.unit.test.js
-- [ ] T027 [P] [US2] Criar testes de integração de negação segura em falha determinística em tests/middleware/authorization-scope.integration.test.js
-- [ ] T028 [P] [US2] Criar teste e2e por perfil (admin, gestor, monitor) para scoping canônico em tests/e2e/authorization-scope.e2e.spec.js
-- [ ] T029 [US2] Executar gate da Onda 2 e atualizar matriz de conformidade parcial em docs/auditorias/07/gate-onda-2.md (depende de T024, T025, T026, T027, T028)
+- [x] T020 [US2] Implementar resolvedor canônico de escopo de eventos em src/services/auth/resolveAuthorizationScope.js (depende de T019)
+- [x] T021 [P] [US2] Aplicar resolvedor de escopo no pipeline API em src/middlewares/scopedEvento.js (depende de T020)
+- [x] T022 [P] [US2] Aplicar resolvedor de escopo no pipeline SSR em src/middlewares/authSSR.js (depende de T020)
+- [x] T023 [US2] Introduzir política de negação segura para gestor/monitor em falha determinística em src/services/auth/scopeGuard.js (depende de T021, T022)
+- [x] T024 [US2] Remover uso de req.query como canal de segurança nos controladores mapeados em src/controllers/certificadoController.js (depende de T023)
+- [x] T025 [P] [US2] Remover uso de req.query como canal de segurança nos controladores SSR mapeados em src/controllers/certificadoSSRController.js (depende de T023)
+- [x] T026 [P] [US2] Criar testes unit para resolveAuthorizationScope e scopeGuard em tests/services/authorization-scope.unit.test.js
+- [x] T027 [P] [US2] Criar testes de integração de negação segura em falha determinística em tests/middleware/authorization-scope.integration.test.js
+- [x] T028 [P] [US2] Criar teste e2e por perfil (admin, gestor, monitor) para scoping canônico em tests/e2e/authorization-scope.e2e.spec.js
+- [x] T029 [US2] Executar gate da Onda 2 e atualizar matriz de conformidade parcial em docs/auditorias/07/gate-onda-2.md (depende de T024, T025, T026, T027, T028)
 
 **Gate da Onda 2**:
 
