@@ -93,20 +93,20 @@
 
 **Critério independente de validação**: operações escopadas P1 exigem eventoIds explícito para perfis restritos; API e SSR compartilham perfil mínimo idêntico por operação equivalente.
 
-- [ ] T030 [US3] Criar utilitário de enforcement canônico por escopo no service layer em src/services/auth/enforceTenantScope.js (depende de T029)
-- [ ] T031 [P] [US3] Aplicar enforcement de escopo em serviços de certificados em src/services/certificadoService.js (depende de T030)
-- [ ] T032 [P] [US3] Aplicar enforcement de escopo em serviços de participantes em src/services/participanteService.js (depende de T030)
-- [ ] T033 [P] [US3] Aplicar enforcement de escopo em serviços de eventos em src/services/eventoService.js (depende de T030)
-- [ ] T034 [US1] Definir catálogo de minimumRole por operationKey (quíntuplo) em src/services/auth/operationPolicyCatalog.js (depende de T029)
-- [ ] T035 [P] [US1] Integrar catálogo de minimumRole no fluxo API em src/middlewares/rbac.js (depende de T034)
-- [ ] T036 [P] [US1] Integrar catálogo de minimumRole no fluxo SSR em src/controllers/dashboardController.js (depende de T034)
-- [ ] T037 [US1] Implementar verificador de drift API/SSR por operationKey em src/services/auth/operationConformanceService.js (depende de T035, T036)
-- [ ] T038 [P] [US3] Criar testes unit de enforceTenantScope por modo global/restrito em tests/services/enforce-tenant-scope.unit.test.js
-- [ ] T039 [P] [US1] Criar testes unit de operationPolicyCatalog e operationConformanceService em tests/services/operation-conformance.unit.test.js
-- [ ] T040 [P] [US1] Criar testes de integração de equivalência de perfil mínimo API/SSR em tests/integration/rbac-equivalence.integration.test.js
-- [ ] T041 [P] [US3] Criar testes de integração de bloqueio cross-tenant no service layer em tests/integration/service-scope-enforcement.integration.test.js
-- [ ] T042 [P] [US1] Criar teste e2e de invariância de autorização API/SSR por quíntuplo em tests/e2e/rbac-equivalence.e2e.spec.js
-- [ ] T043 [US1] Executar gate da Onda 3 e atualizar matriz de conformidade das operações migradas em docs/auditorias/07/gate-onda-3.md (depende de T031, T032, T033, T037, T038, T039, T040, T041, T042)
+- [x] T030 [US3] Criar utilitário de enforcement canônico por escopo no service layer em src/services/auth/enforceTenantScope.js (depende de T029)
+- [x] T031 [P] [US3] Aplicar enforcement de escopo em serviços de certificados em src/services/certificadoService.js (depende de T030)
+- [x] T032 [P] [US3] Aplicar enforcement de escopo em serviços de participantes em src/services/participanteService.js (depende de T030)
+- [x] T033 [P] [US3] Aplicar enforcement de escopo em serviços de eventos em src/services/eventoService.js (depende de T030)
+- [x] T034 [US1] Definir catálogo de minimumRole por operationKey (quíntuplo) em src/services/auth/operationPolicyCatalog.js (depende de T029)
+- [x] T035 [P] [US1] Integrar catálogo de minimumRole no fluxo API em src/middlewares/rbac.js (depende de T034)
+- [x] T036 [P] [US1] Integrar catálogo de minimumRole no fluxo SSR em src/controllers/dashboardController.js (depende de T034)
+- [x] T037 [US1] Implementar verificador de drift API/SSR por operationKey em src/services/auth/operationConformanceService.js (depende de T035, T036)
+- [x] T038 [P] [US3] Criar testes unit de enforceTenantScope por modo global/restrito em tests/services/enforce-tenant-scope.unit.test.js
+- [x] T039 [P] [US1] Criar testes unit de operationPolicyCatalog e operationConformanceService em tests/services/operation-conformance.unit.test.js
+- [x] T040 [P] [US1] Criar testes de integração de equivalência de perfil mínimo API/SSR em tests/integration/rbac-equivalence.integration.test.js
+- [x] T041 [P] [US3] Criar testes de integração de bloqueio cross-tenant no service layer em tests/integration/service-scope-enforcement.integration.test.js
+- [x] T042 [P] [US1] Criar teste e2e de invariância de autorização API/SSR por quíntuplo em tests/e2e/rbac-equivalence.e2e.spec.js
+- [x] T043 [US1] Executar gate da Onda 3 e atualizar matriz de conformidade das operações migradas em docs/auditorias/07/gate-onda-3.md (depende de T031, T032, T033, T037, T038, T039, T040, T041, T042)
 
 **Gate da Onda 3**:
 
