@@ -1,3 +1,12 @@
+===========================================================
+
+Rodar no SpecKit:
+
+Rodar speckit.tasks para decompor o plano em tarefas executáveis por onda.
+
+===========================================================
+
+
 Habilitar a possibilidade de o usuário registrar múltiplos emails.
 
 Padronização de ícones realizadas. Estender para as subpáginas (bebendo de resourceMeta):
