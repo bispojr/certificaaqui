@@ -122,14 +122,14 @@
 
 **Critério independente de validação**: zero consumidores ativos de contrato legado para operações no escopo da feature e auditoria final com classificação completa.
 
-- [ ] T044 [US4] Remover adaptadores legados de principal sem consumidores ativos em src/services/auth/legacyPrincipalAdapter.js (depende de T043)
-- [ ] T045 [P] [US4] Remover caminhos legados de escopo remanescentes em src/middlewares/scopedEvento.js (depende de T043)
-- [ ] T046 [P] [US4] Publicar baseline final de operação por quíntuplo convergida em docs/auditorias/07/baseline-operacoes-quintuplo-final.md (depende de T043)
-- [ ] T047 [US4] Consolidar matriz final de conformidade e exceções formais aprovadas em docs/auditorias/07/matriz-conformidade-final.md (depende de T046)
-- [ ] T048 [P] [US4] Criar testes unit de ausência de fallback legado em src/services/auth em tests/services/no-legacy-fallback.unit.test.js
-- [ ] T049 [P] [US4] Criar testes de integração de bloqueio de contrato legado em tests/integration/no-legacy-contract.integration.test.js
-- [ ] T050 [P] [US4] Criar teste e2e de regressão final de autorização e escopo em tests/e2e/authorization-scope-final-regression.e2e.spec.js
-- [ ] T051 [US4] Executar gate da Onda 4 (unit + integration + e2e + auditoria final) e registrar relatório em docs/auditorias/07/gate-onda-4.md (depende de T044, T045, T047, T048, T049, T050)
+- [x] T044 [US4] Remover adaptadores legados de principal sem consumidores ativos em src/services/auth/legacyPrincipalAdapter.js (depende de T043)
+- [x] T045 [P] [US4] Remover caminhos legados de escopo remanescentes em src/middlewares/scopedEvento.js (depende de T043)
+- [x] T046 [P] [US4] Publicar baseline final de operação por quíntuplo convergida em docs/auditorias/07/baseline-operacoes-quintuplo-final.md (depende de T043)
+- [x] T047 [US4] Consolidar matriz final de conformidade e exceções formais aprovadas em docs/auditorias/07/matriz-conformidade-final.md (depende de T046)
+- [x] T048 [P] [US4] Criar testes unit de ausência de fallback legado em src/services/auth em tests/services/no-legacy-fallback.unit.test.js
+- [x] T049 [P] [US4] Criar testes de integração de bloqueio de contrato legado em tests/integration/no-legacy-contract.integration.test.js
+- [x] T050 [P] [US4] Criar teste e2e de regressão final de autorização e escopo em tests/e2e/authorization-scope-final-regression.e2e.spec.js
+- [x] T051 [US4] Executar gate da Onda 4 (unit + integration + e2e + auditoria final) e registrar relatório em docs/auditorias/07/gate-onda-4.md (depende de T044, T045, T047, T048, T049, T050)
 
 **Gate da Onda 4**:
 

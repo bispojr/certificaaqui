@@ -2,11 +2,8 @@ const {
   fromApi,
   fromSSR,
 } = require('../../src/services/auth/canonicalPrincipalFactory')
-const {
-  toLegacyUsuario,
-} = require('../../src/services/auth/legacyPrincipalAdapter')
 
-describe('canonicalPrincipalFactory + legacyPrincipalAdapter', () => {
+describe('canonicalPrincipalFactory', () => {
   it('materializa principal canônico para API e SSR com o mesmo contrato mínimo', () => {
     const usuario = {
       id: 42,
@@ -47,40 +44,18 @@ describe('canonicalPrincipalFactory + legacyPrincipalAdapter', () => {
     })
   })
 
-  it('adapta principal canônico para a visão legada com flags e getEventos', async () => {
-    const principal = {
-      subjectId: 7,
-      role: 'monitor',
-      authChannel: 'ssr_cookie',
+  it('não materializa campos legados nem fallback de eventos no principal canônico', () => {
+    const principal = fromSSR({
+      usuario: { id: 7, perfil: 'monitor' },
+      decodedToken: { id: 7, perfil: 'monitor' },
+      rawToken: 'token-ssr',
       sessionId: 'sess-7',
-      tokenId: 'jwt:7',
-      tenantScopeMode: 'scoped_events',
-    }
-
-    const legado = toLegacyUsuario(principal, {
-      nome: 'Monitor Exemplo',
-      email: 'monitor@example.com',
-      eventosIds: ['10', '20', 'abc'],
     })
 
-    expect(legado).toEqual(
-      expect.objectContaining({
-        id: 7,
-        nome: 'Monitor Exemplo',
-        email: 'monitor@example.com',
-        perfil: 'monitor',
-        isAdmin: false,
-        isGestor: false,
-        isMonitor: true,
-        subjectId: 7,
-        role: 'monitor',
-        authChannel: 'ssr_cookie',
-        sessionId: 'sess-7',
-        tokenId: 'jwt:7',
-        tenantScopeMode: 'scoped_events',
-      }),
-    )
-
-    await expect(legado.getEventos()).resolves.toEqual([{ id: 10 }, { id: 20 }])
+    expect(principal).not.toHaveProperty('eventosIds')
+    expect(principal).not.toHaveProperty('getEventos')
+    expect(principal).not.toHaveProperty('isAdmin')
+    expect(principal).not.toHaveProperty('isGestor')
+    expect(principal).not.toHaveProperty('isMonitor')
   })
 })

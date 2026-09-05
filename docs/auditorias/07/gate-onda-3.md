@@ -38,18 +38,18 @@
 
 ## Matriz de conformidade por operação migrada
 
-| operationKey | Recurso | API mínimo | SSR mínimo | Status |
-| --- | --- | --- | --- | --- |
-| cert.create | Certificado | monitor | gestor | convergido após catálogo e enforcement |
-| cert.list | Certificado | monitor | monitor | conforme |
-| cert.read | Certificado | monitor | monitor | conforme |
-| cert.update | Certificado | monitor | gestor | convergido após catálogo e enforcement |
-| cert.cancel | Certificado | monitor | gestor | convergido após catálogo e enforcement |
-| cert.delete | Certificado | monitor | gestor | convergido após catálogo e enforcement |
-| cert.restore | Certificado | monitor | admin | identificado como caso crítico e coberto por verificação de drift |
-| participantes.* | Participante | monitor | autenticado | alinhado ao contrato canônico com enforcement no service layer |
-| tipo.* | TiposCertificados | gestor | gestor | conforme |
-| evento.* | Evento | monitor/admin conforme operação | admin/gestor conforme operação | conforme no canal de escopo canônico |
+| operationKey     | Recurso           | API mínimo                      | SSR mínimo                     | Status                                                            |
+| ---------------- | ----------------- | ------------------------------- | ------------------------------ | ----------------------------------------------------------------- |
+| cert.create      | Certificado       | monitor                         | gestor                         | convergido após catálogo e enforcement                            |
+| cert.list        | Certificado       | monitor                         | monitor                        | conforme                                                          |
+| cert.read        | Certificado       | monitor                         | monitor                        | conforme                                                          |
+| cert.update      | Certificado       | monitor                         | gestor                         | convergido após catálogo e enforcement                            |
+| cert.cancel      | Certificado       | monitor                         | gestor                         | convergido após catálogo e enforcement                            |
+| cert.delete      | Certificado       | monitor                         | gestor                         | convergido após catálogo e enforcement                            |
+| cert.restore     | Certificado       | monitor                         | admin                          | identificado como caso crítico e coberto por verificação de drift |
+| participantes.\* | Participante      | monitor                         | autenticado                    | alinhado ao contrato canônico com enforcement no service layer    |
+| tipo.\*          | TiposCertificados | gestor                          | gestor                         | conforme                                                          |
+| evento.\*        | Evento            | monitor/admin conforme operação | admin/gestor conforme operação | conforme no canal de escopo canônico                              |
 
 ## Testes executados
 

@@ -48,9 +48,6 @@ module.exports = async function scopedEvento(req, res, next) {
           requestedEventId,
         })
       }
-      req.query.evento_id =
-        req.query.evento_id ??
-        (eventoIds.length === 1 ? String(eventoIds[0]) : eventoIds)
       return next()
     }
 
