@@ -2,7 +2,10 @@
     "jest.jestCommandLine": "npx jest --runInBand --detectOpenHandles --verbose",
     "jest.autoRun": {
         "watch": false,
-        "onSave": "test-file"
+        "onSave": "test-file",
+        "onStartup": [
+            "all-tests"
+        ]
     },
     "jest.outputConfig": {
         "revealOn": "error",
@@ -11,7 +14,9 @@
     "jest.testExplorer": {
         "showInlineError": true
     },
+    "testing.autoRun.mode": "all",
     "testing.automaticallyOpenTestResults": "neverOpen",
+    "playwright.reuseBrowser": true,
     "chat.promptFilesRecommendations": {
         "speckit.constitution": true,
         "speckit.specify": true,
