@@ -43,15 +43,15 @@
 
 **Critério independente de validação**: principal canônico materializado em API e SSR com atributos mínimos e sem dependência de capacidades ORM.
 
-- [ ] T011 [US2] Definir utilitário de materialização do principal canônico em src/services/auth/canonicalPrincipalFactory.js (depende de T010)
-- [ ] T012 [P] [US2] Integrar principal canônico no middleware API de autenticação em src/middlewares/auth.js (depende de T011)
-- [ ] T013 [P] [US2] Integrar principal canônico no middleware SSR de autenticação em src/middlewares/authSSR.js (depende de T011)
-- [ ] T014 [US2] Criar adaptador legado temporário de principal para consumidores não migrados em src/services/auth/legacyPrincipalAdapter.js (depende de T012, T013)
-- [ ] T015 [P] [US2] Publicar critérios de depreciação do adaptador legado em docs/auditorias/07/legado-principal-criterios.md (depende de T014)
-- [ ] T016 [P] [US2] Criar testes unit para canonicalPrincipalFactory e legacyPrincipalAdapter em tests/services/canonicalPrincipalFactory.unit.test.js
-- [ ] T017 [P] [US2] Criar testes de integração para materialização canônica API/SSR em tests/middleware/canonical-principal.integration.test.js
-- [ ] T018 [P] [US2] Criar teste e2e de login API/SSR validando principal canônico em tests/e2e/auth-canonical-principal.e2e.spec.js
-- [ ] T019 [US2] Executar gate da Onda 1 e registrar conformidade em docs/auditorias/07/gate-onda-1.md (depende de T012, T013, T014, T016, T017, T018)
+- [x] T011 [US2] Definir utilitário de materialização do principal canônico em src/services/auth/canonicalPrincipalFactory.js (depende de T010)
+- [x] T012 [P] [US2] Integrar principal canônico no middleware API de autenticação em src/middlewares/auth.js (depende de T011)
+- [x] T013 [P] [US2] Integrar principal canônico no middleware SSR de autenticação em src/middlewares/authSSR.js (depende de T011)
+- [x] T014 [US2] Criar adaptador legado temporário de principal para consumidores não migrados em src/services/auth/legacyPrincipalAdapter.js (depende de T012, T013)
+- [x] T015 [P] [US2] Publicar critérios de depreciação do adaptador legado em docs/auditorias/07/legado-principal-criterios.md (depende de T014)
+- [x] T016 [P] [US2] Criar testes unit para canonicalPrincipalFactory e legacyPrincipalAdapter em tests/services/canonicalPrincipalFactory.unit.test.js
+- [x] T017 [P] [US2] Criar testes de integração para materialização canônica API/SSR em tests/integration/canonical-principal.integration.test.js
+- [x] T018 [P] [US2] Criar teste e2e de login API/SSR validando principal canônico em tests/e2e/auth-canonical-principal.e2e.spec.js
+- [x] T019 [US2] Executar gate da Onda 1 e registrar conformidade em docs/auditorias/07/gate-onda-1.md (depende de T012, T013, T014, T016, T017, T018)
 
 **Gate da Onda 1**:
 - Principal canônico populado em API e SSR
