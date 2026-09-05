@@ -4,6 +4,7 @@
 **Data:** 2026-05-09 18:49 (BRT)  
 **Escopo:** Login · Logout · Sessão · JWT · Cookies · auth · authSSR · RBAC · roles/perfis · autorização · autenticação API · autenticação SSR · controle de acesso · ownership · proteção de rotas · propagação de identidade · scopedEvento  
 **Fontes consultadas:**
+
 - `docs/especificacoes.md`
 - `src/middlewares/auth.js`
 - `src/middlewares/authSSR.js`
@@ -35,43 +36,43 @@
 
 ## Legenda de Tipos
 
-| Código | Significado                  |
-|--------|------------------------------|
-| BR     | Bug real                     |
-| GI     | Gap de implementação         |
-| IP     | Implementação parcial        |
-| ID     | Inconsistência documental    |
-| DT     | Dívida técnica               |
-| VU     | Vulnerabilidade              |
-| AM     | Ambiguidade                  |
-| VA     | Violação arquitetural        |
+| Código | Significado               |
+| ------ | ------------------------- |
+| BR     | Bug real                  |
+| GI     | Gap de implementação      |
+| IP     | Implementação parcial     |
+| ID     | Inconsistência documental |
+| DT     | Dívida técnica            |
+| VU     | Vulnerabilidade           |
+| AM     | Ambiguidade               |
+| VA     | Violação arquitetural     |
 
 ---
 
 ## 1. Matriz de Achados
 
-| ID      | Descrição                                                                 | Severidade | Tipo | Impacto                                                  | Evidência principal                                       | FR/NFR        |
-|---------|---------------------------------------------------------------------------|------------|------|----------------------------------------------------------|-----------------------------------------------------------|---------------|
-| BR-001  | RBAC incorreto nas rotas de mutação de eventos (API)                      | Alta       | BR   | Gestor/monitor podem atualizar e deletar eventos via API | `src/routes/eventos.js` — `rbac('monitor')` em PUT/DELETE | FR-38, SRS API table |
-| BR-002  | `scopedEvento` usa `req.params.id` como `evento_id` para rotas de recurso | Crítica    | BR   | Controle de acesso item-level de certificados é incorreto | `src/middlewares/scopedEvento.js` linha 37                | FR-37, NFR-1  |
-| BR-003  | SSR certificado/criar exige `gestor`, mas FR-36 permite `monitor`         | Alta       | BR   | Monitores não conseguem criar certificados via SSR        | `src/routes/admin.js` — `rbac('gestor')` em POST /certificados | FR-36        |
-| VU-001  | Cookie JWT sem flag `secure`                                              | Alta       | VU   | Cookie transmitido em HTTP; sujeito a interceptação       | `src/routes/auth.js` — `res.cookie('token', token, { httpOnly: true, sameSite: 'lax' })` | NFR-1, NFR-3 |
-| VU-002  | API login vaza existência de usuário via mensagens de erro distintas      | Média      | VU   | Enumeração de usuários cadastrados (OWASP A07)            | `src/controllers/usuarioController.js` linhas 47–50       | NFR-1         |
-| GI-001  | SSR login (`POST /login`) sem rate limiting                               | Média      | GI   | Ataques de força bruta irrestrita via formulário SSR      | `src/routes/auth.js` — `router.post('/login', ...)` sem `loginLimiter` | FR-55 (ambíguo) |
-| GI-002  | `GET /tipos-certificados` (API) sem `scopedEvento`                        | Média      | GI   | Gestor/monitor visualizam tipos de certificados de todos os eventos | `src/routes/tipos-certificados.js` — sem `scopedEvento` nos GETs | FR-37        |
-| GI-003  | SSR certificado — operações de item sem verificação de ownership          | Alta       | GI   | Gestor pode editar/cancelar/deletar certificados de outros eventos via SSR | `src/controllers/certificadoSSRController.js` — `atualizar`, `cancelar`, `deletar`, `detalhe`, `editar` | FR-37, NFR-1 |
-| GI-004  | Formulário SSR de criação de certificado expõe todos os eventos/tipos     | Média      | GI   | Gestor/monitor vê dados fora do seu escopo no formulário  | `src/controllers/certificadoSSRController.js` — `novo` usa `Evento.findAll()` sem filtro | FR-37        |
-| IP-001  | `authSSR` não valida `JWT_SECRET` na inicialização do módulo             | Baixa      | IP   | NFR-3 não plenamente garantido pelo módulo authSSR        | `src/middlewares/authSSR.js` — ausência de `if (!JWT_SECRET) throw` | NFR-3        |
-| IP-002  | `req.usuario` em SSR é POJO sem `getEventos()` e sem `email`             | Média      | IP   | Incompatibilidade estrutural com middlewares que dependem de `getEventos()`; `email` ausente em contexto SSR | `src/middlewares/authSSR.js` — `usuarioData` sem `getEventos` e sem `email` | NFR-6, FR-31 |
-| IP-003  | `tiposCertificadosSSRController.index` exibe todos os tipos sem filtrar por evento | Média | IP | Gestor/monitor vê tipos de certificados de outros eventos; escopo apenas visual (`podeEditar`) | `src/controllers/tiposCertificadosSSRController.js` — `whereAtivos = {}` | FR-37        |
-| VA-001  | RBAC implementado no controller em vez de middleware para `usuarios-crud` | Média      | VA   | Viola padrão arquitetural fail-fast; autenticação e autorização misturadas na camada controller | `src/routes/usuarios-crud.js` — sem `rbac('admin')`; check em `usuarioController.create` | NFR-6        |
-| VA-002  | Padrão de rota `/:papel/:id/usuarios` excessivamente genérico             | Baixa      | VA   | Rota pode capturar caminhos não intencionais no namespace global | `src/routes/usuarios-crud.js` + `app.use('/', usuariosCrudRouter)` | NFR-6        |
-| ID-001  | FR-22 ambíguo sobre permissão de restauração de certificado via API       | Baixa      | ID   | Comportamentos diferentes entre API (monitor) e SSR (admin) sem justificativa explícita | FR-22: "apenas admin pode restaurar via SSR"; tabela API: perfil mínimo monitor | FR-22        |
-| ID-002  | SRS documenta `/auth/login` mas implementação usa `/login`                | Baixa      | ID   | Documentação de rotas incorreta; desenvolvedores podem referenciar rota errada | SRS tabela SSR-Auth vs `app.use('/', authRouter)` | FR-30        |
-| DT-001  | express-session sem `cookie.secure` e sem `cookie.httpOnly`              | Média      | DT   | Cookie de sessão trafega sem atributos de segurança em produção HTTP | `app.js` — `session({ secret, resave: false, saveUninitialized: false })` sem `cookie` config | NFR-1, NFR-3 |
-| DT-002  | `src/routes/auth.js` sem guard de `JWT_SECRET` na inicialização          | Baixa      | DT   | Diferente de `auth.js` (middleware), que lança erro na carga do módulo | `const JWT_SECRET = process.env.JWT_SECRET` — sem verificação imediata | NFR-3        |
-| DT-003  | Ausência de log de tentativas de autenticação falhas                      | Baixa      | DT   | Sem rastreabilidade de ataques ou falhas de login no servidor | `usuarioController.login` e `src/routes/auth.js POST /login` — sem logging | NFR-1 (implícito) |
-| AM-001  | FR-37 não especifica explicitamente quais recursos são cobertos por `scopedEvento` | Baixa | AM | Ambiguidade sobre se tipos-certificados (GET) e participantes devem ser escopados | FR-37 texto vs implementação atual | FR-37        |
+| ID     | Descrição                                                                          | Severidade | Tipo | Impacto                                                                                                      | Evidência principal                                                                                     | FR/NFR               |
+| ------ | ---------------------------------------------------------------------------------- | ---------- | ---- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- | -------------------- |
+| BR-001 | RBAC incorreto nas rotas de mutação de eventos (API)                               | Alta       | BR   | Gestor/monitor podem atualizar e deletar eventos via API                                                     | `src/routes/eventos.js` — `rbac('monitor')` em PUT/DELETE                                               | FR-38, SRS API table |
+| BR-002 | `scopedEvento` usa `req.params.id` como `evento_id` para rotas de recurso          | Crítica    | BR   | Controle de acesso item-level de certificados é incorreto                                                    | `src/middlewares/scopedEvento.js` linha 37                                                              | FR-37, NFR-1         |
+| BR-003 | SSR certificado/criar exige `gestor`, mas FR-36 permite `monitor`                  | Alta       | BR   | Monitores não conseguem criar certificados via SSR                                                           | `src/routes/admin.js` — `rbac('gestor')` em POST /certificados                                          | FR-36                |
+| VU-001 | Cookie JWT sem flag `secure`                                                       | Alta       | VU   | Cookie transmitido em HTTP; sujeito a interceptação                                                          | `src/routes/auth.js` — `res.cookie('token', token, { httpOnly: true, sameSite: 'lax' })`                | NFR-1, NFR-3         |
+| VU-002 | API login vaza existência de usuário via mensagens de erro distintas               | Média      | VU   | Enumeração de usuários cadastrados (OWASP A07)                                                               | `src/controllers/usuarioController.js` linhas 47–50                                                     | NFR-1                |
+| GI-001 | SSR login (`POST /login`) sem rate limiting                                        | Média      | GI   | Ataques de força bruta irrestrita via formulário SSR                                                         | `src/routes/auth.js` — `router.post('/login', ...)` sem `loginLimiter`                                  | FR-55 (ambíguo)      |
+| GI-002 | `GET /tipos-certificados` (API) sem `scopedEvento`                                 | Média      | GI   | Gestor/monitor visualizam tipos de certificados de todos os eventos                                          | `src/routes/tipos-certificados.js` — sem `scopedEvento` nos GETs                                        | FR-37                |
+| GI-003 | SSR certificado — operações de item sem verificação de ownership                   | Alta       | GI   | Gestor pode editar/cancelar/deletar certificados de outros eventos via SSR                                   | `src/controllers/certificadoSSRController.js` — `atualizar`, `cancelar`, `deletar`, `detalhe`, `editar` | FR-37, NFR-1         |
+| GI-004 | Formulário SSR de criação de certificado expõe todos os eventos/tipos              | Média      | GI   | Gestor/monitor vê dados fora do seu escopo no formulário                                                     | `src/controllers/certificadoSSRController.js` — `novo` usa `Evento.findAll()` sem filtro                | FR-37                |
+| IP-001 | `authSSR` não valida `JWT_SECRET` na inicialização do módulo                       | Baixa      | IP   | NFR-3 não plenamente garantido pelo módulo authSSR                                                           | `src/middlewares/authSSR.js` — ausência de `if (!JWT_SECRET) throw`                                     | NFR-3                |
+| IP-002 | `req.usuario` em SSR é POJO sem `getEventos()` e sem `email`                       | Média      | IP   | Incompatibilidade estrutural com middlewares que dependem de `getEventos()`; `email` ausente em contexto SSR | `src/middlewares/authSSR.js` — `usuarioData` sem `getEventos` e sem `email`                             | NFR-6, FR-31         |
+| IP-003 | `tiposCertificadosSSRController.index` exibe todos os tipos sem filtrar por evento | Média      | IP   | Gestor/monitor vê tipos de certificados de outros eventos; escopo apenas visual (`podeEditar`)               | `src/controllers/tiposCertificadosSSRController.js` — `whereAtivos = {}`                                | FR-37                |
+| VA-001 | RBAC implementado no controller em vez de middleware para `usuarios-crud`          | Média      | VA   | Viola padrão arquitetural fail-fast; autenticação e autorização misturadas na camada controller              | `src/routes/usuarios-crud.js` — sem `rbac('admin')`; check em `usuarioController.create`                | NFR-6                |
+| VA-002 | Padrão de rota `/:papel/:id/usuarios` excessivamente genérico                      | Baixa      | VA   | Rota pode capturar caminhos não intencionais no namespace global                                             | `src/routes/usuarios-crud.js` + `app.use('/', usuariosCrudRouter)`                                      | NFR-6                |
+| ID-001 | FR-22 ambíguo sobre permissão de restauração de certificado via API                | Baixa      | ID   | Comportamentos diferentes entre API (monitor) e SSR (admin) sem justificativa explícita                      | FR-22: "apenas admin pode restaurar via SSR"; tabela API: perfil mínimo monitor                         | FR-22                |
+| ID-002 | SRS documenta `/auth/login` mas implementação usa `/login`                         | Baixa      | ID   | Documentação de rotas incorreta; desenvolvedores podem referenciar rota errada                               | SRS tabela SSR-Auth vs `app.use('/', authRouter)`                                                       | FR-30                |
+| DT-001 | express-session sem `cookie.secure` e sem `cookie.httpOnly`                        | Média      | DT   | Cookie de sessão trafega sem atributos de segurança em produção HTTP                                         | `app.js` — `session({ secret, resave: false, saveUninitialized: false })` sem `cookie` config           | NFR-1, NFR-3         |
+| DT-002 | `src/routes/auth.js` sem guard de `JWT_SECRET` na inicialização                    | Baixa      | DT   | Diferente de `auth.js` (middleware), que lança erro na carga do módulo                                       | `const JWT_SECRET = process.env.JWT_SECRET` — sem verificação imediata                                  | NFR-3                |
+| DT-003 | Ausência de log de tentativas de autenticação falhas                               | Baixa      | DT   | Sem rastreabilidade de ataques ou falhas de login no servidor                                                | `usuarioController.login` e `src/routes/auth.js POST /login` — sem logging                              | NFR-1 (implícito)    |
+| AM-001 | FR-37 não especifica explicitamente quais recursos são cobertos por `scopedEvento` | Baixa      | AM   | Ambiguidade sobre se tipos-certificados (GET) e participantes devem ser escopados                            | FR-37 texto vs implementação atual                                                                      | FR-37                |
 
 ---
 
@@ -82,6 +83,7 @@
 **Localização:** `src/middlewares/scopedEvento.js`, linhas 34–40
 
 **Evidência:**
+
 ```js
 // Para rotas de consulta/alteração, buscar o evento alvo
 const eventoId = req.body.evento_id || req.params.eventoId || req.params.id
@@ -94,6 +96,7 @@ return res.status(403).json({ error: 'Acesso restrito ao evento vinculado.' })
 **Contexto:** Para rotas como `GET /certificados/:id`, `PUT /certificados/:id`, `DELETE /certificados/:id`, `POST /certificados/:id/restore` e `POST /certificados/:id/cancel`, `req.params.id` é o **ID do certificado**, não o ID do evento. O middleware interpreta esse parâmetro como `evento_id` e verifica se está no array de eventos vinculados ao usuário.
 
 **Impacto concreto:** Dado um gestor vinculado aos eventos `[3, 5, 10]`:
+
 - `GET /certificados/3` → **passa** (ID do cert. coincide com ID de evento na lista — acesso não autorizado se o cert. 3 pertence a outro evento)
 - `GET /certificados/7` → **bloqueado** (7 não está em [3, 5, 10] — falso negativo se o cert. 7 pertence ao evento 5)
 - `GET /certificados/5` → **passa** (ID do cert. coincide com evento 5 — acesso não autorizado se o cert. 5 pertence a outro evento)
@@ -109,11 +112,12 @@ O controle de acesso item-level para certificados é **não-determinístico e in
 **Localização:** `src/routes/eventos.js`
 
 **Evidência:**
+
 ```js
 router.post(
   '/',
   auth,
-  rbac('monitor'),   // ← deveria ser rbac('admin')
+  rbac('monitor'), // ← deveria ser rbac('admin')
   scopedEvento,
   validate(eventoSchema),
   eventoController.create,
@@ -121,7 +125,7 @@ router.post(
 router.put(
   '/:id',
   auth,
-  rbac('monitor'),   // ← deveria ser rbac('admin')
+  rbac('monitor'), // ← deveria ser rbac('admin')
   scopedEvento,
   validate(eventoSchema.partial()),
   eventoController.update,
@@ -129,14 +133,14 @@ router.put(
 router.delete(
   '/:id',
   auth,
-  rbac('monitor'),   // ← deveria ser rbac('admin')
+  rbac('monitor'), // ← deveria ser rbac('admin')
   scopedEvento,
   eventoController.delete,
 )
 router.post(
   '/:id/restore',
   auth,
-  rbac('monitor'),   // ← deveria ser rbac('admin')
+  rbac('monitor'), // ← deveria ser rbac('admin')
   scopedEvento,
   eventoController.restore,
 )
@@ -144,12 +148,12 @@ router.post(
 
 **Análise por operação:**
 
-| Rota | RBAC atual | Efeito real (não-admin) |
-|------|------------|------------------------|
-| `POST /eventos` | monitor | `scopedEvento` bloqueia com 403 (não há `evento_id` no body de criação) — resultado correto por acidente, mensagem enganosa |
-| `PUT /eventos/:id` | monitor | Gestor/monitor **vinculado a esse evento** passa `scopedEvento` e pode **atualizar o evento** — BUG REAL |
-| `DELETE /eventos/:id` | monitor | Gestor/monitor **vinculado a esse evento** passa `scopedEvento` e pode **deletar o evento** — BUG REAL |
-| `POST /eventos/:id/restore` | monitor | Gestor/monitor pode **restaurar eventos** sem ser admin — BUG REAL |
+| Rota                        | RBAC atual | Efeito real (não-admin)                                                                                                     |
+| --------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `POST /eventos`             | monitor    | `scopedEvento` bloqueia com 403 (não há `evento_id` no body de criação) — resultado correto por acidente, mensagem enganosa |
+| `PUT /eventos/:id`          | monitor    | Gestor/monitor **vinculado a esse evento** passa `scopedEvento` e pode **atualizar o evento** — BUG REAL                    |
+| `DELETE /eventos/:id`       | monitor    | Gestor/monitor **vinculado a esse evento** passa `scopedEvento` e pode **deletar o evento** — BUG REAL                      |
+| `POST /eventos/:id/restore` | monitor    | Gestor/monitor pode **restaurar eventos** sem ser admin — BUG REAL                                                          |
 
 **SRS documenta** (tabela API, seção Eventos): `PUT`, `DELETE`, `POST restore` → perfil mínimo: `admin`.
 
@@ -162,6 +166,7 @@ router.post(
 **Localização:** `src/routes/auth.js`, linha 61
 
 **Evidência:**
+
 ```js
 res.cookie('token', token, { httpOnly: true, sameSite: 'lax' })
 ```
@@ -179,6 +184,7 @@ res.cookie('token', token, { httpOnly: true, sameSite: 'lax' })
 **Localização:** `src/controllers/usuarioController.js`, linhas 47–50
 
 **Evidência:**
+
 ```js
 async login(req, res) {
   const { email, senha } = req.body
@@ -192,8 +198,9 @@ async login(req, res) {
 ```
 
 **Contraste com SSR login** (`src/routes/auth.js`, correto):
+
 ```js
-req.flash('error', 'Credenciais inválidas')  // ← mensagem unificada
+req.flash('error', 'Credenciais inválidas') // ← mensagem unificada
 ```
 
 **Impacto:** Atacante que chama `POST /usuarios/login` com apenas email pode determinar se o endereço está cadastrado, viabilizando ataques de enumeração (OWASP A07). A superfície SSR trata corretamente com mensagem genérica.
@@ -207,6 +214,7 @@ req.flash('error', 'Credenciais inválidas')  // ← mensagem unificada
 **Localização:** `src/controllers/certificadoSSRController.js`
 
 **Evidência:** As funções `detalhe`, `editar`, `atualizar`, `cancelar` e `deletar` não verificam se o certificado pertence ao escopo de eventos do usuário autenticado:
+
 ```js
 async function atualizar(req, res) {
   const certificado = await Certificado.findByPk(req.params.id)
@@ -230,16 +238,16 @@ async function atualizar(req, res) {
 
 Os dois middlewares de autenticação populam `req.usuario` com estruturas incompatíveis:
 
-| Atributo           | `auth.js` (API)         | `authSSR.js` (SSR)       |
-|--------------------|-------------------------|--------------------------|
-| `id`               | ✅ presente             | ✅ presente              |
-| `nome`             | ✅ (via Sequelize)      | ✅ presente              |
-| `perfil`           | ✅ (via Sequelize)      | ✅ presente              |
-| `email`            | ✅ (via Sequelize)      | ❌ ausente               |
-| `getEventos()`     | ✅ (método Sequelize)   | ❌ ausente (POJO)        |
-| `isAdmin`          | ❌ ausente              | ✅ computado             |
-| `isGestor`         | ❌ ausente              | ✅ computado             |
-| Tipo               | Instância Sequelize     | Plain Object             |
+| Atributo       | `auth.js` (API)       | `authSSR.js` (SSR) |
+| -------------- | --------------------- | ------------------ |
+| `id`           | ✅ presente           | ✅ presente        |
+| `nome`         | ✅ (via Sequelize)    | ✅ presente        |
+| `perfil`       | ✅ (via Sequelize)    | ✅ presente        |
+| `email`        | ✅ (via Sequelize)    | ❌ ausente         |
+| `getEventos()` | ✅ (método Sequelize) | ❌ ausente (POJO)  |
+| `isAdmin`      | ❌ ausente            | ✅ computado       |
+| `isGestor`     | ❌ ausente            | ✅ computado       |
+| Tipo           | Instância Sequelize   | Plain Object       |
 
 **Consequência:** `scopedEvento` e `tiposCertificadosOwnership` verificam `typeof req.usuario.getEventos !== 'function'` e retornam 500 se o método ausente. Ambos os middlewares são usados **apenas em contexto API** (onde `auth.js` garante a instância Sequelize), por isso o sistema funciona no estado atual. Porém qualquer refatoração que misture os contextos provocaria falhas silenciosas ou HTTP 500.
 
@@ -254,6 +262,7 @@ Os controllers SSR que precisam de eventos vinculados (e.g., `tiposCertificadosS
 As rotas SSR em `admin.js` apresentam três padrões de proteção de acesso distintos:
 
 1. **Middleware explícito de RBAC** (maioria das rotas):
+
    ```js
    router.get('/tipos-certificados', rbac('gestor'), ...)
    router.get('/certificados', rbac('monitor'), ...)
@@ -261,9 +270,10 @@ As rotas SSR em `admin.js` apresentam três padrões de proteção de acesso dis
    ```
 
 2. **Sem RBAC, apenas authSSR** (participantes e dashboard):
+
    ```js
-   router.get('/participantes', participanteSSRController.index)      // sem rbac
-   router.get('/dashboard', dashboardController.dashboard)             // sem rbac
+   router.get('/participantes', participanteSSRController.index) // sem rbac
+   router.get('/dashboard', dashboardController.dashboard) // sem rbac
    ```
 
 3. **RBAC no controller** (usuarioController via usuarios-crud):
@@ -292,20 +302,20 @@ O middleware `scopedEvento` foi aplicado à rota de criação de evento (`POST /
 
 ## 4. Divergências API vs SSR
 
-| Aspecto                          | API (`auth` + Bearer JWT)                                  | SSR (`authSSR` + Cookie HTTP-only)                         | Avaliação           |
-|----------------------------------|------------------------------------------------------------|------------------------------------------------------------|---------------------|
-| **Autenticação**                 | `Authorization: Bearer <token>`                            | Cookie `token` com `httpOnly: true`                        | Correto (dois fluxos documentados) |
-| **Mensagem de erro login**       | "Usuário não encontrado" / "Senha inválida" (distintas)    | "Credenciais inválidas" (unificada)                        | ⚠️ VU-002 — API vaza informação |
-| **Rate limiting no login**       | ✅ `loginLimiter` em `POST /usuarios/login`                | ❌ Ausente em `POST /login`                                | ⚠️ GI-001 |
-| **req.usuario**                  | Instância Sequelize (com `getEventos()`, `email`)          | POJO (sem `getEventos()`, sem `email`)                     | ⚠️ IP-002 |
-| **Criação de certificado**       | `rbac('monitor')` — monitores podem criar                  | `rbac('gestor')` — monitores NÃO podem criar               | ⚠️ BR-003 — diverge de FR-36 |
-| **Ownership de certificado/:id** | `scopedEvento` (incorreto — usa cert ID como evento ID)    | Sem verificação nas operações de item                      | ⚠️ BR-002, GI-003 |
-| **Listagem tipos certificados**  | Sem filtro de escopo                                        | Sem filtro de escopo (apenas `podeEditar` na UI)           | ⚠️ GI-002, IP-003 |
-| **Eventos — mutações**           | `rbac('monitor')` (incorreto)                              | `rbac('admin')` (correto)                                  | ⚠️ BR-001 — API difere do SSR e do SRS |
-| **Restauração de certificado**   | `rbac('monitor')`                                          | `rbac('admin')`                                            | ⚠️ ID-001 — SRS ambíguo para API |
-| **Ownership tipos certificados** | `tiposCertificadosOwnership` (middleware)                  | `temOwnership()` (verificação no controller)               | Funcionalmente equivalente, mas arquiteturalmente divergente |
-| **Cookie segurança**             | N/A                                                        | Sem `secure: true`                                         | ⚠️ VU-001 |
-| **JWT_SECRET guard**             | `auth.js` valida na carga do módulo                        | `authSSR.js` NÃO valida na carga do módulo                 | ⚠️ IP-001 |
+| Aspecto                          | API (`auth` + Bearer JWT)                               | SSR (`authSSR` + Cookie HTTP-only)               | Avaliação                                                    |
+| -------------------------------- | ------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------ |
+| **Autenticação**                 | `Authorization: Bearer <token>`                         | Cookie `token` com `httpOnly: true`              | Correto (dois fluxos documentados)                           |
+| **Mensagem de erro login**       | "Usuário não encontrado" / "Senha inválida" (distintas) | "Credenciais inválidas" (unificada)              | ⚠️ VU-002 — API vaza informação                              |
+| **Rate limiting no login**       | ✅ `loginLimiter` em `POST /usuarios/login`             | ❌ Ausente em `POST /login`                      | ⚠️ GI-001                                                    |
+| **req.usuario**                  | Instância Sequelize (com `getEventos()`, `email`)       | POJO (sem `getEventos()`, sem `email`)           | ⚠️ IP-002                                                    |
+| **Criação de certificado**       | `rbac('monitor')` — monitores podem criar               | `rbac('gestor')` — monitores NÃO podem criar     | ⚠️ BR-003 — diverge de FR-36                                 |
+| **Ownership de certificado/:id** | `scopedEvento` (incorreto — usa cert ID como evento ID) | Sem verificação nas operações de item            | ⚠️ BR-002, GI-003                                            |
+| **Listagem tipos certificados**  | Sem filtro de escopo                                    | Sem filtro de escopo (apenas `podeEditar` na UI) | ⚠️ GI-002, IP-003                                            |
+| **Eventos — mutações**           | `rbac('monitor')` (incorreto)                           | `rbac('admin')` (correto)                        | ⚠️ BR-001 — API difere do SSR e do SRS                       |
+| **Restauração de certificado**   | `rbac('monitor')`                                       | `rbac('admin')`                                  | ⚠️ ID-001 — SRS ambíguo para API                             |
+| **Ownership tipos certificados** | `tiposCertificadosOwnership` (middleware)               | `temOwnership()` (verificação no controller)     | Funcionalmente equivalente, mas arquiteturalmente divergente |
+| **Cookie segurança**             | N/A                                                     | Sem `secure: true`                               | ⚠️ VU-001                                                    |
+| **JWT_SECRET guard**             | `auth.js` valida na carga do módulo                     | `authSSR.js` NÃO valida na carga do módulo       | ⚠️ IP-001                                                    |
 
 ---
 
@@ -345,15 +355,15 @@ O middleware `scopedEvento` foi aplicado à rota de criação de evento (`POST /
 
 ## 6. Itens para Validação Humana
 
-| # | Questão                                                                 | Contexto                                                  |
-|---|-------------------------------------------------------------------------|-----------------------------------------------------------|
-| 1 | Qual é o perfil mínimo para `POST /certificados/:id/restore` via API? O SRS é ambíguo (FR-22 diz admin via SSR; tabela API diz monitor). | Decide a correção de BR-003 e ID-001 |
-| 2 | A listagem `GET /tipos-certificados` via API deve ser filtrada por eventos do usuário? O SRS não especifica. | Define se GI-002 é um gap real ou comportamento intencional |
-| 3 | A listagem `GET /participantes` via API deve ser filtrada por eventos do usuário? Participantes são entidades compartilhadas entre eventos. | Define escopo de FR-37 para participantes |
-| 4 | O formulário SSR de criação de certificado deve apresentar apenas eventos/tipos do escopo do gestor? | Define se GI-004 é um bug ou comportamento intencional |
-| 5 | O cookie de sessão do SSR deve ter `secure: true` configurado explicitamente? O comportamento pode ser controlado por proxy reverso (Nginx), tornando a configuração dupla. | Decide severidade real de VU-001 e DT-001 |
-| 6 | A rota SSR de alteração de senha deve exigir re-autenticação explícita (ex.: expirar sessão) além da verificação de senha atual? | Decisão de segurança de sessão |
-| 7 | O dashboardController deve ter `rbac('monitor')` explícito, alinhando com o padrão das demais rotas SSR? | Decisão de consistência arquitetural |
+| #   | Questão                                                                                                                                                                     | Contexto                                                    |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| 1   | Qual é o perfil mínimo para `POST /certificados/:id/restore` via API? O SRS é ambíguo (FR-22 diz admin via SSR; tabela API diz monitor).                                    | Decide a correção de BR-003 e ID-001                        |
+| 2   | A listagem `GET /tipos-certificados` via API deve ser filtrada por eventos do usuário? O SRS não especifica.                                                                | Define se GI-002 é um gap real ou comportamento intencional |
+| 3   | A listagem `GET /participantes` via API deve ser filtrada por eventos do usuário? Participantes são entidades compartilhadas entre eventos.                                 | Define escopo de FR-37 para participantes                   |
+| 4   | O formulário SSR de criação de certificado deve apresentar apenas eventos/tipos do escopo do gestor?                                                                        | Define se GI-004 é um bug ou comportamento intencional      |
+| 5   | O cookie de sessão do SSR deve ter `secure: true` configurado explicitamente? O comportamento pode ser controlado por proxy reverso (Nginx), tornando a configuração dupla. | Decide severidade real de VU-001 e DT-001                   |
+| 6   | A rota SSR de alteração de senha deve exigir re-autenticação explícita (ex.: expirar sessão) além da verificação de senha atual?                                            | Decisão de segurança de sessão                              |
+| 7   | O dashboardController deve ter `rbac('monitor')` explícito, alinhando com o padrão das demais rotas SSR?                                                                    | Decisão de consistência arquitetural                        |
 
 ---
 

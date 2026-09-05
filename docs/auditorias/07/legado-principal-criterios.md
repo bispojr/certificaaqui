@@ -32,11 +32,11 @@ O adaptador legado existe apenas para permitir convivência temporária com cons
 
 ## Sinalizadores de depreciação
 
-| Sinalizador | Condição |
-| --- | --- |
-| `legacyConsumersRemaining` | Zero consumidores críticos ainda dependem da visão legada |
+| Sinalizador                  | Condição                                                                         |
+| ---------------------------- | -------------------------------------------------------------------------------- |
+| `legacyConsumersRemaining`   | Zero consumidores críticos ainda dependem da visão legada                        |
 | `principalCanonicalCoverage` | API e SSR já materializam `subjectId`, `role`, `authChannel` e `tenantScopeMode` |
-| `waveExitReady` | Testes unit, integration e e2e da Onda 1 aprovados |
+| `waveExitReady`              | Testes unit, integration e e2e da Onda 1 aprovados                               |
 
 ## Critério final de saída
 

@@ -5,35 +5,35 @@ module.exports = {
   grupos: {
     certificacao: {
       icon: 'fa-certificate',
-      label: 'Certificação'
+      label: 'Certificação',
     },
     eventos: {
       icon: 'fa-calendar-days',
-      label: 'Eventos'
+      label: 'Eventos',
     },
     administracao: {
       icon: 'fa-user-shield',
-      label: 'Administração'
-    }
+      label: 'Administração',
+    },
   },
   eventos: {
     icon: 'fa-calendar-alt',
-    label: 'Eventos'
+    label: 'Eventos',
   },
   participantes: {
     icon: 'fa-user-graduate',
-    label: 'Participantes'
+    label: 'Participantes',
   },
   certificados: {
     icon: 'fa-certificate',
-    label: 'Certificados'
+    label: 'Certificados',
   },
   tiposCertificados: {
     icon: 'fa-layer-group',
-    label: 'Tipos de Certificado'
+    label: 'Tipos de Certificado',
   },
   usuarios: {
     icon: 'fa-users-cog',
-    label: 'Usuários'
-  }
+    label: 'Usuários',
+  },
 }

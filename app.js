@@ -61,11 +61,11 @@ app.use((req, res, next) => {
   next()
 })
 
-
 // Middleware para expor a URL atual para as views (para menu active)
 app.use((req, res, next) => {
   res.locals.url = req.originalUrl
-  res.locals.activeValidar = req.originalUrl === '/validar' || req.originalUrl.startsWith('/validar/')
+  res.locals.activeValidar =
+    req.originalUrl === '/validar' || req.originalUrl.startsWith('/validar/')
   next()
 })
 

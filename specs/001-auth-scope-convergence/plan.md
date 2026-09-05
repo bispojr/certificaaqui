@@ -21,7 +21,7 @@ Convergir autorização e escopo entre API/SSR em brownfield sem alterar regra d
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
 ### Pre-Phase 0
 
@@ -84,16 +84,19 @@ docs/
 **Objetivo**: estabelecer baseline auditável por operação (quíntuplo), sem alterar comportamento.
 
 **Entradas**:
+
 - Spec 001 aprovada.
 - ADR 009/011/012/014 e SRS vigentes.
 - Inventário inicial de operações API/SSR alvo.
 
 **Atividades**:
+
 - Catalogar operações por quíntuplo e perfil mínimo atual em API e SSR.
 - Classificar conformidade inicial: conforme / não conforme / exceção formal.
 - Identificar pontos de contrato legado de principal e canais não canônicos de escopo.
 
 **Saidas (Gate)**:
+
 - Matriz baseline consolidada com 100% das operações prioritárias P1.
 - Lista priorizada de desvios críticos (drift RBAC + risco multi-tenant).
 - Sem mudanças funcionais em runtime.
@@ -103,15 +106,18 @@ docs/
 **Objetivo**: unificar principal autenticado API/SSR com adaptação controlada de legado.
 
 **Entradas**:
+
 - Onda 0 concluida.
 - Definição de contrato canônico pronta nos contratos da feature.
 
 **Atividades**:
+
 - Introduzir materialização canônica (`subjectId`, `role`, `authChannel`, `sessionId/tokenId`, `tenantScopeMode`).
 - Isolar adaptadores legados temporários para consumidores ainda não migrados.
 - Publicar critério de depreciação dos adaptadores (por cobertura de operações).
 
 **Saidas (Gate)**:
+
 - API e SSR populam principal canônico no request.
 - Nenhum endpoint crítico depende diretamente de capacidade ORM no principal.
 - Adaptadores legados rastreados com owner + prazo de retirada.
@@ -121,15 +127,18 @@ docs/
 **Objetivo**: separar identidade de escopo e padronizar canal canônico de escopo.
 
 **Entradas**:
+
 - Onda 1 concluida.
 - Resolução de evento por vínculo usuário-evento operacional.
 
 **Atividades**:
+
 - Resolver escopo em `req.contextoAutorizacao.eventoIds` (admin global com `null`).
 - Garantir negação segura para `gestor/monitor` em falha determinística de escopo.
 - Remover dependências de canal legado (`req.query` como proxy de segurança).
 
 **Saidas (Gate)**:
+
 - 100% das operações P1 usam canal canônico de escopo.
 - Falhas determinísticas de escopo resultam em negação segura (API/SSR).
 - Sem regressão de acesso admin global.
@@ -139,15 +148,18 @@ docs/
 **Objetivo**: consolidar isolamento multi-tenant e equivalência de perfil mínimo por quíntuplo.
 
 **Entradas**:
+
 - Onda 2 concluida.
 - Services alvo mapeados por domínio.
 
 **Atividades**:
+
 - Aplicar filtro/ownership por `eventoIds` explicitamente no service layer.
 - Alinhar API e SSR para perfil mínimo idêntico por quíntuplo.
 - Registrar e tratar divergências como não conformidade (ou exceção formal ADR).
 
 **Saidas (Gate)**:
+
 - Operações P1 sem drift de perfil mínimo API/SSR.
 - Operações escopadas sem bypass cross-tenant detectável.
 - Matriz de conformidade atualizada para status convergido nas operações migradas.
@@ -157,15 +169,18 @@ docs/
 **Objetivo**: retirar convivência legada e fechar estado convergido auditável.
 
 **Entradas**:
+
 - Ondas 1-3 concluídas com evidências de teste.
 - Lista de componentes legados em transição com status.
 
 **Atividades**:
+
 - Remover adaptadores/paths legados que ainda mantinham contratos antigos.
 - Congelar critério objetivo de depreciação por operação.
 - Executar auditoria final de conformidade arquitetural.
 
 **Saidas (Gate)**:
+
 - 0 consumidores ativos de contrato legado de principal/escopo.
 - 100% das operações no escopo da feature classificadas como conformes ou com exceção formal aprovada.
 - Estado pronto para gerar tasks de execução detalhada.
@@ -177,9 +192,11 @@ Durante transição, legado pode coexistir somente sob controle:
 1. Cada item legado deve ter identificador, dono, risco e prazo.
 2. Coexistência permitida apenas enquanto houver operações não migradas dependentes.
 3. Critério objetivo de depreciação por item:
-  - todas as operações consumidoras migradas para contrato canônico;
-  - cobertura de teste unit/integration/e2e verde para casos equivalentes API/SSR;
-  - evidência de auditoria sem drift para o quíntuplo associado.
+
+- todas as operações consumidoras migradas para contrato canônico;
+- cobertura de teste unit/integration/e2e verde para casos equivalentes API/SSR;
+- evidência de auditoria sem drift para o quíntuplo associado.
+
 4. Item sem evidências não pode ser removido; item com evidências não pode permanecer ativo após janela da onda.
 
 ## Dependências Críticas
@@ -194,31 +211,44 @@ Durante transição, legado pode coexistir somente sob controle:
 ## Riscos e Mitigações
 
 1. **Regressão cross-tenant em rotas por ID**
-  - Mitigação: ownership na camada de serviço e testes de autorização negativa por domínio.
+
+- Mitigação: ownership na camada de serviço e testes de autorização negativa por domínio.
+
 2. **Drift RBAC entre API e SSR durante migração parcial**
-  - Mitigação: matriz de equivalência por quíntuplo como gate de cada onda.
+
+- Mitigação: matriz de equivalência por quíntuplo como gate de cada onda.
+
 3. **Quebra de fluxos admin globais**
-  - Mitigação: testes dedicados para `eventoIds = null` em services e e2e admin.
+
+- Mitigação: testes dedicados para `eventoIds = null` em services e e2e admin.
+
 4. **Persistência de legado sem retirada**
-  - Mitigação: política de depreciação objetiva com owner/prazo/evidência obrigatória.
+
+- Mitigação: política de depreciação objetiva com owner/prazo/evidência obrigatória.
+
 5. **Mudança acidental de escopo de negócio**
-  - Mitigação: regra de não expansão no review de cada PR + checklist de aderência ao SRS.
+
+- Mitigação: regra de não expansão no review de cada PR + checklist de aderência ao SRS.
 
 ## Estratégia de Validação do Plano
 
 ### Unit
+
 - Middlewares/adapters: materialização canônica do principal e resolução de escopo.
 - Services: filtros de `eventoIds`, ownership por recurso e regras admin/restrito.
 
 ### Integration
+
 - API e SSR para mesma operação (mesmo quíntuplo) com asserção de perfil mínimo equivalente.
 - Casos de falha determinística de escopo para `gestor/monitor` com negação segura.
 
 ### E2E
+
 - Fluxos ponta-a-ponta por perfil (`admin`, `gestor`, `monitor`) em operações de maior risco.
 - Verificação de não regressão em endpoints públicos alinhados à ADR 014.
 
 ### Auditoria de Conformidade
+
 - Matriz de operações com status conforme/não conforme/exceção formal.
 - Críticos de saída por onda: drift RBAC, scoping canônico, enforcement na camada de serviço.
 - Crítico final: SC-001..SC-006 da spec com evidência rastreável.

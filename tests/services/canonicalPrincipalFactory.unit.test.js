@@ -81,9 +81,6 @@ describe('canonicalPrincipalFactory + legacyPrincipalAdapter', () => {
       }),
     )
 
-    await expect(legado.getEventos()).resolves.toEqual([
-      { id: 10 },
-      { id: 20 },
-    ])
+    await expect(legado.getEventos()).resolves.toEqual([{ id: 10 }, { id: 20 }])
   })
 })

@@ -6,7 +6,6 @@ const {
   Certificado,
 } = require('../models')
 
-
 const resourceMeta = require('../resourceMeta')
 
 async function dashboard(req, res) {
@@ -38,7 +37,11 @@ async function dashboard(req, res) {
           include: [
             { model: Participante, attributes: ['nomeCompleto'] },
             { model: Evento, attributes: ['nome'] },
-            { model: TiposCertificados, as: 'TiposCertificados', attributes: ['descricao'] },
+            {
+              model: TiposCertificados,
+              as: 'TiposCertificados',
+              attributes: ['descricao'],
+            },
           ],
           attributes: ['id', 'codigo', 'status', 'created_at'],
         }),

@@ -1,5 +1,10 @@
 process.env.NODE_ENV = 'e2e'
-const { Certificado, Participante, Evento, TiposCertificados } = require('./src/models')
+const {
+  Certificado,
+  Participante,
+  Evento,
+  TiposCertificados,
+} = require('./src/models')
 
 Certificado.findOne({
   where: { codigo: 'E2E-2026-001' },

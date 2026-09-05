@@ -31,6 +31,7 @@
 - [x] T010 Executar gate da Onda 0 (unit + integration + e2e + revisão de matriz) e registrar evidências em docs/auditorias/07/gate-onda-0.md (depende de T004, T005, T006, T007, T008, T009)
 
 **Gate da Onda 0**:
+
 - Baseline por operação (quíntuplo) publicado
 - Matriz de conformidade publicada
 - Lista de desvios críticos e itens legados em transição registrada
@@ -54,6 +55,7 @@
 - [x] T019 [US2] Executar gate da Onda 1 e registrar conformidade em docs/auditorias/07/gate-onda-1.md (depende de T012, T013, T014, T016, T017, T018)
 
 **Gate da Onda 1**:
+
 - Principal canônico populado em API e SSR
 - Dependência direta de principal legado removida dos endpoints críticos mapeados
 - Adaptador legado rastreado com owner e prazo de retirada
@@ -78,6 +80,7 @@
 - [ ] T029 [US2] Executar gate da Onda 2 e atualizar matriz de conformidade parcial em docs/auditorias/07/gate-onda-2.md (depende de T024, T025, T026, T027, T028)
 
 **Gate da Onda 2**:
+
 - Operações P1 usam req.contextoAutorizacao.eventoIds
 - Falhas determinísticas de escopo restrito negadas com segurança
 - Modo global admin com eventoIds = null sem regressão
@@ -106,6 +109,7 @@
 - [ ] T043 [US1] Executar gate da Onda 3 e atualizar matriz de conformidade das operações migradas em docs/auditorias/07/gate-onda-3.md (depende de T031, T032, T033, T037, T038, T039, T040, T041, T042)
 
 **Gate da Onda 3**:
+
 - Drift de perfil mínimo API/SSR eliminado nas operações P1 migradas
 - Bypass cross-tenant não detectável nas operações escopadas testadas
 - Matriz de conformidade atualizada com status convergido por operação migrada
@@ -128,6 +132,7 @@
 - [ ] T051 [US4] Executar gate da Onda 4 (unit + integration + e2e + auditoria final) e registrar relatório em docs/auditorias/07/gate-onda-4.md (depende de T044, T045, T047, T048, T049, T050)
 
 **Gate da Onda 4**:
+
 - 0 consumidores ativos de contrato legado de principal/escopo
 - 100% das operações da feature classificadas como conforme ou excecao_formal aprovada
 - Evidências de teste unit, integration e e2e anexadas ao relatório final

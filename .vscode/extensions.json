@@ -1,6 +1,3 @@
 {
-  "recommendations": [
-    "orta.vscode-jest",
-    "ms-playwright.playwright"
-  ]
+  "recommendations": ["orta.vscode-jest", "ms-playwright.playwright"]
 }

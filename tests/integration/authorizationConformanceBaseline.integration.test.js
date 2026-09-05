@@ -24,7 +24,10 @@ function parseOperationKeys(content, operationKeyColumnIndex) {
     .filter((line) => line.trim().startsWith('|'))
     .filter((line) => !line.includes('---'))
     .slice(1)
-    .map((line) => line.split('|').map((cell) => cell.trim())[operationKeyColumnIndex])
+    .map(
+      (line) =>
+        line.split('|').map((cell) => cell.trim())[operationKeyColumnIndex],
+    )
     .filter(Boolean)
 }
 

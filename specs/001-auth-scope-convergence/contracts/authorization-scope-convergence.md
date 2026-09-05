@@ -13,13 +13,14 @@ Todo fluxo autenticado deve materializar:
   "subjectId": 123,
   "role": "gestor",
   "authChannel": "api",
-  "sessionId": "sess-abc", 
+  "sessionId": "sess-abc",
   "tokenId": "jwt-jti-xyz",
   "tenantScopeMode": "restricted"
 }
 ```
 
 Regras:
+
 - Campos obrigatórios: `subjectId`, `role`, `authChannel`, `tenantScopeMode`.
 - Pelo menos um de `sessionId` ou `tokenId` deve existir quando aplicável.
 - `tenantScopeMode=global` <=> `role=admin`.
@@ -38,6 +39,7 @@ Canal único de escopo no request:
 ```
 
 Regras:
+
 - `admin`: `eventoIds = null`.
 - `gestor|monitor`: `eventoIds` deve ser array não vazio.
 - Falha determinística na resolução para perfil restrito => negação segura.
@@ -45,6 +47,7 @@ Regras:
 ## 3) Contrato de Equivalência RBAC por Operação
 
 Unidade canonica: quintuplo
+
 - Intento funcional
 - Recurso alvo
 - Efeito de estado
@@ -52,6 +55,7 @@ Unidade canonica: quintuplo
 - Classe de risco
 
 Regras:
+
 - Mesma operação (mesmo quíntuplo) em API e SSR deve ter mesmo `minimumRole`.
 - Divergência sem exceção formal ADR => não conformidade crítica.
 
@@ -64,6 +68,7 @@ serviceOperation(input, { eventoIds, principal, operationKey })
 ```
 
 Regras:
+
 - `eventoIds` precisa ser consumido explicitamente no service para listagem/ownership por ID.
 - Controllers não podem depender de `req.query` como canal de segurança.
 - Para operação restrita sem `eventoIds` válido, service deve negar operação.
@@ -84,11 +89,13 @@ Campos mínimos de rastreio por item legado:
 ```
 
 Regra de depreciação:
+
 - Só pode remover legado após migração completa das operações dependentes + evidências unit/integration/e2e/auditoria.
 
 ## 6) Compliance Gates
 
 Gate por operação:
+
 1. Principal canônico presente
 2. Escopo no canal canônico
 3. Negação segura para falha de escopo restrito

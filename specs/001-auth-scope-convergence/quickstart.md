@@ -21,18 +21,22 @@ Aplicar convergência transversal de autorização + scoping em ondas controlada
 ## Estratégia de Validação por Onda
 
 ### Unit
+
 - Cobrir materialização de principal canônico em ambos canais.
 - Cobrir serviços com `eventoIds` (admin null, restrito com lista, restrito sem escopo).
 
 ### Integration
+
 - Exercitar operações equivalentes API/SSR e validar mesmo perfil mínimo.
 - Validar negação segura em falha determinística de escopo para gestor/monitor.
 
 ### E2E
+
 - Fluxos ponta-a-ponta por perfil para operações de risco alto.
 - Regressão de endpoints públicos sensíveis conforme ADR 014.
 
 ### Auditoria de Conformidade
+
 - Atualizar matriz por operação em cada onda.
 - Bloquear avanço de onda se houver drift RBAC ou bypass multi-tenant nas operações alvo da onda.
 

@@ -38,9 +38,7 @@ function createCanonicalPrincipal({
     throw new Error('authChannel é obrigatório no principal canônico')
   }
   if (!sessionId && !tokenId) {
-    throw new Error(
-      'sessionId ou tokenId é obrigatório no principal canônico',
-    )
+    throw new Error('sessionId ou tokenId é obrigatório no principal canônico')
   }
 
   return {

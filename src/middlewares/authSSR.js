@@ -1,12 +1,30 @@
 const jwt = require('jsonwebtoken')
 const { Usuario } = require('../models')
 const { fromSSR } = require('../services/auth/canonicalPrincipalFactory')
+const {
+  resolveAuthorizationScope,
+} = require('../services/auth/resolveAuthorizationScope')
 
 function setAnonymous(req, res) {
   req.usuario = null
   req.principal = null
+  req.contextoAutorizacao = { eventoIds: null, scopeMode: 'global' }
   res.locals.usuario = null
   res.locals.principal = null
+  res.locals.contextoAutorizacao = req.contextoAutorizacao
+}
+
+async function setAuthorizationContext(req, res, usuario, principal) {
+  try {
+    req.contextoAutorizacao = await resolveAuthorizationScope({
+      usuario,
+      principal,
+      strict: false,
+    })
+  } catch {
+    req.contextoAutorizacao = { eventoIds: [], scopeMode: 'scoped_events' }
+  }
+  res.locals.contextoAutorizacao = req.contextoAutorizacao
 }
 
 function setAuthenticated(req, res, usuarioData, principal) {
@@ -29,6 +47,7 @@ module.exports = async function authSSR(req, res, next) {
       })
 
       setAuthenticated(req, res, mockUser, principal)
+      await setAuthorizationContext(req, res, mockUser, principal)
       req.session.mockUser = mockUser
       return next()
     } catch {
@@ -50,6 +69,7 @@ module.exports = async function authSSR(req, res, next) {
     })
 
     setAuthenticated(req, res, mockUser, principal)
+    await setAuthorizationContext(req, res, mockUser, principal)
     return next()
   }
 
@@ -88,6 +108,7 @@ module.exports = async function authSSR(req, res, next) {
     })
 
     setAuthenticated(req, res, usuarioData, principal)
+    await setAuthorizationContext(req, res, usuario, principal)
     next()
   } catch {
     setAnonymous(req, res)

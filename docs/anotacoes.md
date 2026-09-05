@@ -6,10 +6,10 @@ Rodar speckit.tasks para decompor o plano em tarefas executáveis por onda.
 
 ===========================================================
 
-
 Habilitar a possibilidade de o usuário registrar múltiplos emails.
 
 Padronização de ícones realizadas. Estender para as subpáginas (bebendo de resourceMeta):
+
 - Eventos
 - Certificados
 - Tipos
@@ -18,7 +18,7 @@ Padronização de ícones realizadas. Estender para as subpáginas (bebendo de r
 
 Ver uma forma interessante de visualizar esses dados de certificados. Perguntar pra GenAI.
 
------------------------------
+---
 
 ### Problema: Risco de Omissão de Parâmetro de Escopo (`eventoIds`) por Falta de Tipagem Forte
 
@@ -30,7 +30,7 @@ Esse risco é inerente ao uso de JavaScript, que não possui tipagem estática. 
 
 A adoção de TypeScript é fortemente recomendada para mitigar esse risco. Com TypeScript, é possível definir na assinatura dos services que o parâmetro `eventoIds` é obrigatório, permitindo que o compilador aponte imediatamente qualquer chamada incorreta ou omissa. Isso aumenta a segurança, a robustez e a manutenibilidade do sistema, reduzindo a probabilidade de falhas silenciosas relacionadas ao escopo multi-tenant.
 
------------------------------
+---
 
 =============================
 Página Inicial

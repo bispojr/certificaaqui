@@ -10,7 +10,9 @@ test('UC-ACB-01 — matriz de conformidade inicial deve existir e conter baselin
 
   const content = fs.readFileSync(matrixPath, 'utf-8')
 
-  expect(content).toContain('# Matriz de Conformidade Inicial - Autorização e Escopo (Onda 0)')
+  expect(content).toContain(
+    '# Matriz de Conformidade Inicial - Autorização e Escopo (Onda 0)',
+  )
   expect(content).toContain('## Matriz por operação P1')
   expect(content).toContain('cert.restore')
   expect(content).toContain('evento.create')

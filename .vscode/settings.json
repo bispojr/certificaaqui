@@ -1,31 +1,29 @@
 {
-    "jest.jestCommandLine": "npx jest --runInBand --detectOpenHandles --verbose",
-    "jest.autoRun": {
-        "watch": false,
-        "onSave": "test-file",
-        "onStartup": [
-            "all-tests"
-        ]
-    },
-    "jest.outputConfig": {
-        "revealOn": "error",
-        "isStickyOnError": true
-    },
-    "jest.testExplorer": {
-        "showInlineError": true
-    },
-    "testing.autoRun.mode": "all",
-    "testing.automaticallyOpenTestResults": "neverOpen",
-    "playwright.reuseBrowser": true,
-    "chat.promptFilesRecommendations": {
-        "speckit.constitution": true,
-        "speckit.specify": true,
-        "speckit.plan": true,
-        "speckit.tasks": true,
-        "speckit.implement": true
-    },
-    "chat.tools.terminal.autoApprove": {
-        ".specify/scripts/bash/": true,
-        ".specify/scripts/powershell/": true
-    }
+  "jest.jestCommandLine": "npx jest --runInBand --detectOpenHandles --verbose",
+  "jest.autoRun": {
+    "watch": false,
+    "onSave": "test-file",
+    "onStartup": ["all-tests"]
+  },
+  "jest.outputConfig": {
+    "revealOn": "error",
+    "isStickyOnError": true
+  },
+  "jest.testExplorer": {
+    "showInlineError": true
+  },
+  "testing.autoRun.mode": "all",
+  "testing.automaticallyOpenTestResults": "neverOpen",
+  "playwright.reuseBrowser": true,
+  "chat.promptFilesRecommendations": {
+    "speckit.constitution": true,
+    "speckit.specify": true,
+    "speckit.plan": true,
+    "speckit.tasks": true,
+    "speckit.implement": true
+  },
+  "chat.tools.terminal.autoApprove": {
+    ".specify/scripts/bash/": true,
+    ".specify/scripts/powershell/": true
+  }
 }

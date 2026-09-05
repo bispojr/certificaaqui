@@ -1,6 +1,11 @@
 const express = require('express')
 const router = express.Router()
-const { Certificado, Participante, Evento, TiposCertificados } = require('../models')
+const {
+  Certificado,
+  Participante,
+  Evento,
+  TiposCertificados,
+} = require('../models')
 
 // Aceita apenas letras (A-Z), números e hífens — protege contra SQL injection e entradas maliciosas
 const CODIGO_CERTIFICADO_REGEX = /^[A-Z0-9-]{1,60}$/i
@@ -65,7 +70,10 @@ router.post('/validar', async (req, res) => {
     }
     return res.render('certificados/validar-resultado', {
       valido: true,
-      certificado: typeof certificado.toJSON === 'function' ? certificado.toJSON() : certificado,
+      certificado:
+        typeof certificado.toJSON === 'function'
+          ? certificado.toJSON()
+          : certificado,
     })
   } catch {
     return res.render('certificados/form-validar', {
@@ -98,7 +106,10 @@ router.get('/validar/:codigo', async (req, res) => {
     }
     return res.render('certificados/validar-resultado', {
       valido: true,
-      certificado: typeof certificado.toJSON === 'function' ? certificado.toJSON() : certificado,
+      certificado:
+        typeof certificado.toJSON === 'function'
+          ? certificado.toJSON()
+          : certificado,
     })
   } catch {
     return res.render('certificados/form-validar', {

@@ -7,6 +7,7 @@ Modelo conceitual para convergência arquitetural de autorização e escopo (sem
 ## Entidade: CanonicalPrincipal
 
 Campos:
+
 - `subjectId` (number, obrigatório)
 - `role` (enum: `admin|gestor|monitor`, obrigatorio)
 - `authChannel` (enum: `api|ssr`, obrigatório)
@@ -15,6 +16,7 @@ Campos:
 - `tenantScopeMode` (enum: `global|restricted`, obrigatório)
 
 Regras:
+
 - Deve existir exatamente um identificador de sessão (`sessionId` ou `tokenId`) quando aplicável.
 - `tenantScopeMode = global` implica `role = admin`.
 - Não pode carregar capacidades ORM/métodos de associação.
@@ -22,11 +24,13 @@ Regras:
 ## Entidade: AuthorizationContext
 
 Campos:
+
 - `principal` (CanonicalPrincipal, obrigatório)
 - `eventoIds` (array<number> ou null, obrigatório)
 - `scopeResolutionStatus` (enum: `resolved|failed_deterministic|not_required`, obrigatório)
 
 Regras:
+
 - `eventoIds = null` apenas para `tenantScopeMode = global`.
 - Para `tenantScopeMode = restricted`, `scopeResolutionStatus` deve ser `resolved` com array não vazio; falha determinística implica negação segura.
 - Canal canônico no request: `req.contextoAutorizacao.eventoIds`.
@@ -34,6 +38,7 @@ Regras:
 ## Entidade: CanonicalBusinessOperation
 
 Campos:
+
 - `operationKey` (string, obrigatório, único)
 - `functionalIntent` (string, obrigatório)
 - `targetResource` (string, obrigatório)
@@ -43,6 +48,7 @@ Campos:
 - `minimumRole` (enum: `admin|gestor|monitor`, obrigatório)
 
 Regras:
+
 - `operationKey` representa o quíntuplo canônico (ADR 012).
 - Operações equivalentes API/SSR devem compartilhar o mesmo `operationKey` e `minimumRole`.
 - Divergência sem exceção formal registrada = não conformidade crítica.
@@ -50,6 +56,7 @@ Regras:
 ## Entidade: ConformanceAssessment
 
 Campos:
+
 - `operationKey` (string, obrigatório)
 - `surface` (enum: `api|ssr|cross-surface`, obrigatório)
 - `status` (enum: `conforme|nao_conforme|excecao_formal`, obrigatório)
@@ -58,12 +65,14 @@ Campos:
 - `updatedAt` (datetime, obrigatório)
 
 Regras:
+
 - Toda operação no baseline deve possuir avaliação.
 - `excecao_formal` requer referência rastreável para ADR complementar.
 
 ## Entidade: LegacyCompatibilityItem
 
 Campos:
+
 - `legacyId` (string, obrigatório, único)
 - `componentRef` (string, obrigatório)
 - `legacyContractType` (enum: `principal|scope|rbac`, obrigatório)
@@ -74,6 +83,7 @@ Campos:
 - `status` (enum: `active|migrating|deprecated|removed`, obrigatório)
 
 Regras:
+
 - Item legado ativo sem owner e sem critério de retirada é inválido.
 - Mudança para `deprecated` exige critérios de saída cumpridos + evidências.
 
@@ -86,10 +96,12 @@ Regras:
 ## Transicoes de Estado
 
 ### ConformanceAssessment
+
 - `nao_conforme -> conforme` quando contrato canônico + scoping canônico + enforcement na camada de serviço + equivalência RBAC forem comprovados.
 - `nao_conforme -> excecao_formal` apenas com ADR complementar aprovado.
 
 ### LegacyCompatibilityItem
+
 - `active -> migrating`: onda iniciada e plano de migração aprovado.
 - `migrating -> deprecated`: todas as operações dependentes migradas e testadas.
 - `deprecated -> removed`: janela de transição encerrada sem consumidores ativos.

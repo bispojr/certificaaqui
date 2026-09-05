@@ -3,7 +3,7 @@ const fs = require('fs')
 const handlebars = require('handlebars')
 
 // Helper 'or' para uso em templates (equivalente ao usado no projeto)
-handlebars.registerHelper('or', function() {
+handlebars.registerHelper('or', function () {
   // Remove o último argumento (options)
   const args = Array.prototype.slice.call(arguments, 0, -1)
   return args.some(Boolean)
@@ -23,13 +23,16 @@ describe('View: admin/dashboard.hbs com resourceMeta', () => {
       grupos: {
         certificacao: { icon: 'fa-certificate', label: 'Certificação' },
         eventos: { icon: 'fa-calendar-days', label: 'Eventos' },
-        administracao: { icon: 'fa-user-shield', label: 'Administração' }
+        administracao: { icon: 'fa-user-shield', label: 'Administração' },
       },
       eventos: { icon: 'fa-calendar-alt', label: 'Eventos' },
       participantes: { icon: 'fa-user-graduate', label: 'Participantes' },
       certificados: { icon: 'fa-certificate', label: 'Certificados' },
-      tiposCertificados: { icon: 'fa-layer-group', label: 'Tipos de Certificado' },
-      usuarios: { icon: 'fa-users-cog', label: 'Usuários' }
+      tiposCertificados: {
+        icon: 'fa-layer-group',
+        label: 'Tipos de Certificado',
+      },
+      usuarios: { icon: 'fa-users-cog', label: 'Usuários' },
     }
     const html = template({
       resourceMeta,
@@ -39,7 +42,7 @@ describe('View: admin/dashboard.hbs com resourceMeta', () => {
       totalUsuarios: 4,
       totalCertificados: 5,
       totalCertificadosPendentes: 6,
-      usuario: { isAdmin: true, isGestor: true }
+      usuario: { isAdmin: true, isGestor: true },
     })
     const $ = cheerio.load(html)
     // Grupos
