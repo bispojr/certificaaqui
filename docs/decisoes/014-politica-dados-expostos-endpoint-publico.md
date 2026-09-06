@@ -69,13 +69,13 @@ Regra canônica de exposição: atributos sem classificação explícita não po
 ## Alternativas Consideradas
 
 1. Exposição mínima estrita para validação pública (adotada).
-Trade-off: reduz risco de exposição e melhora previsibilidade arquitetural, porém pode limitar casos de uso informacionais não formalizados no SRS atual.
+   Trade-off: reduz risco de exposição e melhora previsibilidade arquitetural, porém pode limitar casos de uso informacionais não formalizados no SRS atual.
 
 2. Exposição parcial ampliada (ex.: nome do participante e tipo, sem e-mail e sem `valores_dinamicos`).
-Trade-off: melhora legibilidade pública do resultado, mas amplia superfície de dados pessoais sem critério jurídico consolidado e aumenta risco de scraping.
+   Trade-off: melhora legibilidade pública do resultado, mas amplia superfície de dados pessoais sem critério jurídico consolidado e aumenta risco de scraping.
 
 3. Manter payloads atuais e tratar casos de exposição individualmente por endpoint.
-Trade-off: menor atrito imediato, porém perpetua inconsistência sistêmica, não resolve lacuna arquitetural e mantém alto risco de regressão.
+   Trade-off: menor atrito imediato, porém perpetua inconsistência sistêmica, não resolve lacuna arquitetural e mantém alto risco de regressão.
 
 ## Consequências
 

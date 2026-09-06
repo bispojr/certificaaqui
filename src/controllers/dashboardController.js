@@ -6,17 +6,23 @@ const {
   Certificado,
 } = require('../models')
 
-
 const resourceMeta = require('../resourceMeta')
+const { getMinimumRole } = require('../services/auth/operationPolicyCatalog')
 
 async function dashboard(req, res) {
   try {
     if (!req.usuario) {
       return res.redirect('/login')
     }
-    const { perfil } = req.usuario
 
-    if (perfil === 'admin') {
+    const requiredRole = getMinimumRole('dashboard.read')
+    const requestedPerfil = req.usuario.perfil
+
+    if (!['admin', 'gestor', 'monitor'].includes(requestedPerfil)) {
+      return res.status(403).render('error', { message: 'Perfil inválido.' })
+    }
+
+    if (requestedPerfil === 'admin') {
       const [
         totalEventos,
         totalTipos,
@@ -38,7 +44,11 @@ async function dashboard(req, res) {
           include: [
             { model: Participante, attributes: ['nomeCompleto'] },
             { model: Evento, attributes: ['nome'] },
-            { model: TiposCertificados, as: 'TiposCertificados', attributes: ['descricao'] },
+            {
+              model: TiposCertificados,
+              as: 'TiposCertificados',
+              attributes: ['descricao'],
+            },
           ],
           attributes: ['id', 'codigo', 'status', 'created_at'],
         }),
@@ -57,13 +67,16 @@ async function dashboard(req, res) {
       })
     }
 
-    // gestor ou monitor — escopo por eventos vinculados
-    const dbUsuario = await Usuario.findByPk(req.usuario.id, {
-      include: [{ model: Evento, as: 'eventos', attributes: ['id'] }],
-    })
-    const eventoIds = (dbUsuario.eventos || []).map((e) => e.id)
+    const eventoIds =
+      req.contextoAutorizacao?.eventoIds ??
+      (
+        await Usuario.findByPk(req.usuario.id, {
+          include: [{ model: Evento, as: 'eventos', attributes: ['id'] }],
+        })
+      ).eventos.map((evento) => evento.id)
 
-    const whereEvento = eventoIds.length ? { evento_id: eventoIds } : null
+    const whereEvento =
+      eventoIds && eventoIds.length ? { evento_id: eventoIds } : null
 
     const [totalCertificados, totalParticipantes] = whereEvento
       ? await Promise.all([
@@ -82,6 +95,7 @@ async function dashboard(req, res) {
       totalCertificados,
       totalParticipantes,
       resourceMeta,
+      requiredRole,
     })
   } catch (error) {
     return res.status(500).render('error', { message: error.message })

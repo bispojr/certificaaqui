@@ -36,6 +36,11 @@ module.exports = {
       testMatch: ['<rootDir>/tests/services/**/*.test.js'],
     },
     {
+      displayName: 'integration',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/tests/integration/**/*.test.js'],
+    },
+    {
       displayName: 'controllers',
       testEnvironment: 'node',
       testMatch: ['<rootDir>/tests/controllers/**/*.test.js'],

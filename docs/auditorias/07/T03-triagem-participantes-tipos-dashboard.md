@@ -5,11 +5,13 @@
 **Data da triagem:** 2026-05-09 19:58 (BRT)  
 **Analista:** GitHub Copilot (Claude Sonnet 4.6)  
 **Auditorias-base consumidas:**
+
 - `docs/auditorias/07/06-participantes.md` (2026-05-09 19:14 BRT)
 - `docs/auditorias/07/08-tipos-templates.md` (2026-05-09 19:37 BRT)
 - `docs/auditorias/07/09-dashboard-relatorios.md` (2026-05-09 19:49 BRT)
 
 **Triagens anteriores referenciadas (apenas para dependências):**
+
 - `docs/auditorias/07/T01-triagem-certificados-rbac.md`
 - `docs/auditorias/07/T02-triagem-eventos-usuarios-auth.md`
 - `docs/auditorias/07/02-rbac-escopo.md`
@@ -28,16 +30,16 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 
 ## Legenda de Tipos
 
-| Código | Significado |
-|--------|-------------|
-| BR | Bug real |
-| GI | Gap de implementação |
-| IP | Implementação parcial |
-| ID | Inconsistência documental |
-| DT | Dívida técnica |
-| VU | Vulnerabilidade |
-| AM | Ambiguidade |
-| VA | Violação arquitetural |
+| Código | Significado               |
+| ------ | ------------------------- |
+| BR     | Bug real                  |
+| GI     | Gap de implementação      |
+| IP     | Implementação parcial     |
+| ID     | Inconsistência documental |
+| DT     | Dívida técnica            |
+| VU     | Vulnerabilidade           |
+| AM     | Ambiguidade               |
+| VA     | Violação arquitetural     |
 
 ---
 
@@ -45,76 +47,76 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 
 ### 1.1 Achados Transversais (dois ou mais domínios)
 
-| ID | Domínio | Descrição | Severidade | Tipo | Impacto | Destino Recomendado |
-|----|---------|-----------|------------|------|---------|---------------------|
-| TS-01 | Participantes · Tipos · Dashboard | `authSSR` retorna plain object sem métodos Sequelize: `scopedEvento`, `tiposCertificadosOwnership` inaplicáveis em SSR; `isMonitor` ausente; controllers reimplementam lógica de escopo ad hoc | Crítica | VA | Reutilização de middlewares impossível em SSR; lógica de ownership duplicada; flag `isMonitor` nunca verdadeira em produção | ADR + Backlog crítico |
-| TS-02 | Participantes · Tipos | `scopedEvento` resolve `evento_id` como `req.params.id` em rotas de recurso: controle de acesso item-level determinado por coincidência numérica | Crítica | BR | Acesso concedido ou negado por razão aleatória (ID do recurso ≠ ID do evento); enforcement multi-tenant não-determinístico | Correção imediata |
-| TS-03 | Participantes · Tipos · Dashboard | Services (`participanteService`, `tiposCertificadosService`, `certificadoService`, `dashboardController`) ignoram filtros de evento injetados: `scopedEvento` não produz efeito real | Crítica | VA | Proteção multi-tenant via middleware é ilusória; escopo nunca é aplicado na camada de dados | ADR + Correção imediata |
-| TS-04 | Participantes · Tipos · Dashboard | Divergência sistemática de RBAC entre API e SSR: monitores ora têm acesso negado (SSR criar certificado), ora têm a mais (SSR participantes sem rbac), ora correto (API) | Alta | VA | Sem superfície segura e confiável; surface SSR ignora completamente RBAC em participantes | Correção imediata |
-| TS-05 | Participantes · Tipos | HTTP 200/204 com payload nulo para recursos inexistentes em operações de `update`, `delete` e `restore` | Média | BR | Clientes API não detectam falha em operações sobre IDs inexistentes; integração incorreta | Backlog curto prazo |
-| TS-06 | Participantes · Tipos | Índice `UNIQUE` sem cláusula `WHERE deleted_at IS NULL`: soft-delete bloqueia re-cadastro de email (participante) e colisão após restore (tipos-certificados e código de certificado) | Média | BR | Re-cadastro impossível após exclusão lógica; restore pode falhar com constraint violation | Backlog curto prazo |
+| ID    | Domínio                           | Descrição                                                                                                                                                                                      | Severidade | Tipo | Impacto                                                                                                                     | Destino Recomendado     |
+| ----- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---- | --------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| TS-01 | Participantes · Tipos · Dashboard | `authSSR` retorna plain object sem métodos Sequelize: `scopedEvento`, `tiposCertificadosOwnership` inaplicáveis em SSR; `isMonitor` ausente; controllers reimplementam lógica de escopo ad hoc | Crítica    | VA   | Reutilização de middlewares impossível em SSR; lógica de ownership duplicada; flag `isMonitor` nunca verdadeira em produção | ADR + Backlog crítico   |
+| TS-02 | Participantes · Tipos             | `scopedEvento` resolve `evento_id` como `req.params.id` em rotas de recurso: controle de acesso item-level determinado por coincidência numérica                                               | Crítica    | BR   | Acesso concedido ou negado por razão aleatória (ID do recurso ≠ ID do evento); enforcement multi-tenant não-determinístico  | Correção imediata       |
+| TS-03 | Participantes · Tipos · Dashboard | Services (`participanteService`, `tiposCertificadosService`, `certificadoService`, `dashboardController`) ignoram filtros de evento injetados: `scopedEvento` não produz efeito real           | Crítica    | VA   | Proteção multi-tenant via middleware é ilusória; escopo nunca é aplicado na camada de dados                                 | ADR + Correção imediata |
+| TS-04 | Participantes · Tipos · Dashboard | Divergência sistemática de RBAC entre API e SSR: monitores ora têm acesso negado (SSR criar certificado), ora têm a mais (SSR participantes sem rbac), ora correto (API)                       | Alta       | VA   | Sem superfície segura e confiável; surface SSR ignora completamente RBAC em participantes                                   | Correção imediata       |
+| TS-05 | Participantes · Tipos             | HTTP 200/204 com payload nulo para recursos inexistentes em operações de `update`, `delete` e `restore`                                                                                        | Média      | BR   | Clientes API não detectam falha em operações sobre IDs inexistentes; integração incorreta                                   | Backlog curto prazo     |
+| TS-06 | Participantes · Tipos             | Índice `UNIQUE` sem cláusula `WHERE deleted_at IS NULL`: soft-delete bloqueia re-cadastro de email (participante) e colisão após restore (tipos-certificados e código de certificado)          | Média      | BR   | Re-cadastro impossível após exclusão lógica; restore pode falhar com constraint violation                                   | Backlog curto prazo     |
 
 ---
 
 ### 1.2 Achados do Domínio de Participantes
 
-| ID | Domínio | Descrição | Severidade | Tipo | Impacto | Destino Recomendado |
-|----|---------|-----------|------------|------|---------|---------------------|
-| PA-01 | Participantes | `GET /participantes` (API) lista todos os participantes do sistema sem qualquer filtro de evento: gestor/monitor acessa PII de participantes de outros eventos | Crítica | VU | Vazamento massivo de PII (nome, email, instituição) entre tenants; violação FR-37 | Correção imediata |
-| PA-02 | Participantes | Todas as rotas SSR de participantes sem middleware `rbac()`: monitor pode criar, editar, deletar e restaurar participantes pela interface web | Crítica | VU | Escalada de privilégio funcional direta para monitor; violação FR-35, FR-36, FR-38, NFR-1 | Correção imediata |
-| PA-03 | Participantes | SSR: operações por `:id` (`editar`, `atualizar`, `deletar`, `restaurar`) sem verificação de escopo por evento | Alta | VU | Gestor/monitor pode editar ou deletar participante de outro evento via SSR | Correção imediata |
-| PA-04 | Participantes | SSR: participantes sem certificado vinculado ao evento do usuário ficam invisíveis para gestor/monitor (efeito colateral do JOIN em `Certificado`) | Alta | GI | Participantes registrados mas sem certificados somem da listagem SSR para não-admins; violação FR-36, FR-49 | Backlog crítico |
-| PA-05 | Participantes | SSR: ausência de validação server-side de `nomeCompleto.min(3)` em criação e edição | Média | GI | Participantes com nome de 1–2 caracteres podem ser criados via SSR; violação FR-3 | Backlog curto prazo |
-| PA-06 | Participantes | API: ausência de busca textual (`?q=`): integrações não podem filtrar participantes por nome ou email | Média | GI | API sem paridade funcional com SSR; FR-49 parcialmente atendido | Backlog médio prazo |
-| PA-07 | Participantes | Busca pública por email (`GET /api/certificados?email=`) é case-sensitive: `joao@TESTE.com` ≠ `joao@teste.com` | Baixa | DT | Usuário não encontra certificados por variação de capitalização; violação FR-23, FR-53 | Backlog médio prazo |
-| PA-08 | Participantes | SSR: filtro `?q=` não é aplicado à seção de participantes arquivados | Baixa | BR | Busca filtra ativos mas exibe todos os arquivados; inconsistência de UX | Backlog curto prazo |
-| PA-09 | Participantes | `PUT /participantes/:id` usa `schema.partial()`: aceita corpo vazio `{}` como válido; semântica PATCH implementada via PUT | Baixa | DT | Divergência da semântica REST; FR-1 parcialmente atendido | Backlog longo prazo |
-| PA-10 | Participantes | Duplicação de métodos `destroy` e `delete` no `participanteService` com mesma implementação | Baixa | DT | Risco de divergência futura; manutenção dupla | Backlog longo prazo |
-| PA-11 | Participantes | Modelo `Participante` sem associação direta com `Evento`: impossibilidade ORM de filtrar participantes por evento sem JOIN em certificados | Alta | VA | Impossibilidade arquitetural de aplicar `scopedEvento` ao domínio; raiz do PA-04; violação FR-37 | ADR / Backlog crítico |
+| ID    | Domínio       | Descrição                                                                                                                                                      | Severidade | Tipo | Impacto                                                                                                     | Destino Recomendado   |
+| ----- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---- | ----------------------------------------------------------------------------------------------------------- | --------------------- |
+| PA-01 | Participantes | `GET /participantes` (API) lista todos os participantes do sistema sem qualquer filtro de evento: gestor/monitor acessa PII de participantes de outros eventos | Crítica    | VU   | Vazamento massivo de PII (nome, email, instituição) entre tenants; violação FR-37                           | Correção imediata     |
+| PA-02 | Participantes | Todas as rotas SSR de participantes sem middleware `rbac()`: monitor pode criar, editar, deletar e restaurar participantes pela interface web                  | Crítica    | VU   | Escalada de privilégio funcional direta para monitor; violação FR-35, FR-36, FR-38, NFR-1                   | Correção imediata     |
+| PA-03 | Participantes | SSR: operações por `:id` (`editar`, `atualizar`, `deletar`, `restaurar`) sem verificação de escopo por evento                                                  | Alta       | VU   | Gestor/monitor pode editar ou deletar participante de outro evento via SSR                                  | Correção imediata     |
+| PA-04 | Participantes | SSR: participantes sem certificado vinculado ao evento do usuário ficam invisíveis para gestor/monitor (efeito colateral do JOIN em `Certificado`)             | Alta       | GI   | Participantes registrados mas sem certificados somem da listagem SSR para não-admins; violação FR-36, FR-49 | Backlog crítico       |
+| PA-05 | Participantes | SSR: ausência de validação server-side de `nomeCompleto.min(3)` em criação e edição                                                                            | Média      | GI   | Participantes com nome de 1–2 caracteres podem ser criados via SSR; violação FR-3                           | Backlog curto prazo   |
+| PA-06 | Participantes | API: ausência de busca textual (`?q=`): integrações não podem filtrar participantes por nome ou email                                                          | Média      | GI   | API sem paridade funcional com SSR; FR-49 parcialmente atendido                                             | Backlog médio prazo   |
+| PA-07 | Participantes | Busca pública por email (`GET /api/certificados?email=`) é case-sensitive: `joao@TESTE.com` ≠ `joao@teste.com`                                                 | Baixa      | DT   | Usuário não encontra certificados por variação de capitalização; violação FR-23, FR-53                      | Backlog médio prazo   |
+| PA-08 | Participantes | SSR: filtro `?q=` não é aplicado à seção de participantes arquivados                                                                                           | Baixa      | BR   | Busca filtra ativos mas exibe todos os arquivados; inconsistência de UX                                     | Backlog curto prazo   |
+| PA-09 | Participantes | `PUT /participantes/:id` usa `schema.partial()`: aceita corpo vazio `{}` como válido; semântica PATCH implementada via PUT                                     | Baixa      | DT   | Divergência da semântica REST; FR-1 parcialmente atendido                                                   | Backlog longo prazo   |
+| PA-10 | Participantes | Duplicação de métodos `destroy` e `delete` no `participanteService` com mesma implementação                                                                    | Baixa      | DT   | Risco de divergência futura; manutenção dupla                                                               | Backlog longo prazo   |
+| PA-11 | Participantes | Modelo `Participante` sem associação direta com `Evento`: impossibilidade ORM de filtrar participantes por evento sem JOIN em certificados                     | Alta       | VA   | Impossibilidade arquitetural de aplicar `scopedEvento` ao domínio; raiz do PA-04; violação FR-37            | ADR / Backlog crítico |
 
 ---
 
 ### 1.3 Achados do Domínio de Tipos de Certificados
 
-| ID | Domínio | Descrição | Severidade | Tipo | Impacto | Destino Recomendado |
-|----|---------|-----------|------------|------|---------|---------------------|
-| TC-01 | Tipos · Certificados | Validator Zod de criação de certificado remove `valores_dinamicos` silenciosamente (campo não declarado); service detecta todos os campos como faltantes e retorna HTTP 422 permanente | Crítica | BR | Emissão de certificados com campos dinâmicos impossível via API; caso de uso central corrompido; violação FR-20, FR-54 | Correção imediata |
-| TC-02 | Tipos · Certificados | Service de emissão não valida que `tipo_certificado_id` pertence ao mesmo `evento_id` do certificado | Alta | BR | Certificado pode ser criado vinculando tipo de evento A com evento B; violação FR-21, FR-45 | Correção imediata |
-| TC-03 | Tipos | SSR `index`: `whereAtivos = {}` — `eventosIds` obtido mas nunca usado na cláusula `where`; gestor/monitor vê tipos de todos os eventos | Alta | BR | Isolamento multi-tenant violado na listagem SSR; violação FR-37, FR-46 | Correção imediata |
-| TC-04 | Tipos | SSR `index` de tipos arquivados também sem filtro de evento: gestores veem todos os soft-deletados do sistema | Média | IP | Extensão de TC-03 para a seção de arquivados; violação FR-37 | Backlog curto prazo |
-| TC-05 | Tipos | `tiposCertificadosOwnership` é executado **antes** do validator Zod: `evento_id` pode ser null/inválido ao atingir o middleware de ownership | Média | BR | Body não validado é usado no enforcement de autorização; risco de comportamento imprevisível | Backlog curto prazo |
-| TC-06 | Tipos · Certificados | Migration `20260418232720` cria constraint `UNIQUE(codigo, evento_id)` sem cláusula `WHERE deleted_at IS NULL`: restore de tipo cujo código foi recriado falha com constraint violation | Alta | BR | FR-11 especifica unicidade parcial; migration diverge do SRS; restore potencialmente inutilizável | Correção imediata |
-| TC-07 | Tipos · Certificados | SSR detalhe de certificado acessa `certificado.TiposCertificado?.texto_base` (singular) mas include usa alias `TiposCertificados` (plural): `textoInterpolado` sempre vazio | Alta | BR | Texto interpolado nunca exibido no detalhe SSR; violação FR-39 | Correção imediata |
-| TC-08 | Tipos · Certificados | API `POST /:id/restore` de certificados usa `rbac('monitor')`: monitor pode restaurar qualquer certificado soft-deletado via API | Alta | BR | Contradiz FR-22 ("apenas admin pode restaurar via SSR"); API mais permissiva sem justificativa; violação RBAC | Backlog crítico |
-| TC-09 | Tipos · Certificados | SSR `POST /admin/certificados` usa `rbac('gestor')`: monitor fica bloqueado de criar certificados pela interface web | Alta | IP | Contradiz FR-36 ("monitor pode criar certificados"); divergência API/SSR injustificada | Backlog crítico |
-| TC-10 | Tipos | API PUT de tipos permite alterar `evento_id` sem validar novo ownership do escopo de destino | Média | GI | Gestor pode mover tipo para evento fora do seu escopo; violação FR-45, FR-46 | Backlog curto prazo |
-| TC-11 | Tipos | `scopedEvento` ausente em `GET /tipos-certificados` e `GET /tipos-certificados/:id` via API: gestor/monitor recebe todos os tipos sem filtro | Alta | GI | API não aplica escopo em leitura de tipos; violação FR-37, FR-46 | Backlog crítico |
-| TC-12 | Tipos · Certificados | Formulários SSR de novo/editar certificado carregam todos os tipos sem filtro de evento do usuário | Média | GI | Gestor/monitor vê tipos de outros eventos no seletor do formulário; violação FR-37, FR-45 | Backlog curto prazo |
-| TC-13 | Tipos | Lógica de ownership (`getEventosIds`, `temOwnership`) duplicada independentemente no `tiposCertificadosSSRController` e no middleware `tiposCertificadosOwnership` | Média | DT | Regras de negócio mantidas em dois lugares; BR-02/TC-03 é evidência de divergência já ocorrida; violação NFR-6 | Backlog médio prazo |
-| TC-14 | Tipos | Validação cross-field de `campo_destaque` implementada em hook `beforeValidate` do model Sequelize | Média | VA | Lógica de domínio no model; hook lança `Error` genérico (não `ValidationError`); violação NFR-6 | Backlog médio prazo |
-| TC-15 | Tipos | `dados_dinamicos` não tem estrutura formal documentada no SRS: UI assume `{chave: rótulo}`, validator aceita `z.record(z.any())` | — | AM | Clientes da API sem contrato formal sobre o formato; risco de implementação divergente | Atualização SRS |
-| TC-16 | Tipos | Preview do `texto_base` no formulário SSR usa o rótulo do campo como valor de substituição, não como valor real de exemplo | — | AM | Preview não representa o output final; pode confundir durante configuração de tipos | Validação humana |
-| TC-17 | Tipos | Services de tipos usam caminho de import `../../src/models` em vez de `../models` | Baixa | DT | Funciona apenas pela estrutura atual; frágil ante reorganização de diretórios | Backlog longo prazo |
-| TC-18 | Tipos | `pdfService.js` usa duplo fallback de alias `TiposCertificado || TiposCertificados` | Baixa | DT | Código defensivo que obscurece a inconsistência de aliasing (ver TC-07) em vez de corrigi-la | Backlog longo prazo |
-| TC-19 | Tipos | `JSON.parse` de `dados_dinamicos_json` no SSR sem tratamento: mensagem de erro bruta exposta ao usuário via flash | Baixa | DT | UX degradada em erro de input; possível information disclosure | Backlog médio prazo |
+| ID    | Domínio              | Descrição                                                                                                                                                                               | Severidade | Tipo               | Impacto                                                                                                                | Destino Recomendado |
+| ----- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------- | ------------------- |
+| TC-01 | Tipos · Certificados | Validator Zod de criação de certificado remove `valores_dinamicos` silenciosamente (campo não declarado); service detecta todos os campos como faltantes e retorna HTTP 422 permanente  | Crítica    | BR                 | Emissão de certificados com campos dinâmicos impossível via API; caso de uso central corrompido; violação FR-20, FR-54 | Correção imediata   |
+| TC-02 | Tipos · Certificados | Service de emissão não valida que `tipo_certificado_id` pertence ao mesmo `evento_id` do certificado                                                                                    | Alta       | BR                 | Certificado pode ser criado vinculando tipo de evento A com evento B; violação FR-21, FR-45                            | Correção imediata   |
+| TC-03 | Tipos                | SSR `index`: `whereAtivos = {}` — `eventosIds` obtido mas nunca usado na cláusula `where`; gestor/monitor vê tipos de todos os eventos                                                  | Alta       | BR                 | Isolamento multi-tenant violado na listagem SSR; violação FR-37, FR-46                                                 | Correção imediata   |
+| TC-04 | Tipos                | SSR `index` de tipos arquivados também sem filtro de evento: gestores veem todos os soft-deletados do sistema                                                                           | Média      | IP                 | Extensão de TC-03 para a seção de arquivados; violação FR-37                                                           | Backlog curto prazo |
+| TC-05 | Tipos                | `tiposCertificadosOwnership` é executado **antes** do validator Zod: `evento_id` pode ser null/inválido ao atingir o middleware de ownership                                            | Média      | BR                 | Body não validado é usado no enforcement de autorização; risco de comportamento imprevisível                           | Backlog curto prazo |
+| TC-06 | Tipos · Certificados | Migration `20260418232720` cria constraint `UNIQUE(codigo, evento_id)` sem cláusula `WHERE deleted_at IS NULL`: restore de tipo cujo código foi recriado falha com constraint violation | Alta       | BR                 | FR-11 especifica unicidade parcial; migration diverge do SRS; restore potencialmente inutilizável                      | Correção imediata   |
+| TC-07 | Tipos · Certificados | SSR detalhe de certificado acessa `certificado.TiposCertificado?.texto_base` (singular) mas include usa alias `TiposCertificados` (plural): `textoInterpolado` sempre vazio             | Alta       | BR                 | Texto interpolado nunca exibido no detalhe SSR; violação FR-39                                                         | Correção imediata   |
+| TC-08 | Tipos · Certificados | API `POST /:id/restore` de certificados usa `rbac('monitor')`: monitor pode restaurar qualquer certificado soft-deletado via API                                                        | Alta       | BR                 | Contradiz FR-22 ("apenas admin pode restaurar via SSR"); API mais permissiva sem justificativa; violação RBAC          | Backlog crítico     |
+| TC-09 | Tipos · Certificados | SSR `POST /admin/certificados` usa `rbac('gestor')`: monitor fica bloqueado de criar certificados pela interface web                                                                    | Alta       | IP                 | Contradiz FR-36 ("monitor pode criar certificados"); divergência API/SSR injustificada                                 | Backlog crítico     |
+| TC-10 | Tipos                | API PUT de tipos permite alterar `evento_id` sem validar novo ownership do escopo de destino                                                                                            | Média      | GI                 | Gestor pode mover tipo para evento fora do seu escopo; violação FR-45, FR-46                                           | Backlog curto prazo |
+| TC-11 | Tipos                | `scopedEvento` ausente em `GET /tipos-certificados` e `GET /tipos-certificados/:id` via API: gestor/monitor recebe todos os tipos sem filtro                                            | Alta       | GI                 | API não aplica escopo em leitura de tipos; violação FR-37, FR-46                                                       | Backlog crítico     |
+| TC-12 | Tipos · Certificados | Formulários SSR de novo/editar certificado carregam todos os tipos sem filtro de evento do usuário                                                                                      | Média      | GI                 | Gestor/monitor vê tipos de outros eventos no seletor do formulário; violação FR-37, FR-45                              | Backlog curto prazo |
+| TC-13 | Tipos                | Lógica de ownership (`getEventosIds`, `temOwnership`) duplicada independentemente no `tiposCertificadosSSRController` e no middleware `tiposCertificadosOwnership`                      | Média      | DT                 | Regras de negócio mantidas em dois lugares; BR-02/TC-03 é evidência de divergência já ocorrida; violação NFR-6         | Backlog médio prazo |
+| TC-14 | Tipos                | Validação cross-field de `campo_destaque` implementada em hook `beforeValidate` do model Sequelize                                                                                      | Média      | VA                 | Lógica de domínio no model; hook lança `Error` genérico (não `ValidationError`); violação NFR-6                        | Backlog médio prazo |
+| TC-15 | Tipos                | `dados_dinamicos` não tem estrutura formal documentada no SRS: UI assume `{chave: rótulo}`, validator aceita `z.record(z.any())`                                                        | —          | AM                 | Clientes da API sem contrato formal sobre o formato; risco de implementação divergente                                 | Atualização SRS     |
+| TC-16 | Tipos                | Preview do `texto_base` no formulário SSR usa o rótulo do campo como valor de substituição, não como valor real de exemplo                                                              | —          | AM                 | Preview não representa o output final; pode confundir durante configuração de tipos                                    | Validação humana    |
+| TC-17 | Tipos                | Services de tipos usam caminho de import `../../src/models` em vez de `../models`                                                                                                       | Baixa      | DT                 | Funciona apenas pela estrutura atual; frágil ante reorganização de diretórios                                          | Backlog longo prazo |
+| TC-18 | Tipos                | `pdfService.js` usa duplo fallback de alias `TiposCertificado                                                                                                                           |            | TiposCertificados` | Baixa                                                                                                                  | DT                  | Código defensivo que obscurece a inconsistência de aliasing (ver TC-07) em vez de corrigi-la | Backlog longo prazo |
+| TC-19 | Tipos                | `JSON.parse` de `dados_dinamicos_json` no SSR sem tratamento: mensagem de erro bruta exposta ao usuário via flash                                                                       | Baixa      | DT                 | UX degradada em erro de input; possível information disclosure                                                         | Backlog médio prazo |
 
 ---
 
 ### 1.4 Achados do Domínio de Dashboard
 
-| ID | Domínio | Descrição | Severidade | Tipo | Impacto | Destino Recomendado |
-|----|---------|-----------|------------|------|---------|---------------------|
-| DB-01 | Dashboard | Três cards (`totalTipos`, `totalCertificadosPendentes`, `totalEventos`) renderizados em view para perfis que não os computam: gestor e/ou monitor veem valores vazios para todas as três métricas | Alta | BR | Dois terços dos perfis internos recebem dashboard sem dados; FR-56 ~33% atendido para gestor/monitor | Correção imediata |
-| DB-02 | Dashboard | Flag `isMonitor` nunca definida em `authSSR.js`: qualquer `{{#if usuario.isMonitor}}` no template nunca é ativado em produção | Média | BR | Lógica de view específica de monitor inefetiva; assimetria com `isAdmin` e `isGestor`; testes simulam estado irreal | Backlog curto prazo |
-| DB-03 | Dashboard | `ultimosCertificados` computado pelo controller e passado ao `res.render`, mas `dashboard.hbs` (107 linhas) não contém nenhum `{{#each ultimosCertificados}}` nem tabela correspondente | Crítica | IP | FR-56 ("5 certificados mais recentes") não atendido na UI; query executada a cada request sem uso; overhead desnecessário; violação FR-56 | Correção imediata |
-| DB-04 | Dashboard | Backlog `DASH-ADMIN-003` marcado `[x] concluída em 2026-05-08 09:45 (BRT)` mas view não contém a tabela: rastreabilidade de progresso comprometida | Crítica | ID | Stakeholders acreditam que FR-56 está completamente implementado; estado de entrega incorreto documentado | Correção imediata (backlog) |
-| DB-05 | Dashboard | `totalParticipantes` tem semântica dupla: admin recebe `Participante.count()` (total cadastrado); gestor/monitor recebe `Certificado.count({ distinct: 'participante_id' })` (com certificado) — mesma label | Média | DT | Decisões baseadas em dado mal interpretado; FR-56 semanticamente ambíguo | Atualização SRS + Backlog médio prazo |
-| DB-06 | Dashboard | Template de backlog `DASH-ADMIN-003` usa `{{this.Participante.nome}}` mas atributo real do modelo é `nomeCompleto`; quando implementada, a coluna será renderizada vazia | Média | ID | Implementação futura baseada no backlog incorreto resultará em coluna vazia sem erro visível | Correção imediata (backlog) |
-| DB-07 | Dashboard | Ausência total de endpoint REST API para métricas/dashboard | Baixa | GI | Sem mecanismo para integração externa com dados agregados; FR-49 mencionado como SSR mas sem decisão explícita | Validação humana |
-| DB-08 | Dashboard | `GET /admin/dashboard` sem middleware `rbac()` explícito; SRS define perfil mínimo "monitor" para essa rota | Baixa | VA | Inconsistência arquitetural com demais rotas SSR; funcionalmente inofensivo mas diverge do padrão declarativo do projeto | Backlog longo prazo |
-| DB-09 | Dashboard | FR-56 não especifica quais status compõem `totalCertificados` nem `ultimosCertificados` | Baixa | AM | Ambiguidade sobre inclusão de cancelados; decisão de negócio não documentada | Atualização SRS |
-| DB-10 | Dashboard | Queries de agregação pesadas (até 7 paralelas) residem diretamente no controller sem `dashboardService.js` | Baixa | DT | Violação de NFR-6 (routes → controllers → services → models) | Backlog longo prazo |
-| DB-11 | Dashboard | SRS declara perfil mínimo "monitor" para `/admin/dashboard`; código não aplica `rbac('monitor')` | Baixa | ID | Divergência documental menor; sem impacto de segurança | Atualização SRS |
+| ID    | Domínio   | Descrição                                                                                                                                                                                                    | Severidade | Tipo | Impacto                                                                                                                                   | Destino Recomendado                   |
+| ----- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| DB-01 | Dashboard | Três cards (`totalTipos`, `totalCertificadosPendentes`, `totalEventos`) renderizados em view para perfis que não os computam: gestor e/ou monitor veem valores vazios para todas as três métricas            | Alta       | BR   | Dois terços dos perfis internos recebem dashboard sem dados; FR-56 ~33% atendido para gestor/monitor                                      | Correção imediata                     |
+| DB-02 | Dashboard | Flag `isMonitor` nunca definida em `authSSR.js`: qualquer `{{#if usuario.isMonitor}}` no template nunca é ativado em produção                                                                                | Média      | BR   | Lógica de view específica de monitor inefetiva; assimetria com `isAdmin` e `isGestor`; testes simulam estado irreal                       | Backlog curto prazo                   |
+| DB-03 | Dashboard | `ultimosCertificados` computado pelo controller e passado ao `res.render`, mas `dashboard.hbs` (107 linhas) não contém nenhum `{{#each ultimosCertificados}}` nem tabela correspondente                      | Crítica    | IP   | FR-56 ("5 certificados mais recentes") não atendido na UI; query executada a cada request sem uso; overhead desnecessário; violação FR-56 | Correção imediata                     |
+| DB-04 | Dashboard | Backlog `DASH-ADMIN-003` marcado `[x] concluída em 2026-05-08 09:45 (BRT)` mas view não contém a tabela: rastreabilidade de progresso comprometida                                                           | Crítica    | ID   | Stakeholders acreditam que FR-56 está completamente implementado; estado de entrega incorreto documentado                                 | Correção imediata (backlog)           |
+| DB-05 | Dashboard | `totalParticipantes` tem semântica dupla: admin recebe `Participante.count()` (total cadastrado); gestor/monitor recebe `Certificado.count({ distinct: 'participante_id' })` (com certificado) — mesma label | Média      | DT   | Decisões baseadas em dado mal interpretado; FR-56 semanticamente ambíguo                                                                  | Atualização SRS + Backlog médio prazo |
+| DB-06 | Dashboard | Template de backlog `DASH-ADMIN-003` usa `{{this.Participante.nome}}` mas atributo real do modelo é `nomeCompleto`; quando implementada, a coluna será renderizada vazia                                     | Média      | ID   | Implementação futura baseada no backlog incorreto resultará em coluna vazia sem erro visível                                              | Correção imediata (backlog)           |
+| DB-07 | Dashboard | Ausência total de endpoint REST API para métricas/dashboard                                                                                                                                                  | Baixa      | GI   | Sem mecanismo para integração externa com dados agregados; FR-49 mencionado como SSR mas sem decisão explícita                            | Validação humana                      |
+| DB-08 | Dashboard | `GET /admin/dashboard` sem middleware `rbac()` explícito; SRS define perfil mínimo "monitor" para essa rota                                                                                                  | Baixa      | VA   | Inconsistência arquitetural com demais rotas SSR; funcionalmente inofensivo mas diverge do padrão declarativo do projeto                  | Backlog longo prazo                   |
+| DB-09 | Dashboard | FR-56 não especifica quais status compõem `totalCertificados` nem `ultimosCertificados`                                                                                                                      | Baixa      | AM   | Ambiguidade sobre inclusão de cancelados; decisão de negócio não documentada                                                              | Atualização SRS                       |
+| DB-10 | Dashboard | Queries de agregação pesadas (até 7 paralelas) residem diretamente no controller sem `dashboardService.js`                                                                                                   | Baixa      | DT   | Violação de NFR-6 (routes → controllers → services → models)                                                                              | Backlog longo prazo                   |
+| DB-11 | Dashboard | SRS declara perfil mínimo "monitor" para `/admin/dashboard`; código não aplica `rbac('monitor')`                                                                                                             | Baixa      | ID   | Divergência documental menor; sem impacto de segurança                                                                                    | Atualização SRS                       |
 
 ---
 
@@ -129,6 +131,7 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 **Domínio:** Participantes  
 **Tipo:** VU — Vulnerabilidade crítica  
 **Evidências:**
+
 - `src/routes/participantes.js:L151` — sem `scopedEvento`
 - `src/services/participanteService.js:L6-L16` — `findAndCountAll` sem cláusula `WHERE` de escopo
 - `tests/routes/protectedManagementRoutes.test.js` — teste valida e aceita o comportamento como correto
@@ -145,6 +148,7 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 **Domínio:** Participantes  
 **Tipo:** VU — Vulnerabilidade crítica  
 **Evidências:**
+
 - `src/routes/admin.js:L89-L98` — comentário explícito "todos os perfis autenticados", sem `rbac()` em nenhuma rota
 - Contraste: `src/routes/admin.js:L68` — `POST /certificados` usa `rbac('gestor')`
 
@@ -160,6 +164,7 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 **Domínio:** Participantes  
 **Tipo:** VU — Vulnerabilidade  
 **Evidências:**
+
 - `src/controllers/participanteSSRController.js:L79-L168` — `editar`, `atualizar`, `deletar`, `restaurar` usam `participanteService.findById(req.params.id)` sem checar evento
 
 **FR violados:** FR-37, NFR-1  
@@ -174,6 +179,7 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 **Domínio:** Tipos · Certificados  
 **Tipo:** BR — Bug crítico funcional  
 **Evidências:**
+
 - `src/validators/certificado.js:L4-L9` — `valores_dinamicos` ausente do schema Zod
 - `src/middlewares/validate.js:L4` — `req.body = schema.parse(req.body)` (modo strip silencioso)
 - `src/services/certificadoService.js:L49-L55` — detecta campos como faltantes e retorna HTTP 422
@@ -190,6 +196,7 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 **Domínio:** Participantes · Tipos · Certificados (transversal)  
 **Tipo:** BR + VU  
 **Evidências:**
+
 - `src/middlewares/scopedEvento.js:L32-L36` — `const eventoId = req.body.evento_id || req.params.eventoId || req.params.id`
 - Para `DELETE /certificados/5`: `req.params.id = '5'`; middleware verifica se gestor gerencia o **evento** 5, não o certificado 5
 
@@ -205,6 +212,7 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 **Domínio:** Participantes · Tipos · Dashboard (transversal)  
 **Tipo:** VA — Violação arquitetural crítica  
 **Evidências:**
+
 - `src/services/participanteService.js:L5-L17` — `findAndCountAll({ offset, limit })` sem `evento_id`
 - `src/controllers/tiposCertificadosController.js:L14-L19` — `req.query.evento_id` injetado mas ignorado antes de chegar ao service
 - `dashboardController.js:L57-L90` — lógica de scoping inline no controller, fora do middleware
@@ -221,6 +229,7 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 **Domínio:** Tipos · Certificados  
 **Tipo:** BR  
 **Evidências:**
+
 - `migrations/20260418232720-add-evento-id-to-tipos-certificados.js:L39-L44` — constraint sem `WHERE deleted_at IS NULL`
 - `docs/especificacoes.md` FR-11 — exige unicidade `(codigo, evento_id) WHERE deleted_at IS NULL`
 
@@ -236,6 +245,7 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 **Domínio:** Dashboard  
 **Tipo:** BR + IP  
 **Evidências:**
+
 - `dashboardController.js:L68-L85` — branch gestor/monitor computa apenas `totalCertificados` e `totalParticipantes`
 - `dashboard.hbs:L46, L63, L24-L36` — variáveis `totalCertificadosPendentes`, `totalEventos`, `totalTipos` renderizadas sem guarda de perfil
 - `dashboardController.js:L30-L41` — `ultimosCertificados` computado e passado ao `res.render`
@@ -253,6 +263,7 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 **Domínio:** Participantes · Tipos · Dashboard (transversal)  
 **Tipo:** VA  
 **Evidências:**
+
 - `src/middlewares/authSSR.js:L50-L59` — `req.usuario` é objeto literal sem métodos Sequelize
 - `src/middlewares/scopedEvento.js:L4-L7` — `if (typeof req.usuario.getEventos !== 'function') return HTTP 500`
 - `src/middlewares/tiposCertificadosOwnership.js:L29-L32` — mesma verificação
@@ -268,65 +279,65 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 
 ### 3.1 Curto Prazo — Correções Críticas (antes de qualquer novo desenvolvimento)
 
-| Prioridade | ID | Descrição | Justificativa |
-|-----------|-----|-----------|---------------|
-| 1 | CC-04 / TC-01 | Corrigir schema Zod de certificado: incluir `valores_dinamicos`, tornar `status` opcional com default | Bloqueador de funcionalidade central |
-| 2 | CC-01 / PA-01 | Aplicar escopo de evento na API de participantes (service deve receber `eventoIds`) | PII exposure crítica |
-| 3 | CC-02 / PA-02 | Adicionar `rbac()` em todas as rotas SSR de participantes | Privilege escalation crítica |
-| 4 | CC-03 / PA-03 | Implementar verificação de ownership em operações SSR de participante por `:id` | ACL bypass crítico |
-| 5 | CC-05 / TS-02 | Corrigir `scopedEvento`: usar fetch + verificação de ownership em vez de `req.params.id` para rotas com `:id` | Controle de acesso não-determinístico |
-| 6 | CC-07 / TC-06 | Corrigir migration para constraint `UNIQUE(codigo, evento_id) WHERE deleted_at IS NULL` | Restore inutilizável |
-| 7 | CC-08 / DB-03 | Implementar tabela `ultimosCertificados` na view `dashboard.hbs` | FR-56 não atendido |
-| 8 | DB-01 | Adicionar variáveis faltantes (`totalTipos`) ao branch gestor ou adicionar guards de perfil na view | Dashboard inoperante para gestor/monitor |
-| 9 | TC-02 | Validar que `tipo_certificado_id` pertence ao mesmo `evento_id` na emissão de certificado | Integridade de dados inter-domínios |
-| 10 | TC-03 | Corrigir SSR `index` de tipos: aplicar `WHERE evento_id IN (...)` usando `eventosIds` já obtidos | Multi-tenant SSR violado |
-| 11 | TC-05 | Reordenar middlewares: `validate` antes de `tiposCertificadosOwnership` | Body inválido usado para autorização |
-| 12 | TC-07 | Corrigir alias `TiposCertificado` → `TiposCertificados` no `certificadoSSRController` | Texto interpolado sempre vazio no SSR |
-| 13 | DB-04 | Corrigir status do backlog DASH-ADMIN-003 para refletir estado real (view sem tabela) | Rastreabilidade comprometida |
-| 14 | DB-06 | Corrigir template de backlog: `Participante.nome` → `Participante.nomeCompleto` | Implementação futura defeituosa |
-| 15 | TS-06 | Corrigir índice de email em participantes para `WHERE deleted_at IS NULL` | Re-cadastro bloqueado após soft-delete |
-| 16 | PA-05 | Adicionar validação `nomeCompleto.min(3)` nas rotas SSR de participantes | FR-3 não atendido no SSR |
-| 17 | PA-08 | Aplicar filtro `textWhere` à seção de arquivados no SSR de participantes | Inconsistência de busca |
+| Prioridade | ID            | Descrição                                                                                                     | Justificativa                            |
+| ---------- | ------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| 1          | CC-04 / TC-01 | Corrigir schema Zod de certificado: incluir `valores_dinamicos`, tornar `status` opcional com default         | Bloqueador de funcionalidade central     |
+| 2          | CC-01 / PA-01 | Aplicar escopo de evento na API de participantes (service deve receber `eventoIds`)                           | PII exposure crítica                     |
+| 3          | CC-02 / PA-02 | Adicionar `rbac()` em todas as rotas SSR de participantes                                                     | Privilege escalation crítica             |
+| 4          | CC-03 / PA-03 | Implementar verificação de ownership em operações SSR de participante por `:id`                               | ACL bypass crítico                       |
+| 5          | CC-05 / TS-02 | Corrigir `scopedEvento`: usar fetch + verificação de ownership em vez de `req.params.id` para rotas com `:id` | Controle de acesso não-determinístico    |
+| 6          | CC-07 / TC-06 | Corrigir migration para constraint `UNIQUE(codigo, evento_id) WHERE deleted_at IS NULL`                       | Restore inutilizável                     |
+| 7          | CC-08 / DB-03 | Implementar tabela `ultimosCertificados` na view `dashboard.hbs`                                              | FR-56 não atendido                       |
+| 8          | DB-01         | Adicionar variáveis faltantes (`totalTipos`) ao branch gestor ou adicionar guards de perfil na view           | Dashboard inoperante para gestor/monitor |
+| 9          | TC-02         | Validar que `tipo_certificado_id` pertence ao mesmo `evento_id` na emissão de certificado                     | Integridade de dados inter-domínios      |
+| 10         | TC-03         | Corrigir SSR `index` de tipos: aplicar `WHERE evento_id IN (...)` usando `eventosIds` já obtidos              | Multi-tenant SSR violado                 |
+| 11         | TC-05         | Reordenar middlewares: `validate` antes de `tiposCertificadosOwnership`                                       | Body inválido usado para autorização     |
+| 12         | TC-07         | Corrigir alias `TiposCertificado` → `TiposCertificados` no `certificadoSSRController`                         | Texto interpolado sempre vazio no SSR    |
+| 13         | DB-04         | Corrigir status do backlog DASH-ADMIN-003 para refletir estado real (view sem tabela)                         | Rastreabilidade comprometida             |
+| 14         | DB-06         | Corrigir template de backlog: `Participante.nome` → `Participante.nomeCompleto`                               | Implementação futura defeituosa          |
+| 15         | TS-06         | Corrigir índice de email em participantes para `WHERE deleted_at IS NULL`                                     | Re-cadastro bloqueado após soft-delete   |
+| 16         | PA-05         | Adicionar validação `nomeCompleto.min(3)` nas rotas SSR de participantes                                      | FR-3 não atendido no SSR                 |
+| 17         | PA-08         | Aplicar filtro `textWhere` à seção de arquivados no SSR de participantes                                      | Inconsistência de busca                  |
 
 ---
 
 ### 3.2 Médio Prazo — Incrementais (após estabilização das correções críticas)
 
-| ID | Descrição | Justificativa |
-|----|-----------|---------------|
+| ID            | Descrição                                                                                                                                                                  | Justificativa                                   |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | CC-09 / TS-01 | Refatorar `authSSR` para popular `req.usuario` com instância Sequelize (ou wrapper compatível): unificar contratos de `req.usuario` entre API e SSR, incluindo `isMonitor` | Elimina a raiz dos problemas de autorização SSR |
-| CC-06 / TS-03 | Definir estratégia de enforcement de escopo no service layer: controllers devem propagar `eventoIds` aos services; documentar contrato no SRS | Elimina a classe de bugs multi-tenant |
-| TC-08 | Corrigir RBAC de restauração de certificados na API: alinhar com FR-22 (apenas admin) ou documentar divergência intencional | Consistência de RBAC |
-| TC-09 | Corrigir RBAC de criação de certificados via SSR: `rbac('monitor')` conforme FR-36 | Blockeio indevido de monitor |
-| TC-10 | Bloquear alteração de `evento_id` via API PUT de tipos ou validar novo scopo de ownership | Violação de ownership |
-| TC-11 | Aplicar `scopedEvento` ou filtro equivalente em `GET /tipos-certificados` via API | Escopo não aplicado na leitura |
-| TC-12 | Filtrar tipos disponíveis nos formulários SSR de certificado pelo escopo do usuário | Multi-tenant no formulário |
-| TC-04 | Aplicar filtro de evento à seção de arquivados no SSR de tipos | Extensão de TC-03 |
-| DB-02 | Adicionar `isMonitor: usuario.perfil === 'monitor'` no `authSSR` | Flag ausente invalida lógica de view |
-| DB-05 | Documentar semântica de `totalParticipantes` por perfil no SRS e na label da view | Ambiguidade de dado |
-| TC-13 | Centralizar lógica de ownership de tipos em único ponto compartilhado (middleware ou service) | Eliminação de duplicação divergente |
-| TC-14 | Mover validação de `campo_destaque` para service ou validator Zod | Violação de camada arquitetural |
-| PA-04 | Resolver modelo de scoping de participantes (decisão humana): associação direta a eventos ou aceitar escopo via certificados documentado | Participantes sem certificado invisíveis |
-| PA-06 | Implementar busca textual `?q=` na API de participantes | Paridade funcional com SSR |
-| PA-11 | ADR: definir se `Participante` terá associação direta com `Evento` ou se o scoping via JOIN é a estratégia formal | Raiz arquitetural do domínio |
-| TC-19 | Adicionar `try/catch` em `JSON.parse` de `dados_dinamicos_json` no SSR | UX e information disclosure |
-| TS-05 | Retornar HTTP 404 em `update`, `delete`, `restore` quando registro não existe (participantes e tipos) | Contrato de API |
-| PA-07 | Normalizar email para lowercase antes da busca pública | Case-sensitivity |
+| CC-06 / TS-03 | Definir estratégia de enforcement de escopo no service layer: controllers devem propagar `eventoIds` aos services; documentar contrato no SRS                              | Elimina a classe de bugs multi-tenant           |
+| TC-08         | Corrigir RBAC de restauração de certificados na API: alinhar com FR-22 (apenas admin) ou documentar divergência intencional                                                | Consistência de RBAC                            |
+| TC-09         | Corrigir RBAC de criação de certificados via SSR: `rbac('monitor')` conforme FR-36                                                                                         | Blockeio indevido de monitor                    |
+| TC-10         | Bloquear alteração de `evento_id` via API PUT de tipos ou validar novo scopo de ownership                                                                                  | Violação de ownership                           |
+| TC-11         | Aplicar `scopedEvento` ou filtro equivalente em `GET /tipos-certificados` via API                                                                                          | Escopo não aplicado na leitura                  |
+| TC-12         | Filtrar tipos disponíveis nos formulários SSR de certificado pelo escopo do usuário                                                                                        | Multi-tenant no formulário                      |
+| TC-04         | Aplicar filtro de evento à seção de arquivados no SSR de tipos                                                                                                             | Extensão de TC-03                               |
+| DB-02         | Adicionar `isMonitor: usuario.perfil === 'monitor'` no `authSSR`                                                                                                           | Flag ausente invalida lógica de view            |
+| DB-05         | Documentar semântica de `totalParticipantes` por perfil no SRS e na label da view                                                                                          | Ambiguidade de dado                             |
+| TC-13         | Centralizar lógica de ownership de tipos em único ponto compartilhado (middleware ou service)                                                                              | Eliminação de duplicação divergente             |
+| TC-14         | Mover validação de `campo_destaque` para service ou validator Zod                                                                                                          | Violação de camada arquitetural                 |
+| PA-04         | Resolver modelo de scoping de participantes (decisão humana): associação direta a eventos ou aceitar escopo via certificados documentado                                   | Participantes sem certificado invisíveis        |
+| PA-06         | Implementar busca textual `?q=` na API de participantes                                                                                                                    | Paridade funcional com SSR                      |
+| PA-11         | ADR: definir se `Participante` terá associação direta com `Evento` ou se o scoping via JOIN é a estratégia formal                                                          | Raiz arquitetural do domínio                    |
+| TC-19         | Adicionar `try/catch` em `JSON.parse` de `dados_dinamicos_json` no SSR                                                                                                     | UX e information disclosure                     |
+| TS-05         | Retornar HTTP 404 em `update`, `delete`, `restore` quando registro não existe (participantes e tipos)                                                                      | Contrato de API                                 |
+| PA-07         | Normalizar email para lowercase antes da busca pública                                                                                                                     | Case-sensitivity                                |
 
 ---
 
 ### 3.3 Longo Prazo — Estratégicos e Dívidas Técnicas
 
-| ID | Descrição | Justificativa |
-|----|-----------|---------------|
-| DB-10 | Criar `dashboardService.js` com a lógica de agregação | Conformidade com NFR-6 |
-| DB-08 | Adicionar `rbac('monitor')` explícito em `GET /admin/dashboard` | Conformidade declarativa |
-| PA-09 | Corrigir semântica de `PUT /participantes/:id`: remover `schema.partial()` | Contrato REST correto |
-| PA-10 | Unificar `destroy` e `delete` no `participanteService` | Eliminação de duplicação |
-| TC-17 | Corrigir caminhos de import em services de tipos | Fragilidade estrutural |
-| TC-18 | Corrigir alias no `pdfService` para `TiposCertificados` (plural) | Eliminação de workaround |
-| DB-07 | Definir e avaliar necessidade de endpoint REST para métricas | Integração externa |
-| DB-11 | Sincronizar declaração de `rbac('monitor')` no dashboard SSR com o SRS | Consistência documental |
+| ID    | Descrição                                                                  | Justificativa            |
+| ----- | -------------------------------------------------------------------------- | ------------------------ |
+| DB-10 | Criar `dashboardService.js` com a lógica de agregação                      | Conformidade com NFR-6   |
+| DB-08 | Adicionar `rbac('monitor')` explícito em `GET /admin/dashboard`            | Conformidade declarativa |
+| PA-09 | Corrigir semântica de `PUT /participantes/:id`: remover `schema.partial()` | Contrato REST correto    |
+| PA-10 | Unificar `destroy` e `delete` no `participanteService`                     | Eliminação de duplicação |
+| TC-17 | Corrigir caminhos de import em services de tipos                           | Fragilidade estrutural   |
+| TC-18 | Corrigir alias no `pdfService` para `TiposCertificados` (plural)           | Eliminação de workaround |
+| DB-07 | Definir e avaliar necessidade de endpoint REST para métricas               | Integração externa       |
+| DB-11 | Sincronizar declaração de `rbac('monitor')` no dashboard SSR com o SRS     | Consistência documental  |
 
 ---
 
@@ -546,6 +557,7 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 **Padrão:** Os três domínios auditados apresentam o mesmo padrão de falha: comportamento correto na API, incorreto no SSR (ou vice-versa), com raiz em `authSSR` retornando POJO incompatível com os middlewares de autorização.
 
 **Evidências transversais:**
+
 - Participantes: API com `rbac('monitor')` aplicado; SSR sem RBAC algum
 - Tipos: API com `tiposCertificadosOwnership` funcional (instância Sequelize); SSR reimplementação ad hoc com bug na listagem
 - Dashboard: Controller reimplementa scoping de evento (segunda query ao banco) em vez de usar `scopedEvento`
@@ -562,6 +574,7 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 **Padrão:** `scopedEvento` é aplicado em rotas, injeta `evento_id` em `req.query`, mas nenhum service dos três domínios auditados consome esse campo. O middleware existe como decoração sem efeito funcional.
 
 **Evidências:**
+
 - `participanteService.findAll()`: assinatura `{ page, perPage }`, sem `evento_id`
 - `tiposCertificadosController.findAll()`: recebe `req.query.evento_id` mas não o propaga ao service
 - `dashboardController`: reimplementa scoping manualmente com segunda query ao banco
@@ -578,6 +591,7 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 **Padrão:** Operações de `update`, `delete` e `restore` nos domínios de participantes e tipos de certificados retornam HTTP 200/204 com payload nulo quando o recurso não existe, em vez de HTTP 404.
 
 **Evidências:**
+
 - `participanteController.js`: `update` → HTTP 200 null; `delete` → HTTP 204; `restore` → HTTP 200 null
 - `tiposCertificadosController.js`: `update` → HTTP 200 null; `delete` → HTTP 204
 - T02/C-22, C-23: mesma inconsistência em `eventoController`
@@ -591,6 +605,7 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 **Padrão:** Múltiplas entidades com soft-delete (`paranoid: true`) possuem índices `UNIQUE` globais que bloqueiam re-cadastro de registros excluídos logicamente.
 
 **Evidências:**
+
 - `participante.email`: índice único global bloqueia re-cadastro após soft-delete (PA-07 via F17)
 - `tipos_certificados (codigo, evento_id)`: constraint sem `WHERE deleted_at IS NULL` (TC-06)
 - `certificado.codigo`: geração por `count` (sem paranoid) pode colidir após restore (T01/CERT-12)
@@ -613,12 +628,12 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 
 **Padrão:** Para a mesma operação, perfis diferentes são exigidos em API e SSR, sem justificativa explícita no SRS.
 
-| Operação | API | SSR | FR violado |
-|----------|-----|-----|-----------|
-| Criar certificado | `rbac('monitor')` ✅ | `rbac('gestor')` ❌ | FR-36 |
-| Restaurar certificado | `rbac('monitor')` ❌ | `rbac('admin')` ✅ | FR-22 |
+| Operação               | API                                     | SSR                        | FR violado   |
+| ---------------------- | --------------------------------------- | -------------------------- | ------------ |
+| Criar certificado      | `rbac('monitor')` ✅                    | `rbac('gestor')` ❌        | FR-36        |
+| Restaurar certificado  | `rbac('monitor')` ❌                    | `rbac('admin')` ✅         | FR-22        |
 | Modificar participante | `rbac('monitor')` ❌ (muito permissivo) | sem rbac ❌ (sem controle) | FR-35, FR-36 |
-| Listar participantes | Auth apenas ❌ | Auth apenas ❌ | FR-37 |
+| Listar participantes   | Auth apenas ❌                          | Auth apenas ❌             | FR-37        |
 
 **Consequência:** Um ator mal-intencionado pode escolher a superfície que lhe concede mais permissão para cada operação. O RBAC perde valor como controle de acesso quando as superfícies diferem.
 
@@ -697,17 +712,17 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 
 ### Quantidade de Achados por Categoria
 
-| Categoria | Crítica | Alta | Média | Baixa | Sem severidade |
-|-----------|---------|------|-------|-------|----------------|
-| VU (Vulnerabilidade) | 2 | 1 | — | — | — |
-| BR (Bug real) | 2 | 7 | 6 | 1 | — |
-| VA (Violação arquitetural) | 3 | 2 | 2 | — | — |
-| GI (Gap de implementação) | 1 | 5 | 3 | 2 | — |
-| IP (Implementação parcial) | 1 | 3 | 2 | — | — |
-| DT (Dívida técnica) | — | — | 5 | 6 | — |
-| ID (Inconsistência documental) | 1 | — | 2 | 2 | — |
-| AM (Ambiguidade) | — | — | 1 | 2 | 3 |
-| **Total** | **10** | **18** | **21** | **13** | **3** |
+| Categoria                      | Crítica | Alta   | Média  | Baixa  | Sem severidade |
+| ------------------------------ | ------- | ------ | ------ | ------ | -------------- |
+| VU (Vulnerabilidade)           | 2       | 1      | —      | —      | —              |
+| BR (Bug real)                  | 2       | 7      | 6      | 1      | —              |
+| VA (Violação arquitetural)     | 3       | 2      | 2      | —      | —              |
+| GI (Gap de implementação)      | 1       | 5      | 3      | 2      | —              |
+| IP (Implementação parcial)     | 1       | 3      | 2      | —      | —              |
+| DT (Dívida técnica)            | —       | —      | 5      | 6      | —              |
+| ID (Inconsistência documental) | 1       | —      | 2      | 2      | —              |
+| AM (Ambiguidade)               | —       | —      | 1      | 2      | 3              |
+| **Total**                      | **10**  | **18** | **21** | **13** | **3**          |
 
 **Achados críticos totais:** 10  
 **Correções críticas imediatas identificadas (CC-01 a CC-09):** 9  
@@ -734,15 +749,15 @@ Hipóteses sem confirmação de código são sinalizadas como **Validação Huma
 
 ### Possíveis Blockers para Evolução Futura
 
-| Blocker | Impacto | Domínios afetados |
-|---------|---------|-------------------|
-| `authSSR` retornando POJO — incompatível com middlewares de autorização | Qualquer nova feature de segurança SSR falhará imediatamente; mais workarounds ad hoc serão acumulados | Todos os domínios SSR |
-| `scopedEvento` ineficaz como boundary de segurança | Expansão do sistema a novos domínios replicará falsos positivos de proteção multi-tenant | Todos os novos recursos com scope |
-| Modelo `Participante` sem `evento_id` direto | Impossibilidade de aplicar scoping nativo a participantes sem refatoração de modelo e migrations | Participantes |
-| Migration de índice parcial ausente | Restore de registros soft-deletados pode falhar sem alerta até que a colisão ocorra em produção | Tipos de Certificados |
-| Validator Zod removendo `valores_dinamicos` | Uso do sistema em produção para a funcionalidade principal é bloqueado | Certificados / Tipos |
+| Blocker                                                                 | Impacto                                                                                                | Domínios afetados                 |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------- |
+| `authSSR` retornando POJO — incompatível com middlewares de autorização | Qualquer nova feature de segurança SSR falhará imediatamente; mais workarounds ad hoc serão acumulados | Todos os domínios SSR             |
+| `scopedEvento` ineficaz como boundary de segurança                      | Expansão do sistema a novos domínios replicará falsos positivos de proteção multi-tenant               | Todos os novos recursos com scope |
+| Modelo `Participante` sem `evento_id` direto                            | Impossibilidade de aplicar scoping nativo a participantes sem refatoração de modelo e migrations       | Participantes                     |
+| Migration de índice parcial ausente                                     | Restore de registros soft-deletados pode falhar sem alerta até que a colisão ocorra em produção        | Tipos de Certificados             |
+| Validator Zod removendo `valores_dinamicos`                             | Uso do sistema em produção para a funcionalidade principal é bloqueado                                 | Certificados / Tipos              |
 
 ---
 
-*Triagem produzida em 2026-05-09 19:58 (BRT)*  
-*Próxima triagem recomendada: análise de PDF, R2 e consultas públicas (domínios ainda não cobertos pela auditoria 07)*
+_Triagem produzida em 2026-05-09 19:58 (BRT)_  
+_Próxima triagem recomendada: análise de PDF, R2 e consultas públicas (domínios ainda não cobertos pela auditoria 07)_

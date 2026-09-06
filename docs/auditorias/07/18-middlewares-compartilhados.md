@@ -11,50 +11,50 @@
 
 ## Fontes analisadas
 
-| Arquivo | Propósito |
-|---|---|
-| `docs/especificacoes.md` | SRS — requisitos funcionais e não funcionais |
-| `src/middlewares/auth.js` | Autenticação JWT Bearer (API) |
-| `src/middlewares/authSSR.js` | Autenticação via cookie HTTP-only (SSR) |
-| `src/middlewares/rbac.js` | Controle de acesso por perfil |
-| `src/middlewares/scopedEvento.js` | Isolamento multi-evento |
-| `src/middlewares/tiposCertificadosOwnership.js` | Ownership de tipos por gestor |
-| `src/middlewares/validate.js` | Validação Zod |
-| `src/middlewares/uploadTemplate.js` | Upload via multer |
-| `app.js` | Registro e ordem dos middlewares globais |
-| `src/routes/usuarios.js` | Rate limiting em login API |
-| `src/routes/auth.js` | Fluxo SSR login/logout |
-| `src/routes/admin.js` | Rotas SSR admin + aplicação de authSSR + rbac |
-| `src/routes/certificados.js` | Cadeia de middlewares para certificados |
-| `src/routes/eventos.js` | Cadeia de middlewares para eventos |
-| `src/routes/tipos-certificados.js` | Cadeia para tipos de certificados |
-| `src/routes/participantes.js` | Cadeia para participantes |
-| `src/routes/usuarios-crud.js` | CRUD de usuários via API |
-| `src/models/usuario.js` | Modelo com paranoid: true |
-| `src/controllers/usuarioController.js` | Evidência de enforcement no controller |
-| `src/controllers/perfilSSRController.js` | Evidência de uso de req.usuario.id em SSR |
+| Arquivo                                         | Propósito                                     |
+| ----------------------------------------------- | --------------------------------------------- |
+| `docs/especificacoes.md`                        | SRS — requisitos funcionais e não funcionais  |
+| `src/middlewares/auth.js`                       | Autenticação JWT Bearer (API)                 |
+| `src/middlewares/authSSR.js`                    | Autenticação via cookie HTTP-only (SSR)       |
+| `src/middlewares/rbac.js`                       | Controle de acesso por perfil                 |
+| `src/middlewares/scopedEvento.js`               | Isolamento multi-evento                       |
+| `src/middlewares/tiposCertificadosOwnership.js` | Ownership de tipos por gestor                 |
+| `src/middlewares/validate.js`                   | Validação Zod                                 |
+| `src/middlewares/uploadTemplate.js`             | Upload via multer                             |
+| `app.js`                                        | Registro e ordem dos middlewares globais      |
+| `src/routes/usuarios.js`                        | Rate limiting em login API                    |
+| `src/routes/auth.js`                            | Fluxo SSR login/logout                        |
+| `src/routes/admin.js`                           | Rotas SSR admin + aplicação de authSSR + rbac |
+| `src/routes/certificados.js`                    | Cadeia de middlewares para certificados       |
+| `src/routes/eventos.js`                         | Cadeia de middlewares para eventos            |
+| `src/routes/tipos-certificados.js`              | Cadeia para tipos de certificados             |
+| `src/routes/participantes.js`                   | Cadeia para participantes                     |
+| `src/routes/usuarios-crud.js`                   | CRUD de usuários via API                      |
+| `src/models/usuario.js`                         | Modelo com paranoid: true                     |
+| `src/controllers/usuarioController.js`          | Evidência de enforcement no controller        |
+| `src/controllers/perfilSSRController.js`        | Evidência de uso de req.usuario.id em SSR     |
 
 ---
 
 ## 1. Matriz Consolidada de Achados
 
-| ID | Middleware envolvido | Descrição | Evidências | Severidade | Tipo | Impacto | Requisitos violados | Destino recomendado |
-|---|---|---|---|---|---|---|---|---|
-| F-01 | `scopedEvento` | `req.params.id` tratado como `eventoId` para operações em recurso único — confunde ID do recurso com ID de evento | `scopedEvento.js:31–40`: `const eventoId = req.body.evento_id \|\| req.params.eventoId \|\| req.params.id`. Rotas como `GET /certificados/:id`, `PUT /certificados/:id`, `DELETE /certificados/:id` expõem `:id` do certificado como suposto `eventoId`. | Crítico | VU | Acesso cross-evento: usuário com evento_id=3 pode acessar qualquer recurso com id=3; usuário com evento=[1,2] é bloqueado de certificado id=5 mesmo que pertença ao evento 1 | FR-37, NFR-1 | Backlog segurança — curto prazo |
-| F-02 | nenhum (`usuarios-crud.js`) | Rotas de criação de usuários e atualização de eventos sem `rbac` no pipeline de middlewares; enforcement realizado apenas no controller | `usuarios-crud.js:10–19`: `router.post('/:papel/:id/usuarios', auth, validate(usuarioSchema), usuarioController.create)`. Nenhum `rbac` na cadeia. Controller (`usuarioController.js:13–18`) verifica `req.usuario.perfil !== 'admin'`, violando NFR-6 | Alto | VU | Qualquer usuário autenticado (monitor, gestor) pode tentar criar usuários via API sem bloqueio de middleware; enforcement é responsabilidade do controller, não do pipeline de autorização | FR-34, FR-38, NFR-1, NFR-6 | Backlog segurança — curto prazo |
-| F-03 | nenhum (`routes/auth.js`) | `POST /login` (SSR) não tem rate limiting; apenas `POST /usuarios/login` (API) é protegido | `routes/auth.js:40–63`: `router.post('/login', async (req, res) => {...})` — sem `loginLimiter`. `routes/usuarios.js:8–18`: `loginLimiter` definido com `max: 10, windowMs: 15*60*1000` mas aplicado somente em `router.post('/login', loginLimiter, ...)` | Alto | GI | Endpoint SSR de autenticação vulnerável a brute force sem limitação de tentativas | FR-55 (parcialmente — FR-55 nomeia apenas `/usuarios/login`) | Backlog segurança — curto prazo |
-| F-04 | `authSSR` | Injeta plain object sem método `getEventos()` em `req.usuario`, criando contrato assimétrico com `auth` e risco latente de HTTP 500 se `scopedEvento` for aplicado em rotas SSR | `authSSR.js:48–55`: `const usuarioData = { id, nome, perfil, isAdmin, isGestor }`. `scopedEvento.js:8–11`: `if (typeof req.usuario.getEventos !== 'function') return res.status(500).json(...)`. Campo `email` também ausente no objeto SSR | Alto | VA | Assimetria de contrato `req.usuario` entre fluxo API e SSR; risco latente de 500 em qualquer extensão futura que aplique `scopedEvento` em contexto SSR; `perfilSSRController.js` usa `req.usuario.id` (presente), mas `email` e `getEventos()` ausentes | FR-37, NFR-6 | Backlog arquitetural — médio prazo |
-| F-05 | `rbac` (falha em `routes/eventos.js`) | `POST /eventos` usa `rbac('monitor')` em vez de `rbac('admin')`; proteção real é contornada acidentalmente por `scopedEvento` | `routes/eventos.js:152`: `router.post('/', auth, rbac('monitor'), scopedEvento, ...)`. SSR: `routes/admin.js:83`: `router.post('/eventos', rbac('admin'), ...)`. Para não-admin via API, `scopedEvento` bloqueia com erro "Acesso restrito ao evento vinculado" (confuso), não "Perfil insuficiente" | Médio | VA | Violação de defense-in-depth: RBAC não é o guardião primário para criação de eventos na API; mensagem de erro enganosa leva a diagnóstico incorreto | FR-34, FR-38, NFR-1 | Backlog arquitetural — curto prazo |
-| F-06 | `authSSR` | Sem validação de `JWT_SECRET` ao carregamento do módulo; dependência implícita de `auth.js` ser carregado primeiro | `authSSR.js:` sem nenhum check de env no topo. `auth.js:3-4`: `const secret = process.env.JWT_SECRET; if (!secret) throw new Error(...)`. `authSSR.js:33`: `jwt.verify(token, process.env.JWT_SECRET)` inline | Médio | DT | Dependência implícita de ordem de carregamento de módulos; se `auth.js` não for carregado, `authSSR` falha silenciosamente em runtime ao invés de abortar o startup | NFR-3 | Backlog técnico — médio prazo |
-| F-07 | `scopedEvento` | Sem try/catch ao redor de `req.usuario.getEventos()` | `scopedEvento.js:8`: `const eventos = await req.usuario.getEventos()` — sem tratamento de exceção | Médio | DT | Falha de banco de dados propagada para handler genérico do Express; rotas API podem receber resposta HTML de erro em vez de JSON | NFR-1 (indiretamente) | Backlog técnico — curto prazo |
-| F-08 | `authSSR` / `routes/auth.js` | SRS especifica SSR login em `POST /auth/login`; implementação registra `POST /login` | FR-30: "(b) SSR: `POST /auth/login`". `app.js:176`: `app.use('/', authRouter)`. `routes/auth.js:40`: `router.post('/login', ...)` → rota efetiva: `POST /login` | Médio | ID | Documentação diverge da implementação; pode causar confusão em integração, automação de testes e documentação de API | FR-30 | Backlog documental — médio prazo |
-| F-09 | `scopedEvento` / `tiposCertificadosOwnership` | `GET /tipos-certificados` e `GET /tipos-certificados/:id` sem filtragem por evento do usuário | `routes/tipos-certificados.js:144-145`: `router.get('/', auth, rbac('monitor'), tiposCertificadosController.findAll)` e `router.get('/:id', auth, rbac('monitor'), tiposCertificadosController.findById)` — nenhum `scopedEvento` | Médio | GI | Gestores e monitores podem listar e visualizar tipos de certificados de todos os eventos, não apenas dos seus; violação do princípio de isolamento multi-evento | FR-37 | Backlog segurança — curto prazo |
-| F-10 | `routes/auth.js` / `app.js` (session) | Cookies JWT e de sessão sem atributo `secure: true` explícito | `routes/auth.js:59`: `res.cookie('token', token, { httpOnly: true, sameSite: 'lax' })`. `app.js:43-47`: `session({ secret, resave: false, saveUninitialized: false })` sem `cookie: { secure: true }` | Médio | VH | Se HTTPS não for enforçado no proxy reverso, cookies transmitidos via HTTP podem ser interceptados (OWASP A02) | NFR-1 (implícito) | Validação humana / backlog infra |
-| F-11 | `authSSR` | Backdoor de teste `x-mock-user` injeta usuário via cabeçalho HTTP sem validação de schema | `authSSR.js:6-14`: `JSON.parse(req.headers['x-mock-user'])` sem validação de estrutura; `req.session.mockUser = mockUser` persiste na sessão | Baixo | AM | Risco caso `NODE_ENV === 'test'` seja definido inadvertidamente em ambiente não-teste; object injection via JSON parse sem schema | NFR-1 | Validação humana |
-| F-12 | `authSSR` | `isMonitor` ausente no objeto `req.usuario` / `res.locals.usuario` no contexto SSR | `authSSR.js:48-55`: `{ id, nome, perfil, isAdmin, isGestor }` — sem `isMonitor`. `auth.js` retorna instância Sequelize completa | Baixo | DT | Qualquer view, helper ou lógica que verifique `req.usuario.isMonitor` recebe `undefined`; inconsistência de API do contexto de usuário | — | Backlog técnico — longo prazo |
-| F-13 | `tiposCertificadosOwnership` | Check redundante de `perfil === 'monitor'` em middleware de ownership; rota já tem `rbac('gestor')` antes | `tiposCertificadosOwnership.js:21-26`: bloqueia monitor com 403. `routes/tipos-certificados.js:147-167`: toda mutação já aplica `rbac('gestor')` que bloqueia monitor antes de chegar ao ownership middleware | Baixo | DT | Lógica duplicada; em caso de refatoração das rotas, pode criar comportamento diferente do esperado | NFR-6 | Backlog técnico — longo prazo |
-| F-14 | `authSSR` / `routes/auth.js` | Ausência de mecanismo de revogação/sincronização de logout entre SSR e API | `routes/auth.js:69-72`: `router.post('/logout', (req, res) => { res.clearCookie('token'); return res.redirect('/login') })` — não invalida o token JWT. `routes/usuarios.js:130`: `router.post('/logout', usuarioController.logout)` — retorna JSON sem limpar cookie | Médio | VH | Token JWT emitido permanece válido por 1h após logout SSR; logout API não afeta cookie SSR; comportamento de sessão unificada não especificado no SRS | FR-30 (implícito) | Validação humana |
-| F-15 | `tiposCertificadosOwnership` | Comentário JSDoc no middleware afirma "GET (qualquer): passa sempre" mas o middleware não é aplicado a rotas GET | `tiposCertificadosOwnership.js:5-6`: `* - GET (qualquer): passa sempre`. `routes/tipos-certificados.js:144-145`: GET routes não incluem este middleware | Baixo | ID | Comentário enganoso; pode causar interpretação incorreta do comportamento esperado durante manutenção | — | Backlog documental — longo prazo |
+| ID   | Middleware envolvido                          | Descrição                                                                                                                                                                       | Evidências                                                                                                                                                                                                                                                                                           | Severidade | Tipo | Impacto                                                                                                                                                                                                                                                  | Requisitos violados                                          | Destino recomendado                |
+| ---- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------- |
+| F-01 | `scopedEvento`                                | `req.params.id` tratado como `eventoId` para operações em recurso único — confunde ID do recurso com ID de evento                                                               | `scopedEvento.js:31–40`: `const eventoId = req.body.evento_id \|\| req.params.eventoId \|\| req.params.id`. Rotas como `GET /certificados/:id`, `PUT /certificados/:id`, `DELETE /certificados/:id` expõem `:id` do certificado como suposto `eventoId`.                                             | Crítico    | VU   | Acesso cross-evento: usuário com evento_id=3 pode acessar qualquer recurso com id=3; usuário com evento=[1,2] é bloqueado de certificado id=5 mesmo que pertença ao evento 1                                                                             | FR-37, NFR-1                                                 | Backlog segurança — curto prazo    |
+| F-02 | nenhum (`usuarios-crud.js`)                   | Rotas de criação de usuários e atualização de eventos sem `rbac` no pipeline de middlewares; enforcement realizado apenas no controller                                         | `usuarios-crud.js:10–19`: `router.post('/:papel/:id/usuarios', auth, validate(usuarioSchema), usuarioController.create)`. Nenhum `rbac` na cadeia. Controller (`usuarioController.js:13–18`) verifica `req.usuario.perfil !== 'admin'`, violando NFR-6                                               | Alto       | VU   | Qualquer usuário autenticado (monitor, gestor) pode tentar criar usuários via API sem bloqueio de middleware; enforcement é responsabilidade do controller, não do pipeline de autorização                                                               | FR-34, FR-38, NFR-1, NFR-6                                   | Backlog segurança — curto prazo    |
+| F-03 | nenhum (`routes/auth.js`)                     | `POST /login` (SSR) não tem rate limiting; apenas `POST /usuarios/login` (API) é protegido                                                                                      | `routes/auth.js:40–63`: `router.post('/login', async (req, res) => {...})` — sem `loginLimiter`. `routes/usuarios.js:8–18`: `loginLimiter` definido com `max: 10, windowMs: 15*60*1000` mas aplicado somente em `router.post('/login', loginLimiter, ...)`                                           | Alto       | GI   | Endpoint SSR de autenticação vulnerável a brute force sem limitação de tentativas                                                                                                                                                                        | FR-55 (parcialmente — FR-55 nomeia apenas `/usuarios/login`) | Backlog segurança — curto prazo    |
+| F-04 | `authSSR`                                     | Injeta plain object sem método `getEventos()` em `req.usuario`, criando contrato assimétrico com `auth` e risco latente de HTTP 500 se `scopedEvento` for aplicado em rotas SSR | `authSSR.js:48–55`: `const usuarioData = { id, nome, perfil, isAdmin, isGestor }`. `scopedEvento.js:8–11`: `if (typeof req.usuario.getEventos !== 'function') return res.status(500).json(...)`. Campo `email` também ausente no objeto SSR                                                          | Alto       | VA   | Assimetria de contrato `req.usuario` entre fluxo API e SSR; risco latente de 500 em qualquer extensão futura que aplique `scopedEvento` em contexto SSR; `perfilSSRController.js` usa `req.usuario.id` (presente), mas `email` e `getEventos()` ausentes | FR-37, NFR-6                                                 | Backlog arquitetural — médio prazo |
+| F-05 | `rbac` (falha em `routes/eventos.js`)         | `POST /eventos` usa `rbac('monitor')` em vez de `rbac('admin')`; proteção real é contornada acidentalmente por `scopedEvento`                                                   | `routes/eventos.js:152`: `router.post('/', auth, rbac('monitor'), scopedEvento, ...)`. SSR: `routes/admin.js:83`: `router.post('/eventos', rbac('admin'), ...)`. Para não-admin via API, `scopedEvento` bloqueia com erro "Acesso restrito ao evento vinculado" (confuso), não "Perfil insuficiente" | Médio      | VA   | Violação de defense-in-depth: RBAC não é o guardião primário para criação de eventos na API; mensagem de erro enganosa leva a diagnóstico incorreto                                                                                                      | FR-34, FR-38, NFR-1                                          | Backlog arquitetural — curto prazo |
+| F-06 | `authSSR`                                     | Sem validação de `JWT_SECRET` ao carregamento do módulo; dependência implícita de `auth.js` ser carregado primeiro                                                              | `authSSR.js:` sem nenhum check de env no topo. `auth.js:3-4`: `const secret = process.env.JWT_SECRET; if (!secret) throw new Error(...)`. `authSSR.js:33`: `jwt.verify(token, process.env.JWT_SECRET)` inline                                                                                        | Médio      | DT   | Dependência implícita de ordem de carregamento de módulos; se `auth.js` não for carregado, `authSSR` falha silenciosamente em runtime ao invés de abortar o startup                                                                                      | NFR-3                                                        | Backlog técnico — médio prazo      |
+| F-07 | `scopedEvento`                                | Sem try/catch ao redor de `req.usuario.getEventos()`                                                                                                                            | `scopedEvento.js:8`: `const eventos = await req.usuario.getEventos()` — sem tratamento de exceção                                                                                                                                                                                                    | Médio      | DT   | Falha de banco de dados propagada para handler genérico do Express; rotas API podem receber resposta HTML de erro em vez de JSON                                                                                                                         | NFR-1 (indiretamente)                                        | Backlog técnico — curto prazo      |
+| F-08 | `authSSR` / `routes/auth.js`                  | SRS especifica SSR login em `POST /auth/login`; implementação registra `POST /login`                                                                                            | FR-30: "(b) SSR: `POST /auth/login`". `app.js:176`: `app.use('/', authRouter)`. `routes/auth.js:40`: `router.post('/login', ...)` → rota efetiva: `POST /login`                                                                                                                                      | Médio      | ID   | Documentação diverge da implementação; pode causar confusão em integração, automação de testes e documentação de API                                                                                                                                     | FR-30                                                        | Backlog documental — médio prazo   |
+| F-09 | `scopedEvento` / `tiposCertificadosOwnership` | `GET /tipos-certificados` e `GET /tipos-certificados/:id` sem filtragem por evento do usuário                                                                                   | `routes/tipos-certificados.js:144-145`: `router.get('/', auth, rbac('monitor'), tiposCertificadosController.findAll)` e `router.get('/:id', auth, rbac('monitor'), tiposCertificadosController.findById)` — nenhum `scopedEvento`                                                                    | Médio      | GI   | Gestores e monitores podem listar e visualizar tipos de certificados de todos os eventos, não apenas dos seus; violação do princípio de isolamento multi-evento                                                                                          | FR-37                                                        | Backlog segurança — curto prazo    |
+| F-10 | `routes/auth.js` / `app.js` (session)         | Cookies JWT e de sessão sem atributo `secure: true` explícito                                                                                                                   | `routes/auth.js:59`: `res.cookie('token', token, { httpOnly: true, sameSite: 'lax' })`. `app.js:43-47`: `session({ secret, resave: false, saveUninitialized: false })` sem `cookie: { secure: true }`                                                                                                | Médio      | VH   | Se HTTPS não for enforçado no proxy reverso, cookies transmitidos via HTTP podem ser interceptados (OWASP A02)                                                                                                                                           | NFR-1 (implícito)                                            | Validação humana / backlog infra   |
+| F-11 | `authSSR`                                     | Backdoor de teste `x-mock-user` injeta usuário via cabeçalho HTTP sem validação de schema                                                                                       | `authSSR.js:6-14`: `JSON.parse(req.headers['x-mock-user'])` sem validação de estrutura; `req.session.mockUser = mockUser` persiste na sessão                                                                                                                                                         | Baixo      | AM   | Risco caso `NODE_ENV === 'test'` seja definido inadvertidamente em ambiente não-teste; object injection via JSON parse sem schema                                                                                                                        | NFR-1                                                        | Validação humana                   |
+| F-12 | `authSSR`                                     | `isMonitor` ausente no objeto `req.usuario` / `res.locals.usuario` no contexto SSR                                                                                              | `authSSR.js:48-55`: `{ id, nome, perfil, isAdmin, isGestor }` — sem `isMonitor`. `auth.js` retorna instância Sequelize completa                                                                                                                                                                      | Baixo      | DT   | Qualquer view, helper ou lógica que verifique `req.usuario.isMonitor` recebe `undefined`; inconsistência de API do contexto de usuário                                                                                                                   | —                                                            | Backlog técnico — longo prazo      |
+| F-13 | `tiposCertificadosOwnership`                  | Check redundante de `perfil === 'monitor'` em middleware de ownership; rota já tem `rbac('gestor')` antes                                                                       | `tiposCertificadosOwnership.js:21-26`: bloqueia monitor com 403. `routes/tipos-certificados.js:147-167`: toda mutação já aplica `rbac('gestor')` que bloqueia monitor antes de chegar ao ownership middleware                                                                                        | Baixo      | DT   | Lógica duplicada; em caso de refatoração das rotas, pode criar comportamento diferente do esperado                                                                                                                                                       | NFR-6                                                        | Backlog técnico — longo prazo      |
+| F-14 | `authSSR` / `routes/auth.js`                  | Ausência de mecanismo de revogação/sincronização de logout entre SSR e API                                                                                                      | `routes/auth.js:69-72`: `router.post('/logout', (req, res) => { res.clearCookie('token'); return res.redirect('/login') })` — não invalida o token JWT. `routes/usuarios.js:130`: `router.post('/logout', usuarioController.logout)` — retorna JSON sem limpar cookie                                | Médio      | VH   | Token JWT emitido permanece válido por 1h após logout SSR; logout API não afeta cookie SSR; comportamento de sessão unificada não especificado no SRS                                                                                                    | FR-30 (implícito)                                            | Validação humana                   |
+| F-15 | `tiposCertificadosOwnership`                  | Comentário JSDoc no middleware afirma "GET (qualquer): passa sempre" mas o middleware não é aplicado a rotas GET                                                                | `tiposCertificadosOwnership.js:5-6`: `* - GET (qualquer): passa sempre`. `routes/tipos-certificados.js:144-145`: GET routes não incluem este middleware                                                                                                                                              | Baixo      | ID   | Comentário enganoso; pode causar interpretação incorreta do comportamento esperado durante manutenção                                                                                                                                                    | —                                                            | Backlog documental — longo prazo   |
 
 ---
 
@@ -86,14 +86,17 @@ A lógica de resolução do `eventoId` em `scopedEvento` para operações de rec
 ### 2.4 Fragilidade do pipeline HTTP
 
 A cadeia de middlewares para a API de certificados é:
+
 ```
 auth → rbac('monitor') → scopedEvento → validate → controller
 ```
+
 Para `GET /certificados/:id`, `scopedEvento` tenta resolver o evento do certificado via `req.params.id`. Esta cadeia é frágil: se o certificado de ID=5 não pertencer ao evento=5, o acesso é incorretamente negado ou permitido dependendo da coincidência de IDs.
 
 ### 2.5 Divergência de sessão vs JWT
 
 O sistema mantém dois estados independentes:
+
 1. **Sessão Express** (`express-session`): usada para flash messages e mock de testes.
 2. **JWT via cookie HTTP-only**: autenticação real no SSR.
 
@@ -241,6 +244,7 @@ O sistema não possui mecanismo de revogação de JWT. Após logout SSR, o token
 **Justificativa:** A lógica atual de `req.params.id` como `eventoId` é semanticamente incorreta para todos os recursos cujo `:id` paramétrico não é um `evento_id`.
 
 **Escopo proposto:** Separar claramente as responsabilidades:
+
 1. Para listagens: injeção de filtro `evento_id` (comportamento atual — correto).
 2. Para mutações com `req.body.evento_id`: verificação de evento no body (comportamento atual — correto).
 3. Para operações por `:id`: delegar ao service/controller verificar se o recurso pertence ao evento do usuário — não é responsabilidade do middleware genérico.
@@ -254,6 +258,7 @@ O sistema não possui mecanismo de revogação de JWT. Após logout SSR, o token
 **Justificativa:** Inconsistências na cadeia (ex.: F-05, F-09) sugerem ausência de convenção documentada.
 
 **Escopo proposto:** Definir pipelines por tipo:
+
 - Rota API administrativa: `auth → rbac(nível mínimo) → scopedEvento (se aplicável) → validate → controller`
 - Rota SSR administrativa: `authSSR (global no router) → rbac(nível mínimo) → controller`
 - Rota pública: sem middlewares de autenticação
@@ -270,15 +275,15 @@ Este padrão de reuso de middleware genérico sem adaptação ao domínio é um 
 
 ### 8.2 Inconsistência estrutural entre SSR e API
 
-| Aspecto | API (`auth`) | SSR (`authSSR`) |
-|---|---|---|
-| Tipo de `req.usuario` | Instância Sequelize | Plain object |
-| Campos disponíveis | Todos do modelo | `id, nome, perfil, isAdmin, isGestor` |
-| `email` disponível | Sim | Não |
-| `getEventos()` disponível | Sim | Não |
-| `isMonitor` disponível | Via `perfil === 'monitor'` | Não (campo ausente) |
-| Soft-delete treatment | `paranoid: true` no model — excluído automaticamente | Idem |
-| Validação JWT_SECRET no load | Sim (throw at startup) | Não (dependência implícita) |
+| Aspecto                      | API (`auth`)                                         | SSR (`authSSR`)                       |
+| ---------------------------- | ---------------------------------------------------- | ------------------------------------- |
+| Tipo de `req.usuario`        | Instância Sequelize                                  | Plain object                          |
+| Campos disponíveis           | Todos do modelo                                      | `id, nome, perfil, isAdmin, isGestor` |
+| `email` disponível           | Sim                                                  | Não                                   |
+| `getEventos()` disponível    | Sim                                                  | Não                                   |
+| `isMonitor` disponível       | Via `perfil === 'monitor'`                           | Não (campo ausente)                   |
+| Soft-delete treatment        | `paranoid: true` no model — excluído automaticamente | Idem                                  |
+| Validação JWT_SECRET no load | Sim (throw at startup)                               | Não (dependência implícita)           |
 
 ### 8.3 Dependência excessiva de middleware para segurança com bypasses implícitos
 
@@ -287,6 +292,7 @@ O caso de `POST /eventos` com `rbac('monitor') + scopedEvento` exemplifica um pa
 ### 8.4 Fragilidade de autenticação híbrida
 
 O sistema mantém dois mecanismos de autenticação paralelos (JWT Bearer + cookie JWT) sem definição de relação entre eles:
+
 - Logout em um fluxo não invalida o outro.
 - A sessão Express é um terceiro estado (usada para flash messages e mocks de teste) que coexiste independentemente dos dois mecanismos JWT.
 - A sesão persiste `mockUser` em modo de teste, o que cria um estado de sessão baseado em header HTTP — se o mecanismo de detecção de ambiente falhar, isso se torna uma backdoor de autenticação.
@@ -299,13 +305,13 @@ A combinação de F-01 (confusão de IDs em scopedEvento) e F-02 (ausência de R
 
 O isolamento multi-evento é aplicado de forma inconsistente:
 
-| Recurso | API GET lista | API GET /:id | API POST | API PUT/DELETE |
-|---|---|---|---|---|
-| Certificados | ✅ scopedEvento (query injection) | ⚠️ scopedEvento (ID confusão — F-01) | ✅ scopedEvento (body evento_id) | ⚠️ scopedEvento (ID confusão — F-01) |
-| Eventos | ✅ scopedEvento | ⚠️ scopedEvento (ID confusão) | ⚠️ rbac errado (F-05) | ⚠️ scopedEvento (ID confusão) |
-| Participantes | ✅ sem scoping (intencional?) | ✅ sem scoping (intencional?) | ✅ sem scoping (participantes globais) | ✅ sem scoping |
-| Tipos Certificados | ❌ sem scoping (F-09) | ❌ sem scoping (F-09) | ✅ ownership check | ✅ ownership check |
-| Usuários (CRUD) | N/A | N/A | ⚠️ sem rbac em rota (F-02) | ⚠️ sem rbac em rota (F-02) |
+| Recurso            | API GET lista                     | API GET /:id                         | API POST                               | API PUT/DELETE                       |
+| ------------------ | --------------------------------- | ------------------------------------ | -------------------------------------- | ------------------------------------ |
+| Certificados       | ✅ scopedEvento (query injection) | ⚠️ scopedEvento (ID confusão — F-01) | ✅ scopedEvento (body evento_id)       | ⚠️ scopedEvento (ID confusão — F-01) |
+| Eventos            | ✅ scopedEvento                   | ⚠️ scopedEvento (ID confusão)        | ⚠️ rbac errado (F-05)                  | ⚠️ scopedEvento (ID confusão)        |
+| Participantes      | ✅ sem scoping (intencional?)     | ✅ sem scoping (intencional?)        | ✅ sem scoping (participantes globais) | ✅ sem scoping                       |
+| Tipos Certificados | ❌ sem scoping (F-09)             | ❌ sem scoping (F-09)                | ✅ ownership check                     | ✅ ownership check                   |
+| Usuários (CRUD)    | N/A                               | N/A                                  | ⚠️ sem rbac em rota (F-02)             | ⚠️ sem rbac em rota (F-02)           |
 
 Legenda: ✅ Correto / ⚠️ Com problema identificado / ❌ Ausente
 
@@ -313,4 +319,4 @@ O padrão de inconsistência é claro: operações de listagem têm melhor cober
 
 ---
 
-*Auditoria concluída em 2026-05-10 12:15 (BRT)*
+_Auditoria concluída em 2026-05-10 12:15 (BRT)_

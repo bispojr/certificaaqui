@@ -28,7 +28,8 @@ async function getEventoIds(req) {
 async function index(req, res) {
   try {
     const { status, evento_id, tipo_id } = req.query
-    const eventoIds = await getEventoIds(req)
+    const eventoIds =
+      req.contextoAutorizacao?.eventoIds ?? (await getEventoIds(req))
 
     // eventoIds === null → admin (sem filtro); === [] → gestor sem eventos (retorna nada)
     if (eventoIds !== null && eventoIds.length === 0) {

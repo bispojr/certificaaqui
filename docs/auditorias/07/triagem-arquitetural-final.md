@@ -11,15 +11,15 @@
 
 ## Fontes consolidadas
 
-| Triagem | Domínios | Achados de origem |
-|---------|----------|-------------------|
-| T01 | Certificados, RBAC/Escopo | CERT-01 a CERT-17 |
-| T02 | Eventos, Usuários, Autenticação/Autorização | C-01 a C-43 |
-| T03 | Participantes, Tipos de Certificados, Dashboard | PA-01–11, TC-01–19, DB-01–11, TS-01–06 |
-| T04 | Upload/R2/Arquivos, Templates, Geração de PDF | C-01 a C-47 |
-| T05 | Acesso público (validação, download, consulta) | T05-VU-001 a T05-VH-006 |
-| T06 | Associação Usuário-Evento, Middlewares, Segurança Core | T06-001 a T06-034 |
-| T07 | Models, Relacionamentos, Soft Delete, Constraints, Migrações, Integridade | T07-01 a T07-35 |
+| Triagem | Domínios                                                                  | Achados de origem                      |
+| ------- | ------------------------------------------------------------------------- | -------------------------------------- |
+| T01     | Certificados, RBAC/Escopo                                                 | CERT-01 a CERT-17                      |
+| T02     | Eventos, Usuários, Autenticação/Autorização                               | C-01 a C-43                            |
+| T03     | Participantes, Tipos de Certificados, Dashboard                           | PA-01–11, TC-01–19, DB-01–11, TS-01–06 |
+| T04     | Upload/R2/Arquivos, Templates, Geração de PDF                             | C-01 a C-47                            |
+| T05     | Acesso público (validação, download, consulta)                            | T05-VU-001 a T05-VH-006                |
+| T06     | Associação Usuário-Evento, Middlewares, Segurança Core                    | T06-001 a T06-034                      |
+| T07     | Models, Relacionamentos, Soft Delete, Constraints, Migrações, Integridade | T07-01 a T07-35                        |
 
 Auditorias individuais suportando as triagens: 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25.
 
@@ -73,88 +73,88 @@ O Certifique-me encontra-se em **estado de risco operacional elevado**. A implem
 > Achados consolidados e deduplicados de todas as triagens. IDs prefixados com `STF-` (Super Triagem Final).
 > Rastreabilidade: coluna "Origem" referencia IDs nas triagens de origem.
 
-| ID | Domínio | Descrição | Sev. | Tipo | Impacto | Requisitos Violados | Origem | Status Arq. |
-|----|---------|-----------|------|------|---------|---------------------|--------|-------------|
-| **STF-001** | Multi-tenant / Middleware | `scopedEvento` compara `req.params.id` (ID do recurso) com `evento_id` do usuário em rotas de item único — acesso concedido ou negado por coincidência numérica | Crítico | BR | Controle de acesso não-determinístico em todos os domínios | FR-37, NFR-1, OWASP A01 | T01/CERT-15, T02/C-01, T03/TS-02, T04/C-01, T06/T06-001 | Blocker |
-| **STF-002** | Multi-tenant / Services | Services de certificados e participantes ignoram filtros injetados por `scopedEvento` em listagens — middleware de segurança sem efeito real | Crítico | VA | Multi-tenancy ilusório: `GET /certificados` e `GET /participantes` retornam todos os registros do sistema | FR-37, NFR-1, NFR-6 | T01/CERT-01, T02/C-14, T03/TS-03, T04/C-03, T06/T06-001, T07/T07-05 | Blocker |
-| **STF-003** | Multi-tenant / SSR | Handlers SSR de certificados (`detalhe`, `editar`, `atualizar`, `cancelar`, `deletar`, `restaurar`) sem verificação de ownership de evento | Crítico | VU | Gestor/monitor acessa e altera certificados de qualquer evento via URL direta | FR-37, NFR-1 | T01/CERT-02, T02/C-17, T04/C-02, T06/T06-012 | Blocker |
-| **STF-004** | Multi-tenant / Participantes API | `GET /participantes` lista todos os participantes do sistema sem filtro de evento | Crítico | VU | Vazamento massivo de PII (nome, email, instituição) entre todos os tenants | FR-37, NFR-1, OWASP A01 | T01/CERT-04, T03/PA-01 | Blocker |
-| **STF-005** | Integridade / Validator | Validator Zod de criação de certificado remove `valores_dinamicos` silenciosamente; service rejeita a criação com HTTP 422 — fluxo central de emissão inoperante via API | Crítico | BR | Emissão de certificados com campos dinâmicos impossível via API REST | FR-20, FR-54, NFR-6 | T01/CERT-08, T03/TC-01 | Blocker |
-| **STF-006** | Segurança / Configuração | `SESSION_SECRET=changeme-em-producao` hardcoded em `docker-compose.yml` | Crítico | VU | Comprometimento total de sessões SSR; qualquer actor com acesso ao repo pode forjar cookies de sessão | NFR-3, OWASP A05 | T06/T06-003 | Emergencial |
-| **STF-007** | RBAC / API | `DELETE /eventos/:id`, `PUT /eventos/:id` e `POST /eventos` usam `rbac('monitor')` na API — SSR restringe corretamente a `rbac('admin')` | Crítico | VU | Gestores e monitores podem deletar e atualizar eventos via API REST sem autorização | FR-34, NFR-1 | T02/C-02, T06/T06-002, T07/T07-08 | Emergencial |
-| **STF-008** | Integridade / Certificados | `certificadoService.create()` não valida que `tipo.evento_id === data.evento_id` — certificado pode cruzar tipo de evento A com evento B | Crítico | BR | Mistura de estrutura de dados entre eventos distintos; PDF gerado com schema incorreto | FR-21, FR-45 | T03/TC-02, T07/T07-01 | Emergencial |
-| **STF-009** | Integridade / Certificados | `count()` com `paranoid: true` exclui soft-deletados; próximo código incremental colide com certificado ativo após qualquer soft delete; simultâneo-concorrente gera colisão | Crítico | BR | `UniqueConstraintError` após soft delete; serviço de emissão inoperante em cenários reais | FR-52, NFR-4 | T01/CERT-12, T04/C-17-C-18, T07/T07-02-T07-04 | Emergencial |
-| **STF-010** | Segurança / XSS | `{{{json certificado.valores_dinamicos}}}` e `{{{json tipo.dados_dinamicos}}}` emitidos sem escape em contexto `<script>` via triple-mustache; ausência de CSP | Crítico | VU | XSS stored executável no painel admin; comprometimento de sessão de qualquer usuário autenticado | NFR-1, OWASP A03, A05 | T04/C-04-C-05-C-06 | Emergencial |
-| **STF-011** | Público / Rate Limiting | Ausência total de rate limiting em todas as seis rotas públicas de certificados (API e SSR) | Crítico | VU | Brute force irrestrito, scraping de e-mails, enumeração de PDFs, DoS por geração intensiva de PDF | NFR-1, MS-4 (sem FR) | T05/T05-VU-001 | Emergencial |
-| **STF-012** | Público / IDOR | `GET /api/certificados/:id/pdf` aceita qualquer ID sequencial sem autenticação; IDs são PKs auto-incrementais | Crítico | VU | Enumeração completa de todos os PDFs do sistema por iteração sequencial (IDOR) | FR-42, NFR-1, OWASP A01 | T04/C-11, T05/T05-VU-003 | Emergencial |
-| **STF-013** | Autenticação / Segurança | Cookie JWT SSR sem flag `secure`; cookie de sessão sem `secure`, `httpOnly`, `sameSite` explícitos | Alto | VU | Cookies transmitíveis por HTTP em produção; interceção em trânsito (OWASP A02) | NFR-1, NFR-3 | T02/C-03, T06/T06-007-T06-015 | Emergencial |
-| **STF-014** | Autenticação / RBAC | Login SSR (`POST /login`) sem rate limiting; apenas API protegida | Alto | GI | Endpoint de autenticação web vulnerável a brute force irrestrito | FR-55, NFR-1 | T02/C-05, T06/T06-004 | Emergencial |
-| **STF-015** | RBAC / API | `DELETE /participantes/:id` e `POST /participantes/:id/restore` com `rbac('monitor')`; SSR sem rbac algum | Alto | VU | Monitores deletam e restauram participantes; rotas SSR sem proteção de perfil | FR-35, FR-36, NFR-1 | T03/PA-02, T07/T07-07-T07-10 | Emergencial |
-| **STF-016** | RBAC / API | `POST /certificados/:id/restore` usa `rbac('monitor')` na API; SSR exige `rbac('admin')` — contradiz FR-22 | Alto | IP | Monitores restauram certificados cancelados via API contornando restrição da SSR | FR-22, NFR-1 | T01/CERT-07, T03/TC-08, T07/T07-09 | Emergencial |
-| **STF-017** | RBAC / SSR | SSR `POST /admin/certificados` usa `rbac('gestor')`, bloqueando monitores de criar certificados | Alto | IP | Monitores não podem criar certificados pela interface web; contradiz FR-36 | FR-36 | T02/C-06, T03/TC-09 | Emergencial |
-| **STF-018** | Segurança / PII | `console.log('PDFService certificado:', certificado)` expõe PII completo em logs de produção a cada geração de PDF | Alto | VU | Dados pessoais em stdout/logs; violação LGPD e OWASP A09 | NFR-1, OWASP A09 | T04/C-12, T05/T05-VU-009, T06/T06-008 | Emergencial |
-| **STF-019** | Público / Certificados cancelados | Endpoints de validação pública retornam `valido: true` para certificados `cancelado`; download de PDF não é bloqueado | Alto | BR | Certificados cancelados apresentados como autênticos ao público | FR-24, FR-42, FR-19 | T05/T05-VU-002 | Emergencial |
-| **STF-020** | Segurança / Autenticação | `req.usuario` tem contratos incompatíveis entre API (instância Sequelize com `getEventos()`) e SSR (POJO sem métodos); `email` e `isMonitor` ausentes no SSR | Alto | VA | Middlewares de autorização não reutilizáveis em SSR; HTTP 500 latente; `isMonitor` nunca verdadeiro em produção | FR-37, NFR-6 | T01/CERT-16, T02/C-07, T03/TS-01, T06/T06-005 | Blocker |
-| **STF-021** | Constraint / Migrations | Constraint `UNIQUE(codigo, evento_id)` em `tipos_certificados` é FULL na migration mas partial no model — drift entre produção e testes; restauração após soft delete bloqueia por constraint violation | Crítico | BR | FR-11 violado em produção; restauração de tipos inoperante | FR-11, NFR-4, NFR-5 | T03/TC-06, T07/T07-03 | Emergencial |
-| **STF-022** | Integridade / Transações | Zero uso de `sequelize.transaction()` em qualquer service; operações compostas são não-atômicas | Alto | DT | Estados intermediários inválidos em falhas; race conditions sistêmicas | NFR-4 | T07/T07-18 | Blocker |
-| **STF-023** | Público / Vazamento | E-mail do participante exposto na view SSR de resultado de validação pública; combinado com código previsível permite scraping | Alto | VU | Coleta massiva de e-mails de participantes sem autenticação; LGPD | NFR-1, FR-25, LGPD | T05/T05-VU-005 | Emergencial |
-| **STF-024** | Público / Resposta HTTP | `detalhe: err.message` exposto em respostas HTTP 500 do endpoint público de PDF | Alto | VU | Vaza paths R2, nomes de bucket, endpoints de storage; reconhecimento de topologia interna | NFR-1, OWASP A05 | T05/T05-VU-008 | Emergencial |
-| **STF-025** | Arquitetura / Usuário | `usuarioService.js` ausente; toda a lógica de usuário (JWT, bcrypt, associação N:N) reside no controller | Alto | VA | Violação de NFR-6; CRUD de usuários não reutilizável; único domínio sem service | NFR-6 | T02/C-08 | Blocker |
-| **STF-026** | Multi-tenant / Tipos SSR | `tiposCertificadosSSRController.index()` usa `whereAtivos = {}` — `eventosIds` obtido mas nunca aplicado; listagem exibe tipos de todos os eventos | Alto | BR | Isolamento multi-tenant violado na listagem de tipos via SSR | FR-37, FR-46 | T03/TC-03, T07/T07-06 | Emergencial |
-| **STF-027** | Multi-tenant / Tipos API | `TiposCertificadosController.findAll()` ignora `req.filtro.eventoId` — tipos de todos os eventos retornados via API | Alto | BR | Isolamento multi-tenant violado na listagem de tipos via API | FR-37, FR-46, NFR-1 | T02/C-15, T03/TC-11, T07/T07-05, T06/T06-014 | Emergencial |
-| **STF-028** | UI / Bug | Link de download PDF no painel admin (`/public/certificados/:id/pdf`) aponta para rota inexistente; correto: `/api/certificados/:id/pdf` | Alto | BR | Download de PDF sempre HTTP 404 para usuários autenticados no painel admin | FR-42 | T04/C-15, T05/T05-BR-001 | Emergencial |
-| **STF-029** | UI / Bug | Alias Sequelize `TiposCertificado` (singular) no `certificadoSSRController.detalhe` diverge do alias `TiposCertificados` (plural) declarado no model; texto interpolado sempre vazio | Alto | BR | Texto do certificado nunca exibido no detalhe SSR; FR-39 não atendido | FR-39 | T01/CERT-10, T03/TC-07, T04/C-16, T07/T07-11 | Emergencial |
-| **STF-030** | Validator / URL | `url_template_base` validado como `z.string().url()` por Zod, mas campo armazena key R2 relativa (ex: `templates/cbie/2026/base.jpg`) — nenhuma key válida passa pela API | Alto | BR | Upload de template e configuração de R2 impossíveis via API REST | FR-44 | T02/C-24, T04/C-29 | Emergencial |
-| **STF-031** | Segurança / Configuração | `JWT_SECRET` ausente do `docker-compose.yml` de produção; `SESSION_SECRET` ausente do `.env.example` | Alto | GI | Startup falha de forma não documentada; onboarding inseguro | NFR-3 | T06/T06-032, T06/T06-024 | Emergencial |
-| **STF-032** | Segurança / RBAC | Rotas de criação de usuários (`usuarios-crud.js`) sem `rbac` na cadeia de middlewares; enforcement apenas no controller | Alto | VU | Qualquer usuário autenticado pode tentar criar usuário admin violando defense-in-depth | FR-34, FR-38, NFR-1, NFR-6 | T06/T06-009 | Emergencial |
-| **STF-033** | Autenticação / Enumeração | Login API retorna mensagens distintas: "Usuário não encontrado" vs. "Senha inválida" — user enumeration (OWASP A07) | Médio | VU | Atacante confirma quais e-mails estão cadastrados sem autenticação | NFR-1, OWASP A07 | T02/C-04 | Backlog curto prazo |
-| **STF-034** | Segurança / Senha | Política de senha forte (`senhaForteSchema`) aplicada apenas em self-service; criação de usuário via API aceita senhas fracas | Alto | IP | FR-57 e NFR-2 não cumpridos na criação via API | FR-57, NFR-2 | T02/C-20, T06/T06-010, T07/T07-14 | Emergencial |
-| **STF-035** | Dashboard / Bug | `ultimosCertificados` computado e enviado ao template, mas não há `{{#each}}` no `dashboard.hbs` — feature ausente na view; backlog marcado como concluído equivocadamente | Crítico | IP | FR-56 não atendido; dados processados sem uso; backlog com estado incorreto | FR-56 | T03/DB-03, T03/DB-04 | Emergencial |
-| **STF-036** | Dashboard / Bug | `isMonitor` nunca definido em `authSSR.js`; toda lógica condicional de view baseada em `{{usuario.isMonitor}}` inefetiva | Médio | BR | Interface de monitor não diferenciada; testes simulam estado irreal | - | T03/DB-02 | Backlog curto prazo |
-| **STF-037** | Multi-tenant / Participantes SSR | Operações SSR de participantes por ID (editar, atualizar, deletar, restaurar) sem verificação de escopo de evento | Alto | VU | Gestor/monitor edita ou deleta participante de outro evento via SSR | FR-37, NFR-1 | T03/PA-03 | Emergencial |
-| **STF-038** | UX / Bug | JOIN em `Certificado` na listagem SSR de participantes torna invisíveis participantes sem certificados do evento do usuário | Alto | GI | Violação de FR-36 e FR-49; participantes cadastrados desaparecem da listagem | FR-36, FR-49 | T03/PA-04 | Backlog curto prazo |
-| **STF-039** | Constraints / Email | Índice UNIQUE de `email` em `participantes` e `usuarios` sem `WHERE deleted_at IS NULL`; recriação de usuário/participante com mesmo e-mail após soft delete impossível | Médio | IP | Contradiz semântica de NFR-4 (soft delete + restauração) | FR-2, FR-27, NFR-4 | T07/T07-20 | Backlog curto prazo |
-| **STF-040** | Integridade / FK | FK `ON DELETE CASCADE` em `certificados` para entidades soft-deletáveis; hard delete de parent (por script DBA) apagaria certificados permanentemente | Alto | DT | NFR-4 vulnerável a operações fora do ORM | NFR-4 | T07/T07-16 | Backlog médio prazo |
-| **STF-041** | Integridade / Cascade | Soft delete de evento não cascateia para `TiposCertificados` e `Certificado`; entidades filhas permanecem ativas | Médio | GI | Tipos e certificados de evento deletado aparecem como ativos | FR-9, NFR-4 | T07/T07-23 | Backlog médio prazo |
-| **STF-042** | Integridade / Cascade | Soft delete de participante não cascateia para certificados; certificados ficam com participante nulo no ORM; PDF gerado pode ter nome vazio | Médio | GI | Violação de integridade semântica | FR-4, NFR-4 | T07/T07-24 | Backlog médio prazo |
-| **STF-043** | Integridade / Cascade | `eventoService.restore()` restaura todos os `UsuarioEvento` soft-deletados do evento, incluindo vínculos de usuários removidos intencionalmente e usuários já soft-deletados | Médio | GI | Ghost access reestabelecido; violação de integridade semântica | FR-32, NFR-4 | T06/T06-020, T07/T07-21-T07-31 | Backlog médio prazo |
-| **STF-044** | Constraints / usuario_eventos | Ausência de constraint UNIQUE `(usuario_id, evento_id)` no banco; duplicatas silenciosas possíveis por concorrência ou scripts | Alto | GI | RBAC assume unicidade por combinação; vínculos duplos quebram scoping | FR-32 | T06/T06-016, T07/T07-15 | Backlog médio prazo |
-| **STF-045** | Segurança / Session | `express-session` usando MemoryStore em produção; biblioteca emite warning; sessões perdidas em restart | Alto | DT | OOM com alta carga; perda de sessões em restart de pod | NFR-3 | T06/T06-011 | Backlog médio prazo |
-| **STF-046** | Arquitetura / Rotas | Lógica de busca pública (validação, consulta, PDF) implementada diretamente nas rotas `api.js` e `public.js` sem controller ou service | Alto | VA | Violação de NFR-6; duplicação de lógica em três handlers; impossibilidade de aplicar regras transversais | NFR-6 | T05/T05-VA-001 | Backlog curto prazo |
-| **STF-047** | Arquitetura / Rotas | Lógica de geração de PDF inline na rota `api.js` e `certificadoSSRController.cancelar` bypassando `certificadoService.cancel()` diretamente no model | Médio | VA | Violação de NFR-6; duplicação; mudanças no service não propagadas | NFR-6 | T04/C-33-C-34 | Backlog médio prazo |
-| **STF-048** | Arquitetura / RBAC | RBAC de eventos (`POST /eventos`) sem `rbac('admin')`; proteção colateral dependente de `scopedEvento` — não-declarativa e frágil | Médio | VA | Proteção de criação de evento não-determinística; violação de defense-in-depth | FR-34, NFR-6 | T02/C-11, T06/T06-002 | Backlog curto prazo |
-| **STF-049** | Segurança / Swagger | Swagger exposto em `/api-docs` sem autenticação em qualquer ambiente, incluindo produção | Médio | IP | Facilita reconhecimento de endpoints admin por atacantes; OWASP A01 | NFR-1 | T06/T06-019 | Backlog médio prazo |
-| **STF-050** | Público / Código previsível | Código de certificado (`CODIGO_BASE-YY-TIPO-N`) é sequencial e previsível; permite enumeração sistemática | Alto | VU | Varredura de todos os certificados de um evento por iteração de N; combina com STF-011 e STF-023 | FR-52, NFR-1 | T05/T05-VU-004 | Backlog curto prazo |
-| **STF-051** | Público / GI | `GET /api/validar/:codigo` não inclui associações (Participante, Evento, Tipos) enquanto SSR inclui; contratos divergentes para mesma operação | Médio | GI | API pública de validação semanticamente incompleta | FR-24 | T05/T05-GI-003 | Backlog médio prazo |
-| **STF-052** | Público / GI | Respostas públicas de validação e consulta retornam objetos Sequelize brutos com IDs internos, `deleted_at`, FKs | Alto | GI | Vaza estrutura interna do banco; IDs permitem mapeamento de outros endpoints admin | FR-24, FR-23, NFR-1, OWASP A01 | T05/T05-GI-001-T05-GI-002 | Backlog curto prazo |
-| **STF-053** | Upload / Storage | Upload de arquivo R2 realizado antes da validação do evento; falha posterior gera arquivo órfão imediato; arquivos anteriores nunca removidos ao atualizar template | Alto | BR | Acumulação ilimitada de arquivos órfãos no R2 | FR-51 | T04/C-08-C-09 | Backlog curto prazo |
-| **STF-054** | Upload / Segurança | Validação de MIME type por `file.mimetype` (declarado pelo cliente); ausência de verificação de magic bytes | Alto | VU | Arquivo malicioso disfarçado de imagem passa na validação e é persistido no R2 | NFR-11, OWASP A04 | T04/C-10 | Backlog curto prazo |
-| **STF-055** | Upload / R2 | Credenciais R2 sem validação de startup; aplicação sobe sem R2 funcional; falha silenciosa apenas em runtime | Alto | GI | Diagnóstico difícil; diverge do padrão fail-fast estabelecido para JWT_SECRET | NFR-3 | T04/C-07, T06/T06-023 | Backlog curto prazo |
-| **STF-056** | Upload / Slug | Slug derivado do nome do evento pode ser vazio; dois eventos com nome similar compartilham e sobrescrevem key R2 | Médio | BR | Sobreescrita silenciosa de template de outro evento | FR-51 | T04/C-19 | Backlog curto prazo |
-| **STF-057** | Público / Validação | `GET /api/validar/:codigo` não valida formato do código; SSR aplica REGEX; inconsistência de defesa em profundidade | Alto | VU | Strings arbitrárias chegam ao ORM via API | NFR-1, OWASP A03 | T05/T05-VU-006 | Backlog curto prazo |
-| **STF-058** | Público / Validação | `POST /validar` (SSR) não aplica `CODIGO_CERTIFICADO_REGEX` definido no mesmo arquivo; API e SSR com POST aceitam formatos rejeitados pelo GET | Médio | IP | Inconsistência interna na mesma superfície | NFR-1, FR-24 | T05/T05-IP-001 | Backlog curto prazo |
-| **STF-059** | Autenticação / Backdoor | Backdoor `x-mock-user` em `authSSR` para `NODE_ENV=test`; JSON parse sem validação de schema | Alto | AM | Identidade forjável sem autenticação se `NODE_ENV=test` vazar para produção | NFR-1, NFR-8 | T06/T06-018 | Validação Humana |
-| **STF-060** | Autenticação / JWT | `JWT_SECRET` sem validação de fail-fast em `routes/auth.js` e `authSSR.js`; falha ocorre apenas em runtime | Alto | VU | Startup sem erro; falha em runtime no primeiro uso de JWT | NFR-3 | T06/T06-006 | Emergencial |
-| **STF-061** | Autenticação / JWT | `JWT_SECRET` fraco/previsível no `docker-compose.test.yml` (idêntico ao `.env.example`) | Alto | VU | Tokens JWT de testes forjáveis; risco de reutilização em produção | NFR-3, NFR-8 | T06/T06-013 | Backlog curto prazo |
-| **STF-062** | Autenticação / Logout | Logout API e SSR não sincronizados; token JWT permanece válido até 1h após logout SSR | Médio | VH | JWT inválido logicamente continua válido tecnicamente | FR-30 (implícito) | T06/T06-030 | Validação Humana |
-| **STF-063** | Autenticação / Ownership | `tiposCertificadosOwnership` captura `POST /:id/restore` como criação; `evento_id` undefined → HTTP 403 sistemático para restauração | Médio | BR | Gestores legítimos não conseguem restaurar tipos via API | FR-35, FR-46 | T06/T06-021 | Backlog curto prazo |
-| **STF-064** | Integridade / Participante | `certificadoSSRController.novo()` lista todos os eventos, todos os tipos e todos os participantes sem filtro de escopo | Médio | BR | Monitor/gestor pode selecionar combinação inválida; ativa STF-008 | FR-37, FR-45 | T01/CERT-03, T03/TC-12, T06/T06-022, T07/T07-22 | Backlog curto prazo |
-| **STF-065** | Integridade / Update | `certificadoService.update()` não revalida `valores_dinamicos` contra `dados_dinamicos` do tipo — update pode persistir campos faltantes | Alto | GI | Certificados com campos dinâmicos incompletos; PDF com placeholders não substituídos | FR-54, FR-20 | T07/T07-17 | Backlog médio prazo |
-| **STF-066** | Integridade / FK | `certificadoService.create()` não valida existência de `participante_id`; ID inexistente gera FK violation com HTTP 500 e stack trace exposto | Alto | BR | Exposição de erro técnico ao cliente | FR-21, NFR-6 | T07/T07-13 | Backlog curto prazo |
-| **STF-067** | Integridade / Status | Ausência de máquina de estados para `status` do certificado; qualquer transição aceita (cancelado → emitido) sem validação | Médio | GI | Certificados cancelados podem ser reemitidos sem auditoria | FR-19 | T07/T07-25 | Backlog médio prazo |
-| **STF-068** | SRS / Ambiguidade | FR-44 internamente contraditório: "URL válida" vs "key no R2"; ambiguidade gerou bug real no validator Zod (STF-030) | Médio | ID | Implementação divergente entre API (URL) e SSR (key relativa) | FR-44 | T02/C-37, T04/C-29 | Atualização SRS |
-| **STF-069** | SRS / Ambiguidade | FR-24 não define comportamento de validação pública para certificados `cancelado` e `pendente`; ambiguidade gerou BR (STF-019) | Alto | AM | Comportamento de certificados cancelados indeterminado sem decisão de produto | FR-24, FR-19 | T05/T05-AM-001 | Atualização SRS + VH |
-| **STF-070** | SRS / Duplicação | FR-23 e FR-53 são duplicatas sem diferenciação semântica | Baixo | ID | Rastreabilidade comprometida | FR-23, FR-53 | T05/T05-AM-003 | Atualização SRS |
-| **STF-071** | SRS / Lacuna | FR-30 documenta `POST /auth/login`; implementação usa `POST /login` | Baixo | ID | Documentação de rota incorreta no SRS | FR-30 | T02/C-38, T06/T06-025 | Atualização SRS |
-| **STF-072** | SRS / Lacuna | MS-4 menciona rate limiting para rotas públicas sem FR correspondente; lacuna é invisível no backlog formal | Baixo | ID | Vulnerabilidade STF-011 sem FR rastreável | - | T05/T05-ID-001 | Atualização SRS |
-| **STF-073** | DT / Migrations | Down migration de `certificados` não remove ENUM `enum_certificados_status`; orphan type em rollback | Médio | IP | Inconsistência entre ambientes após rollback | NFR-5 | T07/T07-33 | Backlog médio prazo |
-| **STF-074** | DT / Arquitetura | Lógica de ownership (`getEventosIds`, `temOwnership`) duplicada no `tiposCertificadosSSRController` e no middleware `tiposCertificadosOwnership` | Médio | DT | Regras de negócio em dois lugares; divergência já ocorrida | NFR-6 | T03/TC-13 | Backlog médio prazo |
-| **STF-075** | DT / Model | `campo_destaque` validado por hook `beforeValidate` no Sequelize (lança `Error` genérico não `ValidationError`); Zod valida apenas `min(1)` | Médio | VA | Validação de entrada retorna erro de persistência; UX degradada; violação NFR-6 | FR-14, NFR-6 | T03/TC-14, T07/T07-26 | Backlog médio prazo |
-| **STF-076** | DT / PDF | Anti-pattern `new Promise(async (resolve, reject) => {...})` em `pdfService`; lazy `require('./r2Service')` para evitar dependência circular | Médio | DT | Possibilidade de unhandled promise rejection silenciosa; dependência circular latente | - | T04/C-37-C-39, T05/T05-DT-002-T05-DT-003 | Backlog longo prazo |
-| **STF-077** | DT / R2 | `r2Service.getFile` sem timeout; indisponibilidade do R2 causa hang indefinido na geração de PDF | Médio | DT | Requests pendentes acumulam sob degradação do R2; sem circuit breaker | - | T04/C-25 | Backlog médio prazo |
-| **STF-078** | DT / Migração | Migration `20260418232720` remove constraint global de `tipos_certificados.codigo` por nome fixo; se nome diferir no banco, constraint global persiste junto ao composto | Médio | ID | Em certos ambientes, dois tipos com mesmo código em eventos distintos são bloqueados | FR-11 | T07/T07-27 | Backlog curto prazo |
-| **STF-079** | DT / Histórico | `eventoService.destroy()` é método órfão com semântica divergente de `eventoService.delete()`; não é chamado por nenhum controller | Baixo | DT | Risco de confusão em manutenção | NFR-6 | T02/C-35, T06/T06-026 | Backlog longo prazo |
-| **STF-080** | DT / Sessão | Cookie de sessão sem configuração explícita de `secure`, `httpOnly`, `sameSite`, `maxAge`; dependência de defaults da biblioteca | Médio | DT | Proteção baseada em comportamento default de terceiro; frágil a atualizações | NFR-1, NFR-3 | T06/T06-015 | Backlog médio prazo |
+| ID          | Domínio                           | Descrição                                                                                                                                                                                               | Sev.    | Tipo | Impacto                                                                                                         | Requisitos Violados            | Origem                                                              | Status Arq.          |
+| ----------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ---- | --------------------------------------------------------------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------- | -------------------- |
+| **STF-001** | Multi-tenant / Middleware         | `scopedEvento` compara `req.params.id` (ID do recurso) com `evento_id` do usuário em rotas de item único — acesso concedido ou negado por coincidência numérica                                         | Crítico | BR   | Controle de acesso não-determinístico em todos os domínios                                                      | FR-37, NFR-1, OWASP A01        | T01/CERT-15, T02/C-01, T03/TS-02, T04/C-01, T06/T06-001             | Blocker              |
+| **STF-002** | Multi-tenant / Services           | Services de certificados e participantes ignoram filtros injetados por `scopedEvento` em listagens — middleware de segurança sem efeito real                                                            | Crítico | VA   | Multi-tenancy ilusório: `GET /certificados` e `GET /participantes` retornam todos os registros do sistema       | FR-37, NFR-1, NFR-6            | T01/CERT-01, T02/C-14, T03/TS-03, T04/C-03, T06/T06-001, T07/T07-05 | Blocker              |
+| **STF-003** | Multi-tenant / SSR                | Handlers SSR de certificados (`detalhe`, `editar`, `atualizar`, `cancelar`, `deletar`, `restaurar`) sem verificação de ownership de evento                                                              | Crítico | VU   | Gestor/monitor acessa e altera certificados de qualquer evento via URL direta                                   | FR-37, NFR-1                   | T01/CERT-02, T02/C-17, T04/C-02, T06/T06-012                        | Blocker              |
+| **STF-004** | Multi-tenant / Participantes API  | `GET /participantes` lista todos os participantes do sistema sem filtro de evento                                                                                                                       | Crítico | VU   | Vazamento massivo de PII (nome, email, instituição) entre todos os tenants                                      | FR-37, NFR-1, OWASP A01        | T01/CERT-04, T03/PA-01                                              | Blocker              |
+| **STF-005** | Integridade / Validator           | Validator Zod de criação de certificado remove `valores_dinamicos` silenciosamente; service rejeita a criação com HTTP 422 — fluxo central de emissão inoperante via API                                | Crítico | BR   | Emissão de certificados com campos dinâmicos impossível via API REST                                            | FR-20, FR-54, NFR-6            | T01/CERT-08, T03/TC-01                                              | Blocker              |
+| **STF-006** | Segurança / Configuração          | `SESSION_SECRET=changeme-em-producao` hardcoded em `docker-compose.yml`                                                                                                                                 | Crítico | VU   | Comprometimento total de sessões SSR; qualquer actor com acesso ao repo pode forjar cookies de sessão           | NFR-3, OWASP A05               | T06/T06-003                                                         | Emergencial          |
+| **STF-007** | RBAC / API                        | `DELETE /eventos/:id`, `PUT /eventos/:id` e `POST /eventos` usam `rbac('monitor')` na API — SSR restringe corretamente a `rbac('admin')`                                                                | Crítico | VU   | Gestores e monitores podem deletar e atualizar eventos via API REST sem autorização                             | FR-34, NFR-1                   | T02/C-02, T06/T06-002, T07/T07-08                                   | Emergencial          |
+| **STF-008** | Integridade / Certificados        | `certificadoService.create()` não valida que `tipo.evento_id === data.evento_id` — certificado pode cruzar tipo de evento A com evento B                                                                | Crítico | BR   | Mistura de estrutura de dados entre eventos distintos; PDF gerado com schema incorreto                          | FR-21, FR-45                   | T03/TC-02, T07/T07-01                                               | Emergencial          |
+| **STF-009** | Integridade / Certificados        | `count()` com `paranoid: true` exclui soft-deletados; próximo código incremental colide com certificado ativo após qualquer soft delete; simultâneo-concorrente gera colisão                            | Crítico | BR   | `UniqueConstraintError` após soft delete; serviço de emissão inoperante em cenários reais                       | FR-52, NFR-4                   | T01/CERT-12, T04/C-17-C-18, T07/T07-02-T07-04                       | Emergencial          |
+| **STF-010** | Segurança / XSS                   | `{{{json certificado.valores_dinamicos}}}` e `{{{json tipo.dados_dinamicos}}}` emitidos sem escape em contexto `<script>` via triple-mustache; ausência de CSP                                          | Crítico | VU   | XSS stored executável no painel admin; comprometimento de sessão de qualquer usuário autenticado                | NFR-1, OWASP A03, A05          | T04/C-04-C-05-C-06                                                  | Emergencial          |
+| **STF-011** | Público / Rate Limiting           | Ausência total de rate limiting em todas as seis rotas públicas de certificados (API e SSR)                                                                                                             | Crítico | VU   | Brute force irrestrito, scraping de e-mails, enumeração de PDFs, DoS por geração intensiva de PDF               | NFR-1, MS-4 (sem FR)           | T05/T05-VU-001                                                      | Emergencial          |
+| **STF-012** | Público / IDOR                    | `GET /api/certificados/:id/pdf` aceita qualquer ID sequencial sem autenticação; IDs são PKs auto-incrementais                                                                                           | Crítico | VU   | Enumeração completa de todos os PDFs do sistema por iteração sequencial (IDOR)                                  | FR-42, NFR-1, OWASP A01        | T04/C-11, T05/T05-VU-003                                            | Emergencial          |
+| **STF-013** | Autenticação / Segurança          | Cookie JWT SSR sem flag `secure`; cookie de sessão sem `secure`, `httpOnly`, `sameSite` explícitos                                                                                                      | Alto    | VU   | Cookies transmitíveis por HTTP em produção; interceção em trânsito (OWASP A02)                                  | NFR-1, NFR-3                   | T02/C-03, T06/T06-007-T06-015                                       | Emergencial          |
+| **STF-014** | Autenticação / RBAC               | Login SSR (`POST /login`) sem rate limiting; apenas API protegida                                                                                                                                       | Alto    | GI   | Endpoint de autenticação web vulnerável a brute force irrestrito                                                | FR-55, NFR-1                   | T02/C-05, T06/T06-004                                               | Emergencial          |
+| **STF-015** | RBAC / API                        | `DELETE /participantes/:id` e `POST /participantes/:id/restore` com `rbac('monitor')`; SSR sem rbac algum                                                                                               | Alto    | VU   | Monitores deletam e restauram participantes; rotas SSR sem proteção de perfil                                   | FR-35, FR-36, NFR-1            | T03/PA-02, T07/T07-07-T07-10                                        | Emergencial          |
+| **STF-016** | RBAC / API                        | `POST /certificados/:id/restore` usa `rbac('monitor')` na API; SSR exige `rbac('admin')` — contradiz FR-22                                                                                              | Alto    | IP   | Monitores restauram certificados cancelados via API contornando restrição da SSR                                | FR-22, NFR-1                   | T01/CERT-07, T03/TC-08, T07/T07-09                                  | Emergencial          |
+| **STF-017** | RBAC / SSR                        | SSR `POST /admin/certificados` usa `rbac('gestor')`, bloqueando monitores de criar certificados                                                                                                         | Alto    | IP   | Monitores não podem criar certificados pela interface web; contradiz FR-36                                      | FR-36                          | T02/C-06, T03/TC-09                                                 | Emergencial          |
+| **STF-018** | Segurança / PII                   | `console.log('PDFService certificado:', certificado)` expõe PII completo em logs de produção a cada geração de PDF                                                                                      | Alto    | VU   | Dados pessoais em stdout/logs; violação LGPD e OWASP A09                                                        | NFR-1, OWASP A09               | T04/C-12, T05/T05-VU-009, T06/T06-008                               | Emergencial          |
+| **STF-019** | Público / Certificados cancelados | Endpoints de validação pública retornam `valido: true` para certificados `cancelado`; download de PDF não é bloqueado                                                                                   | Alto    | BR   | Certificados cancelados apresentados como autênticos ao público                                                 | FR-24, FR-42, FR-19            | T05/T05-VU-002                                                      | Emergencial          |
+| **STF-020** | Segurança / Autenticação          | `req.usuario` tem contratos incompatíveis entre API (instância Sequelize com `getEventos()`) e SSR (POJO sem métodos); `email` e `isMonitor` ausentes no SSR                                            | Alto    | VA   | Middlewares de autorização não reutilizáveis em SSR; HTTP 500 latente; `isMonitor` nunca verdadeiro em produção | FR-37, NFR-6                   | T01/CERT-16, T02/C-07, T03/TS-01, T06/T06-005                       | Blocker              |
+| **STF-021** | Constraint / Migrations           | Constraint `UNIQUE(codigo, evento_id)` em `tipos_certificados` é FULL na migration mas partial no model — drift entre produção e testes; restauração após soft delete bloqueia por constraint violation | Crítico | BR   | FR-11 violado em produção; restauração de tipos inoperante                                                      | FR-11, NFR-4, NFR-5            | T03/TC-06, T07/T07-03                                               | Emergencial          |
+| **STF-022** | Integridade / Transações          | Zero uso de `sequelize.transaction()` em qualquer service; operações compostas são não-atômicas                                                                                                         | Alto    | DT   | Estados intermediários inválidos em falhas; race conditions sistêmicas                                          | NFR-4                          | T07/T07-18                                                          | Blocker              |
+| **STF-023** | Público / Vazamento               | E-mail do participante exposto na view SSR de resultado de validação pública; combinado com código previsível permite scraping                                                                          | Alto    | VU   | Coleta massiva de e-mails de participantes sem autenticação; LGPD                                               | NFR-1, FR-25, LGPD             | T05/T05-VU-005                                                      | Emergencial          |
+| **STF-024** | Público / Resposta HTTP           | `detalhe: err.message` exposto em respostas HTTP 500 do endpoint público de PDF                                                                                                                         | Alto    | VU   | Vaza paths R2, nomes de bucket, endpoints de storage; reconhecimento de topologia interna                       | NFR-1, OWASP A05               | T05/T05-VU-008                                                      | Emergencial          |
+| **STF-025** | Arquitetura / Usuário             | `usuarioService.js` ausente; toda a lógica de usuário (JWT, bcrypt, associação N:N) reside no controller                                                                                                | Alto    | VA   | Violação de NFR-6; CRUD de usuários não reutilizável; único domínio sem service                                 | NFR-6                          | T02/C-08                                                            | Blocker              |
+| **STF-026** | Multi-tenant / Tipos SSR          | `tiposCertificadosSSRController.index()` usa `whereAtivos = {}` — `eventosIds` obtido mas nunca aplicado; listagem exibe tipos de todos os eventos                                                      | Alto    | BR   | Isolamento multi-tenant violado na listagem de tipos via SSR                                                    | FR-37, FR-46                   | T03/TC-03, T07/T07-06                                               | Emergencial          |
+| **STF-027** | Multi-tenant / Tipos API          | `TiposCertificadosController.findAll()` ignora `req.filtro.eventoId` — tipos de todos os eventos retornados via API                                                                                     | Alto    | BR   | Isolamento multi-tenant violado na listagem de tipos via API                                                    | FR-37, FR-46, NFR-1            | T02/C-15, T03/TC-11, T07/T07-05, T06/T06-014                        | Emergencial          |
+| **STF-028** | UI / Bug                          | Link de download PDF no painel admin (`/public/certificados/:id/pdf`) aponta para rota inexistente; correto: `/api/certificados/:id/pdf`                                                                | Alto    | BR   | Download de PDF sempre HTTP 404 para usuários autenticados no painel admin                                      | FR-42                          | T04/C-15, T05/T05-BR-001                                            | Emergencial          |
+| **STF-029** | UI / Bug                          | Alias Sequelize `TiposCertificado` (singular) no `certificadoSSRController.detalhe` diverge do alias `TiposCertificados` (plural) declarado no model; texto interpolado sempre vazio                    | Alto    | BR   | Texto do certificado nunca exibido no detalhe SSR; FR-39 não atendido                                           | FR-39                          | T01/CERT-10, T03/TC-07, T04/C-16, T07/T07-11                        | Emergencial          |
+| **STF-030** | Validator / URL                   | `url_template_base` validado como `z.string().url()` por Zod, mas campo armazena key R2 relativa (ex: `templates/cbie/2026/base.jpg`) — nenhuma key válida passa pela API                               | Alto    | BR   | Upload de template e configuração de R2 impossíveis via API REST                                                | FR-44                          | T02/C-24, T04/C-29                                                  | Emergencial          |
+| **STF-031** | Segurança / Configuração          | `JWT_SECRET` ausente do `docker-compose.yml` de produção; `SESSION_SECRET` ausente do `.env.example`                                                                                                    | Alto    | GI   | Startup falha de forma não documentada; onboarding inseguro                                                     | NFR-3                          | T06/T06-032, T06/T06-024                                            | Emergencial          |
+| **STF-032** | Segurança / RBAC                  | Rotas de criação de usuários (`usuarios-crud.js`) sem `rbac` na cadeia de middlewares; enforcement apenas no controller                                                                                 | Alto    | VU   | Qualquer usuário autenticado pode tentar criar usuário admin violando defense-in-depth                          | FR-34, FR-38, NFR-1, NFR-6     | T06/T06-009                                                         | Emergencial          |
+| **STF-033** | Autenticação / Enumeração         | Login API retorna mensagens distintas: "Usuário não encontrado" vs. "Senha inválida" — user enumeration (OWASP A07)                                                                                     | Médio   | VU   | Atacante confirma quais e-mails estão cadastrados sem autenticação                                              | NFR-1, OWASP A07               | T02/C-04                                                            | Backlog curto prazo  |
+| **STF-034** | Segurança / Senha                 | Política de senha forte (`senhaForteSchema`) aplicada apenas em self-service; criação de usuário via API aceita senhas fracas                                                                           | Alto    | IP   | FR-57 e NFR-2 não cumpridos na criação via API                                                                  | FR-57, NFR-2                   | T02/C-20, T06/T06-010, T07/T07-14                                   | Emergencial          |
+| **STF-035** | Dashboard / Bug                   | `ultimosCertificados` computado e enviado ao template, mas não há `{{#each}}` no `dashboard.hbs` — feature ausente na view; backlog marcado como concluído equivocadamente                              | Crítico | IP   | FR-56 não atendido; dados processados sem uso; backlog com estado incorreto                                     | FR-56                          | T03/DB-03, T03/DB-04                                                | Emergencial          |
+| **STF-036** | Dashboard / Bug                   | `isMonitor` nunca definido em `authSSR.js`; toda lógica condicional de view baseada em `{{usuario.isMonitor}}` inefetiva                                                                                | Médio   | BR   | Interface de monitor não diferenciada; testes simulam estado irreal                                             | -                              | T03/DB-02                                                           | Backlog curto prazo  |
+| **STF-037** | Multi-tenant / Participantes SSR  | Operações SSR de participantes por ID (editar, atualizar, deletar, restaurar) sem verificação de escopo de evento                                                                                       | Alto    | VU   | Gestor/monitor edita ou deleta participante de outro evento via SSR                                             | FR-37, NFR-1                   | T03/PA-03                                                           | Emergencial          |
+| **STF-038** | UX / Bug                          | JOIN em `Certificado` na listagem SSR de participantes torna invisíveis participantes sem certificados do evento do usuário                                                                             | Alto    | GI   | Violação de FR-36 e FR-49; participantes cadastrados desaparecem da listagem                                    | FR-36, FR-49                   | T03/PA-04                                                           | Backlog curto prazo  |
+| **STF-039** | Constraints / Email               | Índice UNIQUE de `email` em `participantes` e `usuarios` sem `WHERE deleted_at IS NULL`; recriação de usuário/participante com mesmo e-mail após soft delete impossível                                 | Médio   | IP   | Contradiz semântica de NFR-4 (soft delete + restauração)                                                        | FR-2, FR-27, NFR-4             | T07/T07-20                                                          | Backlog curto prazo  |
+| **STF-040** | Integridade / FK                  | FK `ON DELETE CASCADE` em `certificados` para entidades soft-deletáveis; hard delete de parent (por script DBA) apagaria certificados permanentemente                                                   | Alto    | DT   | NFR-4 vulnerável a operações fora do ORM                                                                        | NFR-4                          | T07/T07-16                                                          | Backlog médio prazo  |
+| **STF-041** | Integridade / Cascade             | Soft delete de evento não cascateia para `TiposCertificados` e `Certificado`; entidades filhas permanecem ativas                                                                                        | Médio   | GI   | Tipos e certificados de evento deletado aparecem como ativos                                                    | FR-9, NFR-4                    | T07/T07-23                                                          | Backlog médio prazo  |
+| **STF-042** | Integridade / Cascade             | Soft delete de participante não cascateia para certificados; certificados ficam com participante nulo no ORM; PDF gerado pode ter nome vazio                                                            | Médio   | GI   | Violação de integridade semântica                                                                               | FR-4, NFR-4                    | T07/T07-24                                                          | Backlog médio prazo  |
+| **STF-043** | Integridade / Cascade             | `eventoService.restore()` restaura todos os `UsuarioEvento` soft-deletados do evento, incluindo vínculos de usuários removidos intencionalmente e usuários já soft-deletados                            | Médio   | GI   | Ghost access reestabelecido; violação de integridade semântica                                                  | FR-32, NFR-4                   | T06/T06-020, T07/T07-21-T07-31                                      | Backlog médio prazo  |
+| **STF-044** | Constraints / usuario_eventos     | Ausência de constraint UNIQUE `(usuario_id, evento_id)` no banco; duplicatas silenciosas possíveis por concorrência ou scripts                                                                          | Alto    | GI   | RBAC assume unicidade por combinação; vínculos duplos quebram scoping                                           | FR-32                          | T06/T06-016, T07/T07-15                                             | Backlog médio prazo  |
+| **STF-045** | Segurança / Session               | `express-session` usando MemoryStore em produção; biblioteca emite warning; sessões perdidas em restart                                                                                                 | Alto    | DT   | OOM com alta carga; perda de sessões em restart de pod                                                          | NFR-3                          | T06/T06-011                                                         | Backlog médio prazo  |
+| **STF-046** | Arquitetura / Rotas               | Lógica de busca pública (validação, consulta, PDF) implementada diretamente nas rotas `api.js` e `public.js` sem controller ou service                                                                  | Alto    | VA   | Violação de NFR-6; duplicação de lógica em três handlers; impossibilidade de aplicar regras transversais        | NFR-6                          | T05/T05-VA-001                                                      | Backlog curto prazo  |
+| **STF-047** | Arquitetura / Rotas               | Lógica de geração de PDF inline na rota `api.js` e `certificadoSSRController.cancelar` bypassando `certificadoService.cancel()` diretamente no model                                                    | Médio   | VA   | Violação de NFR-6; duplicação; mudanças no service não propagadas                                               | NFR-6                          | T04/C-33-C-34                                                       | Backlog médio prazo  |
+| **STF-048** | Arquitetura / RBAC                | RBAC de eventos (`POST /eventos`) sem `rbac('admin')`; proteção colateral dependente de `scopedEvento` — não-declarativa e frágil                                                                       | Médio   | VA   | Proteção de criação de evento não-determinística; violação de defense-in-depth                                  | FR-34, NFR-6                   | T02/C-11, T06/T06-002                                               | Backlog curto prazo  |
+| **STF-049** | Segurança / Swagger               | Swagger exposto em `/api-docs` sem autenticação em qualquer ambiente, incluindo produção                                                                                                                | Médio   | IP   | Facilita reconhecimento de endpoints admin por atacantes; OWASP A01                                             | NFR-1                          | T06/T06-019                                                         | Backlog médio prazo  |
+| **STF-050** | Público / Código previsível       | Código de certificado (`CODIGO_BASE-YY-TIPO-N`) é sequencial e previsível; permite enumeração sistemática                                                                                               | Alto    | VU   | Varredura de todos os certificados de um evento por iteração de N; combina com STF-011 e STF-023                | FR-52, NFR-1                   | T05/T05-VU-004                                                      | Backlog curto prazo  |
+| **STF-051** | Público / GI                      | `GET /api/validar/:codigo` não inclui associações (Participante, Evento, Tipos) enquanto SSR inclui; contratos divergentes para mesma operação                                                          | Médio   | GI   | API pública de validação semanticamente incompleta                                                              | FR-24                          | T05/T05-GI-003                                                      | Backlog médio prazo  |
+| **STF-052** | Público / GI                      | Respostas públicas de validação e consulta retornam objetos Sequelize brutos com IDs internos, `deleted_at`, FKs                                                                                        | Alto    | GI   | Vaza estrutura interna do banco; IDs permitem mapeamento de outros endpoints admin                              | FR-24, FR-23, NFR-1, OWASP A01 | T05/T05-GI-001-T05-GI-002                                           | Backlog curto prazo  |
+| **STF-053** | Upload / Storage                  | Upload de arquivo R2 realizado antes da validação do evento; falha posterior gera arquivo órfão imediato; arquivos anteriores nunca removidos ao atualizar template                                     | Alto    | BR   | Acumulação ilimitada de arquivos órfãos no R2                                                                   | FR-51                          | T04/C-08-C-09                                                       | Backlog curto prazo  |
+| **STF-054** | Upload / Segurança                | Validação de MIME type por `file.mimetype` (declarado pelo cliente); ausência de verificação de magic bytes                                                                                             | Alto    | VU   | Arquivo malicioso disfarçado de imagem passa na validação e é persistido no R2                                  | NFR-11, OWASP A04              | T04/C-10                                                            | Backlog curto prazo  |
+| **STF-055** | Upload / R2                       | Credenciais R2 sem validação de startup; aplicação sobe sem R2 funcional; falha silenciosa apenas em runtime                                                                                            | Alto    | GI   | Diagnóstico difícil; diverge do padrão fail-fast estabelecido para JWT_SECRET                                   | NFR-3                          | T04/C-07, T06/T06-023                                               | Backlog curto prazo  |
+| **STF-056** | Upload / Slug                     | Slug derivado do nome do evento pode ser vazio; dois eventos com nome similar compartilham e sobrescrevem key R2                                                                                        | Médio   | BR   | Sobreescrita silenciosa de template de outro evento                                                             | FR-51                          | T04/C-19                                                            | Backlog curto prazo  |
+| **STF-057** | Público / Validação               | `GET /api/validar/:codigo` não valida formato do código; SSR aplica REGEX; inconsistência de defesa em profundidade                                                                                     | Alto    | VU   | Strings arbitrárias chegam ao ORM via API                                                                       | NFR-1, OWASP A03               | T05/T05-VU-006                                                      | Backlog curto prazo  |
+| **STF-058** | Público / Validação               | `POST /validar` (SSR) não aplica `CODIGO_CERTIFICADO_REGEX` definido no mesmo arquivo; API e SSR com POST aceitam formatos rejeitados pelo GET                                                          | Médio   | IP   | Inconsistência interna na mesma superfície                                                                      | NFR-1, FR-24                   | T05/T05-IP-001                                                      | Backlog curto prazo  |
+| **STF-059** | Autenticação / Backdoor           | Backdoor `x-mock-user` em `authSSR` para `NODE_ENV=test`; JSON parse sem validação de schema                                                                                                            | Alto    | AM   | Identidade forjável sem autenticação se `NODE_ENV=test` vazar para produção                                     | NFR-1, NFR-8                   | T06/T06-018                                                         | Validação Humana     |
+| **STF-060** | Autenticação / JWT                | `JWT_SECRET` sem validação de fail-fast em `routes/auth.js` e `authSSR.js`; falha ocorre apenas em runtime                                                                                              | Alto    | VU   | Startup sem erro; falha em runtime no primeiro uso de JWT                                                       | NFR-3                          | T06/T06-006                                                         | Emergencial          |
+| **STF-061** | Autenticação / JWT                | `JWT_SECRET` fraco/previsível no `docker-compose.test.yml` (idêntico ao `.env.example`)                                                                                                                 | Alto    | VU   | Tokens JWT de testes forjáveis; risco de reutilização em produção                                               | NFR-3, NFR-8                   | T06/T06-013                                                         | Backlog curto prazo  |
+| **STF-062** | Autenticação / Logout             | Logout API e SSR não sincronizados; token JWT permanece válido até 1h após logout SSR                                                                                                                   | Médio   | VH   | JWT inválido logicamente continua válido tecnicamente                                                           | FR-30 (implícito)              | T06/T06-030                                                         | Validação Humana     |
+| **STF-063** | Autenticação / Ownership          | `tiposCertificadosOwnership` captura `POST /:id/restore` como criação; `evento_id` undefined → HTTP 403 sistemático para restauração                                                                    | Médio   | BR   | Gestores legítimos não conseguem restaurar tipos via API                                                        | FR-35, FR-46                   | T06/T06-021                                                         | Backlog curto prazo  |
+| **STF-064** | Integridade / Participante        | `certificadoSSRController.novo()` lista todos os eventos, todos os tipos e todos os participantes sem filtro de escopo                                                                                  | Médio   | BR   | Monitor/gestor pode selecionar combinação inválida; ativa STF-008                                               | FR-37, FR-45                   | T01/CERT-03, T03/TC-12, T06/T06-022, T07/T07-22                     | Backlog curto prazo  |
+| **STF-065** | Integridade / Update              | `certificadoService.update()` não revalida `valores_dinamicos` contra `dados_dinamicos` do tipo — update pode persistir campos faltantes                                                                | Alto    | GI   | Certificados com campos dinâmicos incompletos; PDF com placeholders não substituídos                            | FR-54, FR-20                   | T07/T07-17                                                          | Backlog médio prazo  |
+| **STF-066** | Integridade / FK                  | `certificadoService.create()` não valida existência de `participante_id`; ID inexistente gera FK violation com HTTP 500 e stack trace exposto                                                           | Alto    | BR   | Exposição de erro técnico ao cliente                                                                            | FR-21, NFR-6                   | T07/T07-13                                                          | Backlog curto prazo  |
+| **STF-067** | Integridade / Status              | Ausência de máquina de estados para `status` do certificado; qualquer transição aceita (cancelado → emitido) sem validação                                                                              | Médio   | GI   | Certificados cancelados podem ser reemitidos sem auditoria                                                      | FR-19                          | T07/T07-25                                                          | Backlog médio prazo  |
+| **STF-068** | SRS / Ambiguidade                 | FR-44 internamente contraditório: "URL válida" vs "key no R2"; ambiguidade gerou bug real no validator Zod (STF-030)                                                                                    | Médio   | ID   | Implementação divergente entre API (URL) e SSR (key relativa)                                                   | FR-44                          | T02/C-37, T04/C-29                                                  | Atualização SRS      |
+| **STF-069** | SRS / Ambiguidade                 | FR-24 não define comportamento de validação pública para certificados `cancelado` e `pendente`; ambiguidade gerou BR (STF-019)                                                                          | Alto    | AM   | Comportamento de certificados cancelados indeterminado sem decisão de produto                                   | FR-24, FR-19                   | T05/T05-AM-001                                                      | Atualização SRS + VH |
+| **STF-070** | SRS / Duplicação                  | FR-23 e FR-53 são duplicatas sem diferenciação semântica                                                                                                                                                | Baixo   | ID   | Rastreabilidade comprometida                                                                                    | FR-23, FR-53                   | T05/T05-AM-003                                                      | Atualização SRS      |
+| **STF-071** | SRS / Lacuna                      | FR-30 documenta `POST /auth/login`; implementação usa `POST /login`                                                                                                                                     | Baixo   | ID   | Documentação de rota incorreta no SRS                                                                           | FR-30                          | T02/C-38, T06/T06-025                                               | Atualização SRS      |
+| **STF-072** | SRS / Lacuna                      | MS-4 menciona rate limiting para rotas públicas sem FR correspondente; lacuna é invisível no backlog formal                                                                                             | Baixo   | ID   | Vulnerabilidade STF-011 sem FR rastreável                                                                       | -                              | T05/T05-ID-001                                                      | Atualização SRS      |
+| **STF-073** | DT / Migrations                   | Down migration de `certificados` não remove ENUM `enum_certificados_status`; orphan type em rollback                                                                                                    | Médio   | IP   | Inconsistência entre ambientes após rollback                                                                    | NFR-5                          | T07/T07-33                                                          | Backlog médio prazo  |
+| **STF-074** | DT / Arquitetura                  | Lógica de ownership (`getEventosIds`, `temOwnership`) duplicada no `tiposCertificadosSSRController` e no middleware `tiposCertificadosOwnership`                                                        | Médio   | DT   | Regras de negócio em dois lugares; divergência já ocorrida                                                      | NFR-6                          | T03/TC-13                                                           | Backlog médio prazo  |
+| **STF-075** | DT / Model                        | `campo_destaque` validado por hook `beforeValidate` no Sequelize (lança `Error` genérico não `ValidationError`); Zod valida apenas `min(1)`                                                             | Médio   | VA   | Validação de entrada retorna erro de persistência; UX degradada; violação NFR-6                                 | FR-14, NFR-6                   | T03/TC-14, T07/T07-26                                               | Backlog médio prazo  |
+| **STF-076** | DT / PDF                          | Anti-pattern `new Promise(async (resolve, reject) => {...})` em `pdfService`; lazy `require('./r2Service')` para evitar dependência circular                                                            | Médio   | DT   | Possibilidade de unhandled promise rejection silenciosa; dependência circular latente                           | -                              | T04/C-37-C-39, T05/T05-DT-002-T05-DT-003                            | Backlog longo prazo  |
+| **STF-077** | DT / R2                           | `r2Service.getFile` sem timeout; indisponibilidade do R2 causa hang indefinido na geração de PDF                                                                                                        | Médio   | DT   | Requests pendentes acumulam sob degradação do R2; sem circuit breaker                                           | -                              | T04/C-25                                                            | Backlog médio prazo  |
+| **STF-078** | DT / Migração                     | Migration `20260418232720` remove constraint global de `tipos_certificados.codigo` por nome fixo; se nome diferir no banco, constraint global persiste junto ao composto                                | Médio   | ID   | Em certos ambientes, dois tipos com mesmo código em eventos distintos são bloqueados                            | FR-11                          | T07/T07-27                                                          | Backlog curto prazo  |
+| **STF-079** | DT / Histórico                    | `eventoService.destroy()` é método órfão com semântica divergente de `eventoService.delete()`; não é chamado por nenhum controller                                                                      | Baixo   | DT   | Risco de confusão em manutenção                                                                                 | NFR-6                          | T02/C-35, T06/T06-026                                               | Backlog longo prazo  |
+| **STF-080** | DT / Sessão                       | Cookie de sessão sem configuração explícita de `secure`, `httpOnly`, `sameSite`, `maxAge`; dependência de defaults da biblioteca                                                                        | Médio   | DT   | Proteção baseada em comportamento default de terceiro; frágil a atualizações                                    | NFR-1, NFR-3                   | T06/T06-015                                                         | Backlog médio prazo  |
 
 ---
 
@@ -189,6 +189,7 @@ O sistema utiliza o middleware `scopedEvento` como o único mecanismo de isolame
 O middleware `auth` (API) popula `req.usuario` com uma **instância Sequelize** que inclui métodos como `getEventos()`, o campo `email` e `isMonitor`. O middleware `authSSR` (SSR) popula `req.usuario` como um **plain object (POJO)** sem métodos, sem `email` e sem `isMonitor`.
 
 Consequências documentadas:
+
 - `scopedEvento` e `tiposCertificadosOwnership` dependem de `req.usuario.getEventos()` — inaplicáveis em SSR; qualquer uso em SSR gera HTTP 500.
 - Controllers SSR reimplementam a lógica de escopo ad hoc via `UsuarioEvento.findAll()` diretamente, triplicando a lógica de domínio.
 - `isMonitor` nunca é verdadeiro em produção SSR — toda lógica condicional de view baseada nesse flag é inefetiva.
@@ -208,13 +209,13 @@ Consequências documentadas:
 
 Para as mesmas operações, a API REST aplica perfis RBAC sistematicamente mais permissivos que a SSR, sem justificativa documentada no SRS:
 
-| Operação | API REST | SSR | SRS/Correto |
-|----------|----------|-----|-------------|
-| DELETE/PUT/POST eventos | `monitor` | `admin` | `admin` |
-| DELETE/restore participantes | `monitor` | *(sem rbac)* | `gestor` |
-| Restore certificados | `monitor` | `admin` | `admin` (FR-22) |
-| Criar certificados | `monitor` | `gestor` | `monitor` (FR-36) |
-| Listar/criar usuários | sem rbac na rota | `admin` | `admin` |
+| Operação                     | API REST         | SSR          | SRS/Correto       |
+| ---------------------------- | ---------------- | ------------ | ----------------- |
+| DELETE/PUT/POST eventos      | `monitor`        | `admin`      | `admin`           |
+| DELETE/restore participantes | `monitor`        | _(sem rbac)_ | `gestor`          |
+| Restore certificados         | `monitor`        | `admin`      | `admin` (FR-22)   |
+| Criar certificados           | `monitor`        | `gestor`     | `monitor` (FR-36) |
+| Listar/criar usuários        | sem rbac na rota | `admin`      | `admin`           |
 
 A API é sistematicamente mais permissiva onde deveria ser equivalente ou mais restritiva. A SSR tem falhas opostas: rotas de participantes sem nenhum `rbac()`, criação de certificados bloqueando monitors.
 
@@ -231,6 +232,7 @@ A API é sistematicamente mais permissiva onde deveria ser equivalente ou mais r
 **Descrição:**
 
 O sistema possui **zero chamadas a `sequelize.transaction()`** em qualquer service. Operações compostas como:
+
 - Geração de código + criação de certificado (race condition → colisão de `codigo`)
 - Soft delete de evento + soft delete de `UsuarioEvento`
 - Restore de evento + restore de `UsuarioEvento`
@@ -250,6 +252,7 @@ O sistema possui **zero chamadas a `sequelize.transaction()`** em qualquer servi
 **Descrição:**
 
 Múltiplos domínios violam NFR-6 (routes → controllers → services → models):
+
 - Lógica de PDF e busca pública inline em `routes/api.js` e `routes/public.js`
 - `usuarioService.js` ausente; lógica de JWT, bcrypt e associação N:N no controller
 - Lógica de upload e geração de key R2 em `eventoSSRController`
@@ -313,14 +316,14 @@ STF-010 (XSS stored)
 
 ## 4.2 Dependências entre Specs
 
-| Spec Necessária | Dependências | Bloqueada por |
-|-----------------|-------------|---------------|
-| Spec de Enforcement Multi-tenant | ADR sobre estratégia de scoping | STF-001, STF-002, STF-020 |
-| Spec de Correção RBAC | Decisão sobre perfil mínimo por operação | STF-007, STF-015-STF-017, STF-032 |
-| Spec de Integridade Transacional | ADR de transações | STF-022 |
-| Spec de Segurança de Endpoints Públicos | VH sobre política de dados expostos | STF-011, STF-012, STF-050 |
-| Spec de Contrato de `req.usuario` | ADR de autenticação unificada | STF-020 |
-| Spec de SRS (url_template_base) | Clarificação do FR-44 | STF-068 |
+| Spec Necessária                         | Dependências                             | Bloqueada por                     |
+| --------------------------------------- | ---------------------------------------- | --------------------------------- |
+| Spec de Enforcement Multi-tenant        | ADR sobre estratégia de scoping          | STF-001, STF-002, STF-020         |
+| Spec de Correção RBAC                   | Decisão sobre perfil mínimo por operação | STF-007, STF-015-STF-017, STF-032 |
+| Spec de Integridade Transacional        | ADR de transações                        | STF-022                           |
+| Spec de Segurança de Endpoints Públicos | VH sobre política de dados expostos      | STF-011, STF-012, STF-050         |
+| Spec de Contrato de `req.usuario`       | ADR de autenticação unificada            | STF-020                           |
+| Spec de SRS (url_template_base)         | Clarificação do FR-44                    | STF-068                           |
 
 ## 4.3 Dependências entre ADRs
 
@@ -366,87 +369,87 @@ Validator (STF-005, STF-030)
 
 ## 5.1 Multi-tenant
 
-| ID | Achado | Severidade | Evidência |
-|----|--------|-----------|----------|
-| STF-001 | `scopedEvento` semanticamente incorreto | Crítico | `scopedEvento.js:31-40` |
-| STF-002 | Services ignoram filtros de listagem | Crítico | `certificadoService.js:9-23`, `participanteService.js:5-23` |
-| STF-003 | SSR sem ownership em operações por ID | Crítico | `certificadoSSRController.js:82-269` |
-| STF-004 | API de participantes sem escopo | Crítico | `participanteController.js:13-31` |
-| STF-026 | Tipos SSR sem filtro de evento | Alto | `tiposCertificadosSSRController.js:49-52` |
-| STF-027 | Tipos API sem filtro de evento | Alto | `tiposCertificadosController.js:11-16` |
-| STF-037 | Participantes SSR por ID sem escopo | Alto | `admin.js:88-98` |
+| ID      | Achado                                  | Severidade | Evidência                                                   |
+| ------- | --------------------------------------- | ---------- | ----------------------------------------------------------- |
+| STF-001 | `scopedEvento` semanticamente incorreto | Crítico    | `scopedEvento.js:31-40`                                     |
+| STF-002 | Services ignoram filtros de listagem    | Crítico    | `certificadoService.js:9-23`, `participanteService.js:5-23` |
+| STF-003 | SSR sem ownership em operações por ID   | Crítico    | `certificadoSSRController.js:82-269`                        |
+| STF-004 | API de participantes sem escopo         | Crítico    | `participanteController.js:13-31`                           |
+| STF-026 | Tipos SSR sem filtro de evento          | Alto       | `tiposCertificadosSSRController.js:49-52`                   |
+| STF-027 | Tipos API sem filtro de evento          | Alto       | `tiposCertificadosController.js:11-16`                      |
+| STF-037 | Participantes SSR por ID sem escopo     | Alto       | `admin.js:88-98`                                            |
 
 ## 5.2 RBAC
 
-| ID | Achado | Severidade | Evidência |
-|----|--------|-----------|----------|
-| STF-007 | Gestores/monitores deletam eventos via API | Crítico | `routes/eventos.js:router.delete/put` |
-| STF-015 | Monitores deletam participantes; SSR sem proteção | Alto | `routes/participantes.js:140,150` |
-| STF-016 | Monitores restauram certificados via API | Alto | `routes/certificados.js:218` |
-| STF-017 | Monitors bloqueados de criar certificados via SSR | Alto | `routes/admin.js:68` |
-| STF-032 | Criação de usuário sem `rbac` na rota | Alto | `routes/usuarios-crud.js:10-19` |
+| ID      | Achado                                            | Severidade | Evidência                             |
+| ------- | ------------------------------------------------- | ---------- | ------------------------------------- |
+| STF-007 | Gestores/monitores deletam eventos via API        | Crítico    | `routes/eventos.js:router.delete/put` |
+| STF-015 | Monitores deletam participantes; SSR sem proteção | Alto       | `routes/participantes.js:140,150`     |
+| STF-016 | Monitores restauram certificados via API          | Alto       | `routes/certificados.js:218`          |
+| STF-017 | Monitors bloqueados de criar certificados via SSR | Alto       | `routes/admin.js:68`                  |
+| STF-032 | Criação de usuário sem `rbac` na rota             | Alto       | `routes/usuarios-crud.js:10-19`       |
 
 ## 5.3 Ownership
 
-| ID | Achado | Severidade | Evidência |
-|----|--------|-----------|----------|
-| STF-008 | Certificado pode cruzar tipo de evento A com evento B | Crítico | `certificadoService.js:36-40` |
-| STF-063 | Gestores não conseguem restaurar tipos via API | Médio | `tiposCertificadosOwnership.js:41-47` |
-| STF-064 | Formulário SSR de novo certificado lista todos os eventos sem filtro | Médio | `certificadoSSRController.js:novo()` |
+| ID      | Achado                                                               | Severidade | Evidência                             |
+| ------- | -------------------------------------------------------------------- | ---------- | ------------------------------------- |
+| STF-008 | Certificado pode cruzar tipo de evento A com evento B                | Crítico    | `certificadoService.js:36-40`         |
+| STF-063 | Gestores não conseguem restaurar tipos via API                       | Médio      | `tiposCertificadosOwnership.js:41-47` |
+| STF-064 | Formulário SSR de novo certificado lista todos os eventos sem filtro | Médio      | `certificadoSSRController.js:novo()`  |
 
 ## 5.4 Integridade
 
-| ID | Achado | Severidade | Evidência |
-|----|--------|-----------|----------|
-| STF-009 | Colisão de código após soft delete e em concorrência | Crítico | `certificadoService.js:63-77` |
-| STF-021 | Constraint drift: full vs partial em tipos_certificados | Crítico | `migrations/20260418232720` vs model |
-| STF-022 | Ausência total de transações | Alto | grep zero ocorrências |
-| STF-005 | Validator remove `valores_dinamicos` | Crítico | `validators/certificado.js` |
+| ID      | Achado                                                  | Severidade | Evidência                            |
+| ------- | ------------------------------------------------------- | ---------- | ------------------------------------ |
+| STF-009 | Colisão de código após soft delete e em concorrência    | Crítico    | `certificadoService.js:63-77`        |
+| STF-021 | Constraint drift: full vs partial em tipos_certificados | Crítico    | `migrations/20260418232720` vs model |
+| STF-022 | Ausência total de transações                            | Alto       | grep zero ocorrências                |
+| STF-005 | Validator remove `valores_dinamicos`                    | Crítico    | `validators/certificado.js`          |
 
 ## 5.5 Vazamento de dados / Informações
 
-| ID | Achado | Severidade | Evidência |
-|----|--------|-----------|----------|
-| STF-018 | PII em logs a cada geração de PDF | Alto | `pdfService.js:16` |
-| STF-023 | E-mail do participante na view pública de validação | Alto | `validar-resultado.hbs:20-21` |
-| STF-024 | `err.message` em resposta HTTP 500 pública de PDF | Alto | `routes/api.js:70-73` |
-| STF-052 | Objetos Sequelize brutos com IDs internos em respostas públicas | Alto | `routes/api.js:121,167` |
+| ID      | Achado                                                          | Severidade | Evidência                     |
+| ------- | --------------------------------------------------------------- | ---------- | ----------------------------- |
+| STF-018 | PII em logs a cada geração de PDF                               | Alto       | `pdfService.js:16`            |
+| STF-023 | E-mail do participante na view pública de validação             | Alto       | `validar-resultado.hbs:20-21` |
+| STF-024 | `err.message` em resposta HTTP 500 pública de PDF               | Alto       | `routes/api.js:70-73`         |
+| STF-052 | Objetos Sequelize brutos com IDs internos em respostas públicas | Alto       | `routes/api.js:121,167`       |
 
 ## 5.6 PDFs públicos e enumeração
 
-| ID | Achado | Severidade | Evidência |
-|----|--------|-----------|----------|
-| STF-012 | IDOR via ID sequencial em `GET /api/certificados/:id/pdf` | Crítico | `routes/api.js:43` |
-| STF-050 | Código de certificado previsível e enumerável | Alto | `certificadoService.js:63-70` |
-| STF-011 | Ausência de rate limiting em todas as rotas públicas | Crítico | `routes/api.js`, `routes/public.js` |
+| ID      | Achado                                                    | Severidade | Evidência                           |
+| ------- | --------------------------------------------------------- | ---------- | ----------------------------------- |
+| STF-012 | IDOR via ID sequencial em `GET /api/certificados/:id/pdf` | Crítico    | `routes/api.js:43`                  |
+| STF-050 | Código de certificado previsível e enumerável             | Alto       | `certificadoService.js:63-70`       |
+| STF-011 | Ausência de rate limiting em todas as rotas públicas      | Crítico    | `routes/api.js`, `routes/public.js` |
 
 ## 5.7 Upload e Storage
 
-| ID | Achado | Severidade | Evidência |
-|----|--------|-----------|----------|
-| STF-054 | Validação MIME sem magic bytes | Alto | `uploadTemplate.js:8-13` |
-| STF-053 | Arquivos órfãos no R2 por ausência de cleanup | Alto | `eventoSSRController.js:107-135` |
-| STF-055 | Credenciais R2 sem validação de startup | Alto | `r2Service.js:11-19` |
+| ID      | Achado                                        | Severidade | Evidência                        |
+| ------- | --------------------------------------------- | ---------- | -------------------------------- |
+| STF-054 | Validação MIME sem magic bytes                | Alto       | `uploadTemplate.js:8-13`         |
+| STF-053 | Arquivos órfãos no R2 por ausência de cleanup | Alto       | `eventoSSRController.js:107-135` |
+| STF-055 | Credenciais R2 sem validação de startup       | Alto       | `r2Service.js:11-19`             |
 
 ## 5.8 Autenticação
 
-| ID | Achado | Severidade | Evidência |
-|----|--------|-----------|----------|
-| STF-006 | `SESSION_SECRET` hardcoded em docker-compose.yml | Crítico | `docker-compose.yml:22` |
-| STF-013 | Cookie JWT sem `secure`; sessão sem atributos explícitos | Alto | `routes/auth.js:65`, `app.js:48-53` |
-| STF-014 | Login SSR sem rate limiting | Alto | `routes/auth.js:58-73` |
-| STF-060 | `JWT_SECRET` sem fail-fast em authSSR e routes/auth.js | Alto | `authSSR.js:41`, `routes/auth.js:8` |
-| STF-033 | User enumeration no login API | Médio | `usuarioController.js:login` |
+| ID      | Achado                                                   | Severidade | Evidência                           |
+| ------- | -------------------------------------------------------- | ---------- | ----------------------------------- |
+| STF-006 | `SESSION_SECRET` hardcoded em docker-compose.yml         | Crítico    | `docker-compose.yml:22`             |
+| STF-013 | Cookie JWT sem `secure`; sessão sem atributos explícitos | Alto       | `routes/auth.js:65`, `app.js:48-53` |
+| STF-014 | Login SSR sem rate limiting                              | Alto       | `routes/auth.js:58-73`              |
+| STF-060 | `JWT_SECRET` sem fail-fast em authSSR e routes/auth.js   | Alto       | `authSSR.js:41`, `routes/auth.js:8` |
+| STF-033 | User enumeration no login API                            | Médio      | `usuarioController.js:login`        |
 
 ## 5.9 SSR (específico)
 
-| ID | Achado | Severidade | Evidência |
-|----|--------|-----------|----------|
-| STF-010 | XSS stored via triple-mustache sem CSP | Crítico | `form.hbs:71`, `tipos-certificados/form.hbs:106` |
-| STF-028 | Link PDF no painel admin aponta para rota inexistente | Alto | `detalhe.hbs:5` |
-| STF-029 | Alias TiposCertificado errado; texto do certificado sempre vazio | Alto | `certificadoSSRController.js:82` |
-| STF-035 | `ultimosCertificados` não renderizado na view do dashboard | Crítico | `dashboard.hbs` |
-| STF-036 | `isMonitor` nunca verdadeiro em authSSR | Médio | `authSSR.js:48-55` |
+| ID      | Achado                                                           | Severidade | Evidência                                        |
+| ------- | ---------------------------------------------------------------- | ---------- | ------------------------------------------------ |
+| STF-010 | XSS stored via triple-mustache sem CSP                           | Crítico    | `form.hbs:71`, `tipos-certificados/form.hbs:106` |
+| STF-028 | Link PDF no painel admin aponta para rota inexistente            | Alto       | `detalhe.hbs:5`                                  |
+| STF-029 | Alias TiposCertificado errado; texto do certificado sempre vazio | Alto       | `certificadoSSRController.js:82`                 |
+| STF-035 | `ultimosCertificados` não renderizado na view do dashboard       | Crítico    | `dashboard.hbs`                                  |
+| STF-036 | `isMonitor` nunca verdadeiro em authSSR                          | Médio      | `authSSR.js:48-55`                               |
 
 ---
 
@@ -461,6 +464,7 @@ Validator (STF-005, STF-030)
 **Impacto:** Todos os domínios que operam sobre dados escopados por evento.
 
 **Alternativas implícitas:**
+
 1. Services recebem `eventoIds` explicitamente dos controllers como parâmetro de chamada.
 2. Camada de autorização separada no service layer que verifica ownership antes de executar a operação.
 3. Row-level security no banco de dados.
@@ -480,6 +484,7 @@ Validator (STF-005, STF-030)
 **Impacto:** Arquitetura do domínio de participantes.
 
 **Alternativas implícitas:**
+
 1. Criar tabela de junção `participante_eventos` (impacto em migrações e modelo).
 2. Aceitar que participantes são globais e aplicar escopo apenas na listagem por certificados (decisão de produto).
 
@@ -494,6 +499,7 @@ Validator (STF-005, STF-030)
 **Contexto:** A assimetria é deliberada (SSR usa cookie, API usa Bearer), mas o contrato de `req.usuario` pode ser unificado sem alterar o mecanismo de autenticação.
 
 **Alternativas implícitas:**
+
 1. `authSSR` busca no banco e retorna instância Sequelize completa (impacto de performance por request).
 2. Ambos os middlewares retornam POJO com interface explícita; middlewares dependentes recebem helper para buscar eventos do usuário.
 3. Helper centralizado `getUserEventos(req.usuario.id)` chamado sob demanda nos services.
@@ -511,6 +517,7 @@ Validator (STF-005, STF-030)
 **Contexto:** O SRS define papéis (admin, gestor, monitor) mas não mapeia explicitamente cada operação ao perfil mínimo para cada superfície. A tabela de requisitos implica que a superfície não deveria influenciar o perfil mínimo.
 
 **Alternativas implícitas:**
+
 1. Perfil unificado por operação de negócio, independente da superfície.
 2. Perfis distintos por superfície, documentados explicitamente no SRS com justificativa.
 
@@ -527,6 +534,7 @@ Validator (STF-005, STF-030)
 **Contexto:** Três bugs críticos decorrem diretamente desta ausência (STF-009, STF-043, STF-022).
 
 **Alternativas implícitas:**
+
 1. `sequelize.transaction()` em todas as operações compostas no service layer.
 2. Transações somente em operações de escrita críticas (certificados, vínculos usuarios-eventos).
 3. Uso de sequências de banco de dados para geração de código (elimina race condition sem transação).
@@ -542,6 +550,7 @@ Validator (STF-005, STF-030)
 **Contexto:** Sem definição de produto e jurídico (LGPD), não é possível determinar o escopo correto dos dados públicos.
 
 **Alternativas implícitas:**
+
 1. Definir DTO mínimo para respostas públicas (somente campos de validação: código, nome do tipo, status, data).
 2. Permitir acesso a nome e tipo mas não a e-mail e `valores_dinamicos`.
 
@@ -674,37 +683,37 @@ Validator (STF-005, STF-030)
 
 # 8. Atualizações Necessárias no SRS
 
-| # | FR/NFR | Problema | Tipo | Ação Recomendada |
-|---|--------|---------|------|-----------------|
-| SRS-01 | FR-44 | "URL válida" e "key (caminho) no R2" são internamente contraditórios — Zod implementou URL, SSR implementou key | ID | Definir explicitamente: o campo armazena a **key R2 relativa** (não URL); remover validação Zod como URL |
-| SRS-02 | FR-24 | Não define comportamento de validação pública para `status = 'cancelado'` ou `'pendente'` — gerou BR diretamente | AM | Explicitar: certificado `cancelado` retorna `{ valido: false }` ou omite? Definir formalmente |
-| SRS-03 | FR-25 | Não define quais campos pessoais podem ser expostos em rotas públicas — gerou exposição de e-mail e IDs internos | AM | Definir DTO público mínimo (código, nome do tipo, evento, data de emissão) e excluir explicitamente campos não autorizados |
-| SRS-04 | FR-23 / FR-53 | Duplicata semântica exata; ambos descrevem `GET /api/certificados?email=` | ID | Remover FR-53; manter FR-23; adicionar link a qualquer especificação ampliada |
-| SRS-05 | FR-30 | Documenta `POST /auth/login`; implementação usa `POST /login` via `app.use('/')` | ID | Atualizar para `POST /login` ou documentar o caminho efetivo de montagem |
-| SRS-06 | NFR-1 / MS-4 | Rate limiting para rotas públicas documentado apenas como "Melhoria Sugerida" sem FR | ID | Elevar a FR explícito com limites definidos (ex.: 60 req/min por IP para validação, 10/min para geração de PDF) |
-| SRS-07 | FR-37 | Não enumera explicitamente quais recursos e operações são cobertos pelo `scopedEvento` | AM | Listar explicitamente: certificados (todas as ops), participantes (?), tipos de certificados (?), eventos (?) |
-| SRS-08 | FR-22 | Ambíguo sobre restauração de certificado via API (admin via SSR) — gerou divergência entre superfícies | AM | Definir: restauração de certificado é exclusiva de admin independente da superfície |
-| SRS-09 | FR-56 | Não especifica quais status compõem `totalCertificados` e `ultimosCertificados` | AM | Definir: inclui cancelados? Inclui pendentes? |
-| SRS-10 | FR-48 | Não especifica se coordenadas de layout são configuráveis via API ou apenas via SSR | AM | Definir explicitamente qual superfície gerencia cada campo do evento |
-| SRS-11 | FR-8 | Não especifica sensibilidade a maiúsculas de `codigo_base` | AM | Acrescentar: `codigo_base` é armazenado em maiúsculas; validação é case-insensitive |
-| SRS-12 | FR-43 / FR-52 | Não define comportamento quando `count + 1` colide — gap de integridade que gerou BR | AM | Documentar mecanismo de geração de código como atômico; especificar comportamento em colisão |
+| #      | FR/NFR        | Problema                                                                                                         | Tipo | Ação Recomendada                                                                                                           |
+| ------ | ------------- | ---------------------------------------------------------------------------------------------------------------- | ---- | -------------------------------------------------------------------------------------------------------------------------- |
+| SRS-01 | FR-44         | "URL válida" e "key (caminho) no R2" são internamente contraditórios — Zod implementou URL, SSR implementou key  | ID   | Definir explicitamente: o campo armazena a **key R2 relativa** (não URL); remover validação Zod como URL                   |
+| SRS-02 | FR-24         | Não define comportamento de validação pública para `status = 'cancelado'` ou `'pendente'` — gerou BR diretamente | AM   | Explicitar: certificado `cancelado` retorna `{ valido: false }` ou omite? Definir formalmente                              |
+| SRS-03 | FR-25         | Não define quais campos pessoais podem ser expostos em rotas públicas — gerou exposição de e-mail e IDs internos | AM   | Definir DTO público mínimo (código, nome do tipo, evento, data de emissão) e excluir explicitamente campos não autorizados |
+| SRS-04 | FR-23 / FR-53 | Duplicata semântica exata; ambos descrevem `GET /api/certificados?email=`                                        | ID   | Remover FR-53; manter FR-23; adicionar link a qualquer especificação ampliada                                              |
+| SRS-05 | FR-30         | Documenta `POST /auth/login`; implementação usa `POST /login` via `app.use('/')`                                 | ID   | Atualizar para `POST /login` ou documentar o caminho efetivo de montagem                                                   |
+| SRS-06 | NFR-1 / MS-4  | Rate limiting para rotas públicas documentado apenas como "Melhoria Sugerida" sem FR                             | ID   | Elevar a FR explícito com limites definidos (ex.: 60 req/min por IP para validação, 10/min para geração de PDF)            |
+| SRS-07 | FR-37         | Não enumera explicitamente quais recursos e operações são cobertos pelo `scopedEvento`                           | AM   | Listar explicitamente: certificados (todas as ops), participantes (?), tipos de certificados (?), eventos (?)              |
+| SRS-08 | FR-22         | Ambíguo sobre restauração de certificado via API (admin via SSR) — gerou divergência entre superfícies           | AM   | Definir: restauração de certificado é exclusiva de admin independente da superfície                                        |
+| SRS-09 | FR-56         | Não especifica quais status compõem `totalCertificados` e `ultimosCertificados`                                  | AM   | Definir: inclui cancelados? Inclui pendentes?                                                                              |
+| SRS-10 | FR-48         | Não especifica se coordenadas de layout são configuráveis via API ou apenas via SSR                              | AM   | Definir explicitamente qual superfície gerencia cada campo do evento                                                       |
+| SRS-11 | FR-8          | Não especifica sensibilidade a maiúsculas de `codigo_base`                                                       | AM   | Acrescentar: `codigo_base` é armazenado em maiúsculas; validação é case-insensitive                                        |
+| SRS-12 | FR-43 / FR-52 | Não define comportamento quando `count + 1` colide — gap de integridade que gerou BR                             | AM   | Documentar mecanismo de geração de código como atômico; especificar comportamento em colisão                               |
 
 ---
 
 # 9. Itens para Validação Humana
 
-| ID | Decisão | Contexto | Impacto se não decidido |
-|----|---------|----------|------------------------|
-| **VH-01** | Comportamento de certificados `cancelado` e `pendente` na validação pública | FR-24 não define; implementação atual retorna `valido: true` para todos os status | STF-019 permanece como bug sem definição de produto; spec corretiva não pode ser escrita |
-| **VH-02** | Comportamento de cascata de soft delete de evento sobre `TiposCertificados` e `Certificado` | FR-9 define soft delete de evento, mas não especifica cascata para tipos e certificados | STF-041 permanece como GI; implementação atual deixa tipos ativos após deletar evento |
-| **VH-03** | Comportamento de cascata de soft delete de participante sobre `Certificado` | FR-4 define soft delete de participante sem cascata; certificados ficam com participante nulo | STF-042 indefinido; PDF pode ser gerado com nome vazio |
-| **VH-04** | Campos expostos em respostas públicas de validação e consulta | FR-25 não define escopo de dados; e-mail e IDs internos atualmente expostos | STF-023, STF-052 sem baseline normativo; compliance LGPD indeterminado |
-| **VH-05** | Política de exibição de certificados cancelados na listagem pública por e-mail | FR-23 não especifica se cancelados aparecem; view atual exibe com badge distinto | STF-019 (parcial); comportamento intencional indeterminado |
-| **VH-06** | Participantes como entidade global ou escopada por evento | PA-11: model sem associação direta com evento; filtrar participantes por evento requer JOIN em certificados, excluindo não-certificados | ADR-MT-02 não pode ser implementado sem decisão de produto |
-| **VH-07** | RBAC unificado por operação de negócio vs RBAC por superfície | A API é sistematicamente mais permissiva; pode ser intencional (acesso programático) ou bug | ADR-RBAC-01 não pode ser especificado sem decisão arquitetural |
-| **VH-08** | Política de exibição do e-mail do participante na view de validação pública | E-mail exposto na view SSR de resultado; pode ser intencional para o participante verificar o certificado | Sem decisão, STF-023 não pode ser corrigido sem risco de quebrar funcionalidade intencional |
-| **VH-09** | Backdoor `x-mock-user` em authSSR para `NODE_ENV=test` deve ser mantido ou removido | Facilita testes de integração; risco se `NODE_ENV=test` vazar para produção | STF-059 aguarda decisão técnica de testabilidade |
-| **VH-10** | Política de cache HTTP para PDFs gerados sob demanda | Sem `Cache-Control`, navegadores e proxies podem cachear PDF de certificado cancelado | Comportamento de cache indefinido; depende de topologia de infraestrutura |
+| ID        | Decisão                                                                                     | Contexto                                                                                                                                | Impacto se não decidido                                                                     |
+| --------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| **VH-01** | Comportamento de certificados `cancelado` e `pendente` na validação pública                 | FR-24 não define; implementação atual retorna `valido: true` para todos os status                                                       | STF-019 permanece como bug sem definição de produto; spec corretiva não pode ser escrita    |
+| **VH-02** | Comportamento de cascata de soft delete de evento sobre `TiposCertificados` e `Certificado` | FR-9 define soft delete de evento, mas não especifica cascata para tipos e certificados                                                 | STF-041 permanece como GI; implementação atual deixa tipos ativos após deletar evento       |
+| **VH-03** | Comportamento de cascata de soft delete de participante sobre `Certificado`                 | FR-4 define soft delete de participante sem cascata; certificados ficam com participante nulo                                           | STF-042 indefinido; PDF pode ser gerado com nome vazio                                      |
+| **VH-04** | Campos expostos em respostas públicas de validação e consulta                               | FR-25 não define escopo de dados; e-mail e IDs internos atualmente expostos                                                             | STF-023, STF-052 sem baseline normativo; compliance LGPD indeterminado                      |
+| **VH-05** | Política de exibição de certificados cancelados na listagem pública por e-mail              | FR-23 não especifica se cancelados aparecem; view atual exibe com badge distinto                                                        | STF-019 (parcial); comportamento intencional indeterminado                                  |
+| **VH-06** | Participantes como entidade global ou escopada por evento                                   | PA-11: model sem associação direta com evento; filtrar participantes por evento requer JOIN em certificados, excluindo não-certificados | ADR-MT-02 não pode ser implementado sem decisão de produto                                  |
+| **VH-07** | RBAC unificado por operação de negócio vs RBAC por superfície                               | A API é sistematicamente mais permissiva; pode ser intencional (acesso programático) ou bug                                             | ADR-RBAC-01 não pode ser especificado sem decisão arquitetural                              |
+| **VH-08** | Política de exibição do e-mail do participante na view de validação pública                 | E-mail exposto na view SSR de resultado; pode ser intencional para o participante verificar o certificado                               | Sem decisão, STF-023 não pode ser corrigido sem risco de quebrar funcionalidade intencional |
+| **VH-09** | Backdoor `x-mock-user` em authSSR para `NODE_ENV=test` deve ser mantido ou removido         | Facilita testes de integração; risco se `NODE_ENV=test` vazar para produção                                                             | STF-059 aguarda decisão técnica de testabilidade                                            |
+| **VH-10** | Política de cache HTTP para PDFs gerados sob demanda                                        | Sem `Cache-Control`, navegadores e proxies podem cachear PDF de certificado cancelado                                                   | Comportamento de cache indefinido; depende de topologia de infraestrutura                   |
 
 ---
 
@@ -714,29 +723,29 @@ Validator (STF-005, STF-030)
 
 > Objetivo: eliminar vulnerabilidades críticas que permitem acesso cross-tenant, privilege escalation, XSS e credenciais comprometidas.
 
-| # | Item | ID | Criticidade | Dependência | Risco Mitigado |
-|---|------|----|------------|-------------|----------------|
-| F0-01 | Remover `SESSION_SECRET` hardcoded de `docker-compose.yml` | STF-006 | Crítico | Nenhuma | Sessões SSR forjáveis |
-| F0-02 | Corrigir `rbac` em DELETE/PUT/POST eventos na API (`monitor` → `admin`) | STF-007 | Crítico | Nenhuma | Escalada de privilégio |
-| F0-03 | Adicionar `rbac('admin')` na cadeia de rotas de `usuarios-crud.js` | STF-032 | Alto | Nenhuma | Criação de admin por qualquer autenticado |
-| F0-04 | Corrigir cookie JWT SSR: adicionar `secure: true` em produção | STF-013 | Alto | Nenhuma | Interceção de cookie por HTTP |
-| F0-05 | Aplicar rate limiting em `POST /login` SSR (mesmo `loginLimiter` da API) | STF-014 | Alto | Nenhuma | Brute force no formulário web |
-| F0-06 | Remover/condicionar `console.log` de PII em `pdfService.js` | STF-018 | Alto | Nenhuma | PII em logs de produção |
-| F0-07 | Remover `detalhe: err.message` de resposta HTTP 500 pública de PDF | STF-024 | Alto | Nenhuma | Reconhecimento de topologia |
-| F0-08 | Adicionar `JWT_SECRET` como fail-fast em `authSSR.js` e `routes/auth.js` | STF-060 | Alto | Nenhuma | Falha silenciosa em runtime |
-| F0-09 | Substituir `JWT_SECRET` fraco em `docker-compose.test.yml` | STF-061 | Alto | Nenhuma | JWT de testes forjável |
-| F0-10 | Corrigir validator Zod de certificado: manter `valores_dinamicos`, tornar `status` optional com default `"emitido"` | STF-005 | Crítico | Nenhuma | Emissão de certificados impossível via API |
-| F0-11 | Corrigir constraint de tipos_certificados: nova migration com partial index | STF-021 | Crítico | Nenhuma | Restauração de tipos inoperante |
-| F0-12 | Corrigir colisão de código: `count(paranoid: false)` no serviço de emissão | STF-009 | Crítico | Nenhuma | UniqueConstraintError após soft delete |
-| F0-13 | Validar `tipo.evento_id === data.evento_id` em `certificadoService.create()` | STF-008 | Crítico | Nenhuma | Mistura de dados entre eventos |
-| F0-14 | Corrigir alias Sequelize: `TiposCertificado` → `TiposCertificados` em SSR | STF-029 | Alto | Nenhuma | Texto do certificado sempre vazio |
-| F0-15 | Corrigir link de PDF no painel admin: `/api/certificados/:id/pdf` | STF-028 | Alto | Nenhuma | Download sempre HTTP 404 no painel admin |
-| F0-16 | Adicionar rate limiting mínimo nas rotas públicas de certificados | STF-011 | Crítico | Nenhuma | DoS por geração de PDF; scraping |
-| F0-17 | Corrigir XSS stored: substituir `{{{json ...}}}` por serialização segura em `<script>` | STF-010 | Crítico | Nenhuma | Execução de código no painel admin |
-| F0-18 | Adicionar Content Security Policy nos layouts `layout.hbs` e `layouts/admin.hbs` | STF-010 | Crítico | F0-17 | Amplificação de XSS sem restrição |
-| F0-19 | Aplicar `rbac('monitor')` → `rbac('gestor')` ou `rbac('admin')` em delete/restore de participantes | STF-015 | Alto | ADR-RBAC-01 (VH-07) | Escalada de privilégio de monitor |
-| F0-20 | Corrigir `POST /certificados/:id/restore`: uniformizar para `rbac('admin')` ou `gestor` | STF-016 | Alto | VH-07 | Monitor restaura certificados |
-| F0-21 | Corrigir criação de certificados SSR: `rbac('gestor')` → `rbac('monitor')` | STF-017 | Alto | Nenhuma | Monitor bloqueado de criar certificados por SSR |
+| #     | Item                                                                                                                | ID      | Criticidade | Dependência         | Risco Mitigado                                  |
+| ----- | ------------------------------------------------------------------------------------------------------------------- | ------- | ----------- | ------------------- | ----------------------------------------------- |
+| F0-01 | Remover `SESSION_SECRET` hardcoded de `docker-compose.yml`                                                          | STF-006 | Crítico     | Nenhuma             | Sessões SSR forjáveis                           |
+| F0-02 | Corrigir `rbac` em DELETE/PUT/POST eventos na API (`monitor` → `admin`)                                             | STF-007 | Crítico     | Nenhuma             | Escalada de privilégio                          |
+| F0-03 | Adicionar `rbac('admin')` na cadeia de rotas de `usuarios-crud.js`                                                  | STF-032 | Alto        | Nenhuma             | Criação de admin por qualquer autenticado       |
+| F0-04 | Corrigir cookie JWT SSR: adicionar `secure: true` em produção                                                       | STF-013 | Alto        | Nenhuma             | Interceção de cookie por HTTP                   |
+| F0-05 | Aplicar rate limiting em `POST /login` SSR (mesmo `loginLimiter` da API)                                            | STF-014 | Alto        | Nenhuma             | Brute force no formulário web                   |
+| F0-06 | Remover/condicionar `console.log` de PII em `pdfService.js`                                                         | STF-018 | Alto        | Nenhuma             | PII em logs de produção                         |
+| F0-07 | Remover `detalhe: err.message` de resposta HTTP 500 pública de PDF                                                  | STF-024 | Alto        | Nenhuma             | Reconhecimento de topologia                     |
+| F0-08 | Adicionar `JWT_SECRET` como fail-fast em `authSSR.js` e `routes/auth.js`                                            | STF-060 | Alto        | Nenhuma             | Falha silenciosa em runtime                     |
+| F0-09 | Substituir `JWT_SECRET` fraco em `docker-compose.test.yml`                                                          | STF-061 | Alto        | Nenhuma             | JWT de testes forjável                          |
+| F0-10 | Corrigir validator Zod de certificado: manter `valores_dinamicos`, tornar `status` optional com default `"emitido"` | STF-005 | Crítico     | Nenhuma             | Emissão de certificados impossível via API      |
+| F0-11 | Corrigir constraint de tipos_certificados: nova migration com partial index                                         | STF-021 | Crítico     | Nenhuma             | Restauração de tipos inoperante                 |
+| F0-12 | Corrigir colisão de código: `count(paranoid: false)` no serviço de emissão                                          | STF-009 | Crítico     | Nenhuma             | UniqueConstraintError após soft delete          |
+| F0-13 | Validar `tipo.evento_id === data.evento_id` em `certificadoService.create()`                                        | STF-008 | Crítico     | Nenhuma             | Mistura de dados entre eventos                  |
+| F0-14 | Corrigir alias Sequelize: `TiposCertificado` → `TiposCertificados` em SSR                                           | STF-029 | Alto        | Nenhuma             | Texto do certificado sempre vazio               |
+| F0-15 | Corrigir link de PDF no painel admin: `/api/certificados/:id/pdf`                                                   | STF-028 | Alto        | Nenhuma             | Download sempre HTTP 404 no painel admin        |
+| F0-16 | Adicionar rate limiting mínimo nas rotas públicas de certificados                                                   | STF-011 | Crítico     | Nenhuma             | DoS por geração de PDF; scraping                |
+| F0-17 | Corrigir XSS stored: substituir `{{{json ...}}}` por serialização segura em `<script>`                              | STF-010 | Crítico     | Nenhuma             | Execução de código no painel admin              |
+| F0-18 | Adicionar Content Security Policy nos layouts `layout.hbs` e `layouts/admin.hbs`                                    | STF-010 | Crítico     | F0-17               | Amplificação de XSS sem restrição               |
+| F0-19 | Aplicar `rbac('monitor')` → `rbac('gestor')` ou `rbac('admin')` em delete/restore de participantes                  | STF-015 | Alto        | ADR-RBAC-01 (VH-07) | Escalada de privilégio de monitor               |
+| F0-20 | Corrigir `POST /certificados/:id/restore`: uniformizar para `rbac('admin')` ou `gestor`                             | STF-016 | Alto        | VH-07               | Monitor restaura certificados                   |
+| F0-21 | Corrigir criação de certificados SSR: `rbac('gestor')` → `rbac('monitor')`                                          | STF-017 | Alto        | Nenhuma             | Monitor bloqueado de criar certificados por SSR |
 
 ---
 
@@ -744,25 +753,25 @@ Validator (STF-005, STF-030)
 
 > Objetivo: contratos consistentes entre camadas; enforcement real de multi-tenancy e RBAC; integridade transacional.
 
-| # | Item | ID | Criticidade | Dependência | Risco Mitigado |
-|---|------|----|------------|-------------|----------------|
-| F1-01 | Implementar ADR-AUTH-01: unificar contrato de `req.usuario` entre API e SSR | STF-020 | Alto | ADR-AUTH-01 | Middlewares inaplicáveis em SSR; isMonitor sempre falso |
-| F1-02 | Implementar ADR-MT-01: services recebem `eventoIds` de controllers; `scopedEvento` corrigido | STF-001, STF-002 | Crítico | ADR-MT-01, F1-01 | Multi-tenancy ilusório |
-| F1-03 | Aplicar enforcement de escopo em todas as operações SSR de certificados por ID | STF-003 | Crítico | F1-01 | Acesso cross-tenant via SSR |
-| F1-04 | Aplicar filtro de escopo em `GET /participantes` API | STF-004 | Crítico | ADR-MT-01, VH-06 | Vazamento de PII |
-| F1-05 | Aplicar escopo em operações SSR de participantes por ID | STF-037 | Alto | F1-01 | Edição cross-tenant via SSR |
-| F1-06 | Aplicar filtro de escopo em `GET /tipos-certificados` API e SSR | STF-026, STF-027 | Alto | F1-02 | Metadados de tipos expostos entre tenants |
-| F1-07 | Implementar ADR-TX-01: `sequelize.transaction()` em `create()`, `delete()`, `restore()` de certificados e eventos | STF-022 | Alto | ADR-TX-01 | Race condition em emissão; estados inválidos |
-| F1-08 | Adicionar validação de `participante_id` em `certificadoService.create()` | STF-066 | Alto | Nenhuma | FK violation exposta ao cliente |
-| F1-09 | Criar `usuarioService.js`; mover lógica de JWT/bcrypt/associação N:N do controller | STF-025 | Alto | Nenhuma | Violação de NFR-6; CRUD de usuários não reutilizável |
-| F1-10 | Implementar partial indexes de email em `participantes` e `usuarios` (migration) | STF-039 | Médio | Nenhuma | Recriação após soft delete impossível |
-| F1-11 | Adicionar unique constraint `(usuario_id, evento_id)` em `usuario_eventos` (migration) | STF-044 | Alto | Nenhuma | Duplicatas silenciosas e RBAC quebrado |
-| F1-12 | Corrigir `tiposCertificadosOwnership` para tratar restore por ID corretamente | STF-063 | Médio | Nenhuma | Gestores não conseguem restaurar tipos |
-| F1-13 | Filtrar eventos, tipos e participantes no formulário SSR de novo certificado | STF-064 | Médio | F1-02 | Combinação inválida entre eventos no formulário |
-| F1-14 | Aplicar `senhaForteSchema` na criação de usuário via API | STF-034 | Alto | Nenhuma | Senhas fracas em criação via API |
-| F1-15 | Mover lógica de busca pública de rotas para controllers e services | STF-046 | Alto | Nenhuma | Violação de NFR-6; duplicação de lógica |
-| F1-16 | Adicionar validação de formato de código em `GET /api/validar/:codigo` | STF-057 | Alto | Nenhuma | Strings arbitrárias chegam ao ORM |
-| F1-17 | Definir e implementar DTO mínimo para respostas públicas (pós ADR-PUBLICO-01) | STF-052 | Alto | ADR-PUBLICO-01, VH-04 | IDs internos expostos publicamente |
+| #     | Item                                                                                                              | ID               | Criticidade | Dependência           | Risco Mitigado                                          |
+| ----- | ----------------------------------------------------------------------------------------------------------------- | ---------------- | ----------- | --------------------- | ------------------------------------------------------- |
+| F1-01 | Implementar ADR-AUTH-01: unificar contrato de `req.usuario` entre API e SSR                                       | STF-020          | Alto        | ADR-AUTH-01           | Middlewares inaplicáveis em SSR; isMonitor sempre falso |
+| F1-02 | Implementar ADR-MT-01: services recebem `eventoIds` de controllers; `scopedEvento` corrigido                      | STF-001, STF-002 | Crítico     | ADR-MT-01, F1-01      | Multi-tenancy ilusório                                  |
+| F1-03 | Aplicar enforcement de escopo em todas as operações SSR de certificados por ID                                    | STF-003          | Crítico     | F1-01                 | Acesso cross-tenant via SSR                             |
+| F1-04 | Aplicar filtro de escopo em `GET /participantes` API                                                              | STF-004          | Crítico     | ADR-MT-01, VH-06      | Vazamento de PII                                        |
+| F1-05 | Aplicar escopo em operações SSR de participantes por ID                                                           | STF-037          | Alto        | F1-01                 | Edição cross-tenant via SSR                             |
+| F1-06 | Aplicar filtro de escopo em `GET /tipos-certificados` API e SSR                                                   | STF-026, STF-027 | Alto        | F1-02                 | Metadados de tipos expostos entre tenants               |
+| F1-07 | Implementar ADR-TX-01: `sequelize.transaction()` em `create()`, `delete()`, `restore()` de certificados e eventos | STF-022          | Alto        | ADR-TX-01             | Race condition em emissão; estados inválidos            |
+| F1-08 | Adicionar validação de `participante_id` em `certificadoService.create()`                                         | STF-066          | Alto        | Nenhuma               | FK violation exposta ao cliente                         |
+| F1-09 | Criar `usuarioService.js`; mover lógica de JWT/bcrypt/associação N:N do controller                                | STF-025          | Alto        | Nenhuma               | Violação de NFR-6; CRUD de usuários não reutilizável    |
+| F1-10 | Implementar partial indexes de email em `participantes` e `usuarios` (migration)                                  | STF-039          | Médio       | Nenhuma               | Recriação após soft delete impossível                   |
+| F1-11 | Adicionar unique constraint `(usuario_id, evento_id)` em `usuario_eventos` (migration)                            | STF-044          | Alto        | Nenhuma               | Duplicatas silenciosas e RBAC quebrado                  |
+| F1-12 | Corrigir `tiposCertificadosOwnership` para tratar restore por ID corretamente                                     | STF-063          | Médio       | Nenhuma               | Gestores não conseguem restaurar tipos                  |
+| F1-13 | Filtrar eventos, tipos e participantes no formulário SSR de novo certificado                                      | STF-064          | Médio       | F1-02                 | Combinação inválida entre eventos no formulário         |
+| F1-14 | Aplicar `senhaForteSchema` na criação de usuário via API                                                          | STF-034          | Alto        | Nenhuma               | Senhas fracas em criação via API                        |
+| F1-15 | Mover lógica de busca pública de rotas para controllers e services                                                | STF-046          | Alto        | Nenhuma               | Violação de NFR-6; duplicação de lógica                 |
+| F1-16 | Adicionar validação de formato de código em `GET /api/validar/:codigo`                                            | STF-057          | Alto        | Nenhuma               | Strings arbitrárias chegam ao ORM                       |
+| F1-17 | Definir e implementar DTO mínimo para respostas públicas (pós ADR-PUBLICO-01)                                     | STF-052          | Alto        | ADR-PUBLICO-01, VH-04 | IDs internos expostos publicamente                      |
 
 ---
 
@@ -770,31 +779,31 @@ Validator (STF-005, STF-030)
 
 > Objetivo: eliminar duplicação de lógica; padronizar transversais; resolver issues de cascade e session.
 
-| # | Item | ID | Criticidade | Dependência | Risco Mitigado |
-|---|------|----|------------|-------------|----------------|
-| F2-01 | Substituir MemoryStore do `express-session` por store persistente | STF-045 | Alto | Nenhuma | OOM e perda de sessões em produção |
-| F2-02 | Adicionar timeout em `r2Service.getFile`; circuit breaker ou fallback em geração de PDF | STF-077 | Médio | Nenhuma | Hang indefinido sob degradação do R2 |
-| F2-03 | Implementar cleanup de arquivo R2 ao atualizar template; atomicidade upload→persist | STF-053 | Alto | Nenhuma | Arquivos órfãos no R2 |
-| F2-04 | Adicionar validação de magic bytes no upload de template | STF-054 | Alto | Nenhuma | Arquivo malicioso persistido no R2 |
-| F2-05 | Validar credenciais R2 com fail-fast no startup | STF-055 | Alto | Nenhuma | Falha silenciosa em tempo de execução |
-| F2-06 | Corrigir slug de evento: garantir não-vazio; evitar colisão de keys R2 | STF-056 | Médio | Nenhuma | Sobreescrita de template de outro evento |
-| F2-07 | Adicionar `scopedEvento` ou filtro equivalente a `GET /api/certificados?email=` (pós VH-04) | STF-052 | Alto | VH-04 | Exposição irrestrita de IDs internos |
-| F2-08 | Corrigir `validação de certificados cancelados` na view SSR: ocultar botão PDF para cancelados | STF-019 (parcial) | Alto | VH-01, VH-05 | UX convidando download de PDF cancelado |
-| F2-09 | Revalidar `valores_dinamicos` em `certificadoService.update()` | STF-065 | Alto | Nenhuma | Dados parciais persistidos em atualização |
-| F2-10 | Mover validação cross-field de `campo_destaque` para Zod (refinement) com HTTP 422 | STF-075 | Médio | Nenhuma | Erro de persistência retornado para erro de entrada |
-| F2-11 | Consolidar lógica de ownership de tipos em ponto único (remover duplicação) | STF-074 | Médio | F1-06 | Divergência futura silenciosa |
-| F2-12 | Adicionar `isMonitor`, `email` ao contrato de `req.usuario` no authSSR | STF-036 | Médio | F1-01 | isMonitor nunca verdadeiro; e-mail indisponível em SSR |
-| F2-13 | Definir e implementar cascata de soft delete de evento → tipos e certificados (pós VH-02) | STF-041 | Médio | VH-02 | Tipos ativos após deletar evento |
-| F2-14 | Definir e implementar cascata de soft delete de participante → certificados (pós VH-03) | STF-042 | Médio | VH-03 | PDF com nome vazio |
-| F2-15 | Corrigir `eventoService.restore()`: filtrar vínculos por data e excluir usuários soft-deletados | STF-043 | Médio | Nenhuma | Ghost access reestabelecido |
-| F2-16 | Adicionar `Swagger` com autenticação ou restrito a ambientes não-produção | STF-049 | Médio | Nenhuma | Reconhecimento de endpoints admin |
-| F2-17 | Renderizar `ultimosCertificados` no `dashboard.hbs`; corrigir backlog | STF-035 | Crítico | Nenhuma | FR-56 não atendido; backlog incorreto |
-| F2-18 | Implementar máquina de estados para `status` do certificado | STF-067 | Médio | Nenhuma | Transições inválidas (cancelado → emitido) |
-| F2-19 | Corrigir validator `url_template_base`: aceitar key R2 relativa (não URL) | STF-030, STF-068 | Alto | SRS-01 | Upload via API completamente bloqueado |
-| F2-20 | Adicionar campos de layout (`texto_x/y`, `validacao_x/y`) ao schema Zod de evento | T07/T07-35 | Baixo | SRS-10 | Coordenadas não atualizáveis via API |
-| F2-21 | Resolver down migration do ENUM `enum_certificados_status` | STF-073 | Médio | Nenhuma | Orphan type após rollback |
-| F2-22 | Adicionar `SESSION_SECRET` ao `.env.example` | STF-031 | Médio | Nenhuma | Onboarding inseguro |
-| F2-23 | Documentar `JWT_SECRET` como obrigatório em `docker-compose.yml` | STF-031 | Alto | Nenhuma | Startup falha de forma não documentada |
+| #     | Item                                                                                            | ID                | Criticidade | Dependência  | Risco Mitigado                                         |
+| ----- | ----------------------------------------------------------------------------------------------- | ----------------- | ----------- | ------------ | ------------------------------------------------------ |
+| F2-01 | Substituir MemoryStore do `express-session` por store persistente                               | STF-045           | Alto        | Nenhuma      | OOM e perda de sessões em produção                     |
+| F2-02 | Adicionar timeout em `r2Service.getFile`; circuit breaker ou fallback em geração de PDF         | STF-077           | Médio       | Nenhuma      | Hang indefinido sob degradação do R2                   |
+| F2-03 | Implementar cleanup de arquivo R2 ao atualizar template; atomicidade upload→persist             | STF-053           | Alto        | Nenhuma      | Arquivos órfãos no R2                                  |
+| F2-04 | Adicionar validação de magic bytes no upload de template                                        | STF-054           | Alto        | Nenhuma      | Arquivo malicioso persistido no R2                     |
+| F2-05 | Validar credenciais R2 com fail-fast no startup                                                 | STF-055           | Alto        | Nenhuma      | Falha silenciosa em tempo de execução                  |
+| F2-06 | Corrigir slug de evento: garantir não-vazio; evitar colisão de keys R2                          | STF-056           | Médio       | Nenhuma      | Sobreescrita de template de outro evento               |
+| F2-07 | Adicionar `scopedEvento` ou filtro equivalente a `GET /api/certificados?email=` (pós VH-04)     | STF-052           | Alto        | VH-04        | Exposição irrestrita de IDs internos                   |
+| F2-08 | Corrigir `validação de certificados cancelados` na view SSR: ocultar botão PDF para cancelados  | STF-019 (parcial) | Alto        | VH-01, VH-05 | UX convidando download de PDF cancelado                |
+| F2-09 | Revalidar `valores_dinamicos` em `certificadoService.update()`                                  | STF-065           | Alto        | Nenhuma      | Dados parciais persistidos em atualização              |
+| F2-10 | Mover validação cross-field de `campo_destaque` para Zod (refinement) com HTTP 422              | STF-075           | Médio       | Nenhuma      | Erro de persistência retornado para erro de entrada    |
+| F2-11 | Consolidar lógica de ownership de tipos em ponto único (remover duplicação)                     | STF-074           | Médio       | F1-06        | Divergência futura silenciosa                          |
+| F2-12 | Adicionar `isMonitor`, `email` ao contrato de `req.usuario` no authSSR                          | STF-036           | Médio       | F1-01        | isMonitor nunca verdadeiro; e-mail indisponível em SSR |
+| F2-13 | Definir e implementar cascata de soft delete de evento → tipos e certificados (pós VH-02)       | STF-041           | Médio       | VH-02        | Tipos ativos após deletar evento                       |
+| F2-14 | Definir e implementar cascata de soft delete de participante → certificados (pós VH-03)         | STF-042           | Médio       | VH-03        | PDF com nome vazio                                     |
+| F2-15 | Corrigir `eventoService.restore()`: filtrar vínculos por data e excluir usuários soft-deletados | STF-043           | Médio       | Nenhuma      | Ghost access reestabelecido                            |
+| F2-16 | Adicionar `Swagger` com autenticação ou restrito a ambientes não-produção                       | STF-049           | Médio       | Nenhuma      | Reconhecimento de endpoints admin                      |
+| F2-17 | Renderizar `ultimosCertificados` no `dashboard.hbs`; corrigir backlog                           | STF-035           | Crítico     | Nenhuma      | FR-56 não atendido; backlog incorreto                  |
+| F2-18 | Implementar máquina de estados para `status` do certificado                                     | STF-067           | Médio       | Nenhuma      | Transições inválidas (cancelado → emitido)             |
+| F2-19 | Corrigir validator `url_template_base`: aceitar key R2 relativa (não URL)                       | STF-030, STF-068  | Alto        | SRS-01       | Upload via API completamente bloqueado                 |
+| F2-20 | Adicionar campos de layout (`texto_x/y`, `validacao_x/y`) ao schema Zod de evento               | T07/T07-35        | Baixo       | SRS-10       | Coordenadas não atualizáveis via API                   |
+| F2-21 | Resolver down migration do ENUM `enum_certificados_status`                                      | STF-073           | Médio       | Nenhuma      | Orphan type após rollback                              |
+| F2-22 | Adicionar `SESSION_SECRET` ao `.env.example`                                                    | STF-031           | Médio       | Nenhuma      | Onboarding inseguro                                    |
+| F2-23 | Documentar `JWT_SECRET` como obrigatório em `docker-compose.yml`                                | STF-031           | Alto        | Nenhuma      | Startup falha de forma não documentada                 |
 
 ---
 
@@ -802,18 +811,18 @@ Validator (STF-005, STF-030)
 
 > Objetivo: otimizações, hardening adicional, capacidade de evolução.
 
-| # | Item | ID | Criticidade | Dependência |
-|---|------|----|------------|-------------|
-| F3-01 | Avaliar enumeração de certificados: considerar código não-previsível (UUID parcial ou hash) | STF-050 | Alto | VH-01, ADR-PUBLICO-01 |
-| F3-02 | Implementar logging estruturado para tentativas de autenticação falhas | T02/C-31 | Médio | Nenhuma |
-| F3-03 | Resolver dependência circular entre `pdfService` e `r2Service` | STF-076 | Médio | Nenhuma |
-| F3-04 | Substituir `new Promise(async (resolve, reject))` por async/await puro em `pdfService` | STF-076 | Médio | F3-03 |
-| F3-05 | Limpar método `eventoService.destroy()` órfão | STF-079 | Baixo | Nenhuma |
-| F3-06 | Configurar Morgan com formato estruturado distinto por ambiente | T06/T06-034 | Baixo | Nenhuma |
-| F3-07 | Considerar paginação em `GET /api/certificados?email=` | T05/T05-GI-002 | Médio | F2-07 |
-| F3-08 | Adicionar CRUD API completo de usuários (FR-26 não atendido) | T02/C-19 | Alto | F1-09, VH-07 |
-| F3-09 | Normalizar busca de e-mail (case-insensitive) em endpoint público | T03/PA-07 | Médio | Nenhuma |
-| F3-10 | Adicionar headers HTTP de segurança (`X-Content-Type-Options`, `Cache-Control`) nas respostas de PDF | T05/T05-GI-004 | Médio | Nenhuma |
+| #     | Item                                                                                                 | ID             | Criticidade | Dependência           |
+| ----- | ---------------------------------------------------------------------------------------------------- | -------------- | ----------- | --------------------- |
+| F3-01 | Avaliar enumeração de certificados: considerar código não-previsível (UUID parcial ou hash)          | STF-050        | Alto        | VH-01, ADR-PUBLICO-01 |
+| F3-02 | Implementar logging estruturado para tentativas de autenticação falhas                               | T02/C-31       | Médio       | Nenhuma               |
+| F3-03 | Resolver dependência circular entre `pdfService` e `r2Service`                                       | STF-076        | Médio       | Nenhuma               |
+| F3-04 | Substituir `new Promise(async (resolve, reject))` por async/await puro em `pdfService`               | STF-076        | Médio       | F3-03                 |
+| F3-05 | Limpar método `eventoService.destroy()` órfão                                                        | STF-079        | Baixo       | Nenhuma               |
+| F3-06 | Configurar Morgan com formato estruturado distinto por ambiente                                      | T06/T06-034    | Baixo       | Nenhuma               |
+| F3-07 | Considerar paginação em `GET /api/certificados?email=`                                               | T05/T05-GI-002 | Médio       | F2-07                 |
+| F3-08 | Adicionar CRUD API completo de usuários (FR-26 não atendido)                                         | T02/C-19       | Alto        | F1-09, VH-07          |
+| F3-09 | Normalizar busca de e-mail (case-insensitive) em endpoint público                                    | T03/PA-07      | Médio       | Nenhuma               |
+| F3-10 | Adicionar headers HTTP de segurança (`X-Content-Type-Options`, `Cache-Control`) nas respostas de PDF | T05/T05-GI-004 | Médio       | Nenhuma               |
 
 ---
 
@@ -822,6 +831,7 @@ Validator (STF-005, STF-030)
 ## Robustez
 
 **Baixa.** O sistema apresenta múltiplos pontos de falha críticos que afetam fluxos centrais:
+
 - Emissão de certificados com campos dinâmicos via API é impossível (STF-005).
 - Download de PDF no painel admin sempre retorna 404 (STF-028).
 - Colisão de código após soft delete inviabiliza re-emissão em eventos com histórico (STF-009).
@@ -831,6 +841,7 @@ Validator (STF-005, STF-030)
 ## Manutenibilidade
 
 **Média-Baixa.** A estrutura em camadas existe nominalmente mas é violada em pontos críticos:
+
 - `usuarioService.js` ausente (STF-025); lógica de domínio espalhada.
 - Lógica de busca pública inline em rotas (STF-046); duplicada em três handlers.
 - Lógica de ownership duplicada em controller e middleware (STF-074).
@@ -840,6 +851,7 @@ Validator (STF-005, STF-030)
 ## Segurança
 
 **Crítica — não apta para produção multiusuário.** Falhas de severidade crítica ativas:
+
 - Multi-tenancy completamente ilusório (STF-001-STF-004, PST-01).
 - Privilege escalation via API em múltiplos domínios (STF-007, STF-015, STF-016, STF-032).
 - XSS stored com superfície ampliada por ausência de CSP (STF-010).
@@ -850,6 +862,7 @@ Validator (STF-005, STF-030)
 ## Confiabilidade
 
 **Baixa.** Integridade de dados não garantida:
+
 - Sem transações em operações compostas (STF-022).
 - Constraint drift entre migration e model (STF-021).
 - Colisão de código de certificado determinística após soft delete (STF-009).
@@ -920,6 +933,6 @@ O sistema possui fundação técnica para evolução (estrutura de camadas, migr
 
 ---
 
-*Triagem produzida por: Arquiteto de Software Principal (GitHub Copilot — Claude Sonnet 4.6)*  
-*Data: 2026-05-10 15:15 (BRT)*  
-*Baseada exclusivamente em evidências documentadas nas auditorias 07/02 a 07/25 e triagens T01 a T07.*
+_Triagem produzida por: Arquiteto de Software Principal (GitHub Copilot — Claude Sonnet 4.6)_  
+_Data: 2026-05-10 15:15 (BRT)_  
+_Baseada exclusivamente em evidências documentadas nas auditorias 07/02 a 07/25 e triagens T01 a T07._

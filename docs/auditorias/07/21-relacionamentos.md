@@ -10,36 +10,36 @@
 
 ## Fontes Analisadas
 
-| Fonte | Lida |
-|---|---|
-| `docs/especificacoes.md` | ✓ |
-| `src/models/certificado.js` | ✓ |
-| `src/models/evento.js` | ✓ |
-| `src/models/participante.js` | ✓ |
-| `src/models/tipos_certificados.js` | ✓ |
-| `src/models/usuario.js` | ✓ |
-| `src/models/usuario_eventos.js` | ✓ |
-| `src/models/index.js` | ✓ |
-| `src/services/certificadoService.js` | ✓ |
-| `src/services/eventoService.js` | ✓ |
-| `src/services/pdfService.js` | ✓ |
-| `src/services/participanteService.js` | ✓ |
-| `src/services/tiposCertificadosService.js` | ✓ |
-| `src/controllers/certificadoController.js` | ✓ |
-| `src/controllers/certificadoSSRController.js` | ✓ |
-| `src/controllers/dashboardController.js` | ✓ |
-| `src/controllers/eventoSSRController.js` | ✓ |
-| `src/controllers/participanteSSRController.js` | ✓ |
-| `src/controllers/usuarioController.js` | ✓ |
-| `src/controllers/usuarioSSRController.js` | ✓ |
-| `src/controllers/tiposCertificadosSSRController.js` | ✓ |
-| `src/middlewares/auth.js` | ✓ |
-| `src/middlewares/authSSR.js` | ✓ |
-| `src/middlewares/scopedEvento.js` | ✓ |
-| `src/middlewares/tiposCertificadosOwnership.js` | ✓ |
-| `src/routes/api.js` | ✓ |
-| `src/routes/certificados.js` | ✓ |
-| `src/routes/tipos-certificados.js` | ✓ |
+| Fonte                                               | Lida |
+| --------------------------------------------------- | ---- |
+| `docs/especificacoes.md`                            | ✓    |
+| `src/models/certificado.js`                         | ✓    |
+| `src/models/evento.js`                              | ✓    |
+| `src/models/participante.js`                        | ✓    |
+| `src/models/tipos_certificados.js`                  | ✓    |
+| `src/models/usuario.js`                             | ✓    |
+| `src/models/usuario_eventos.js`                     | ✓    |
+| `src/models/index.js`                               | ✓    |
+| `src/services/certificadoService.js`                | ✓    |
+| `src/services/eventoService.js`                     | ✓    |
+| `src/services/pdfService.js`                        | ✓    |
+| `src/services/participanteService.js`               | ✓    |
+| `src/services/tiposCertificadosService.js`          | ✓    |
+| `src/controllers/certificadoController.js`          | ✓    |
+| `src/controllers/certificadoSSRController.js`       | ✓    |
+| `src/controllers/dashboardController.js`            | ✓    |
+| `src/controllers/eventoSSRController.js`            | ✓    |
+| `src/controllers/participanteSSRController.js`      | ✓    |
+| `src/controllers/usuarioController.js`              | ✓    |
+| `src/controllers/usuarioSSRController.js`           | ✓    |
+| `src/controllers/tiposCertificadosSSRController.js` | ✓    |
+| `src/middlewares/auth.js`                           | ✓    |
+| `src/middlewares/authSSR.js`                        | ✓    |
+| `src/middlewares/scopedEvento.js`                   | ✓    |
+| `src/middlewares/tiposCertificadosOwnership.js`     | ✓    |
+| `src/routes/api.js`                                 | ✓    |
+| `src/routes/certificados.js`                        | ✓    |
+| `src/routes/tipos-certificados.js`                  | ✓    |
 
 ---
 
@@ -69,19 +69,19 @@ Usuario ─────── belongsToMany ────────────
 
 ## 1. Matriz Consolidada de Achados
 
-| ID | Relacionamento | Descrição | Evidências | Tipo | Severidade | Impacto | Requisitos Violados | Destino Recomendado |
-|---|---|---|---|---|---|---|---|---|
-| REL-01 | Certificado → TiposCertificados | Alias singular `TiposCertificado` usado em lugar do alias declarado `TiposCertificados` (plural) | `certificadoSSRController.js:110` usa `certificado.TiposCertificado?.texto_base` | BR | Alto | Texto interpolado sempre vazio na interface SSR de detalhe do certificado | FR-39 (interpolação de texto) | Corrigir no curto prazo |
-| REL-02 | Certificado → TiposCertificados | `pdfService.js` contém workaround `TiposCertificado \|\| TiposCertificados` como defesa contra ambiguidade de alias | `pdfService.js:79` | IP | Médio | Código defensivo que mascara o bug REL-01 no contexto do PDF; pode gerar falsos negativos | FR-42 (geração de PDF) | Corrigir junto com REL-01 |
-| REL-03 | Certificado → Participante / Evento | `Certificado.belongsTo(Participante)` e `Certificado.belongsTo(Evento)` sem alias explícito (`as:`), diferente do padrão usado para `TiposCertificados` | `certificado.js:7-10` | DT | Baixo | Inconsistência de naming: includes com e sem alias na mesma entidade; risco de manutenção | – | Médio prazo |
-| REL-04 | Todos | Nenhuma associação ORM define `onDelete`/`onUpdate` | Todos os `belongsTo`/`hasMany` em `*.js` | DT | Médio | Em operações de hard delete (nunca usadas hoje, mas possíveis via migrations/admin), FKs não propagam ação. Risco latente | NFR-4 (soft delete) | Médio prazo |
-| REL-05 | Usuario ↔ Evento (UsuarioEvento) | Tabela pivot `usuario_eventos` tem `paranoid: true` (soft delete), comportamento atípico para join tables Sequelize | `usuario_eventos.js:25` | DT | Médio | Queries `belongsToMany` podem incluir/excluir linhas soft-deleted dependendo da versão do Sequelize e configuração; restauração de evento restaura associações automaticamente | FR-32 (vinculação N:N) | Médio prazo (documentar ou remover paranoid da pivot) |
-| REL-06 | Usuario ↔ Evento (UsuarioEvento) | `UsuarioEvento.associate()` vazio — join table não declara associações para seus parents | `usuario_eventos.js:8` | ID | Baixo | Impossibilidade de fazer includes a partir de `UsuarioEvento` diretamente; sem impacto funcional hoje | NFR-7 (carregamento explícito) | Longo prazo |
-| REL-07 | Participante → Evento (implícito) | Isolamento multi-tenant de Participantes é feito via JOIN implícito através de Certificado, sem associação formal | `participanteSSRController.js:34-41` | DT | Médio | Padrão implícito não óbvio; quebra ao refatorar sem conhecer a dependência; acoplamento escondido | FR-37 (scopedEvento) | Médio prazo (documentar no SRS) |
-| REL-08 | Participante ↔ Evento | SRS não explicita cardinalidade entre Participante e Evento; relação é inferida via Certificado | `docs/especificacoes.md` — ausência | ID | Baixo | Ambiguidade para novos desenvolvedores sobre como participantes se relacionam com eventos | – | Atualização do SRS |
-| REL-09 | eventoService.restore() | Restauração de evento restaura todas as associações `UsuarioEvento`, mesmo que o usuário vinculado esteja soft-deleted | `eventoService.js:50-55` | IP | Médio | Ghost associations: usuário deletado pode ter vínculo de evento ativo/restaurado → possível leakage de acesso | FR-32, FR-37 | Curto prazo |
-| REL-10 | scopedEvento / tiposCertificadosOwnership | Middleware `tiposCertificadosOwnership` usa `usuario.getEventos()` sem fallback para plain objects | `tiposCertificadosOwnership.js:31-33` (hard return 500 se método ausente) | IP | Alto | Se auth mudar para retornar plain object ou em contexto diferente, retorna HTTP 500; middleware `scopedEvento` tem o mesmo padrão | FR-37, FR-38 | Curto prazo |
-| REL-11 | Certificado (API pública) | `GET /api/certificados?email=...` retorna certificados sem eager loading de Evento, Participante ou TiposCertificados | `api.js:118-121` | IP | Baixo | Consumidores da API recebem apenas FK IDs sem dados úteis de contexto | FR-53 (consulta pública por email) | Médio prazo |
+| ID     | Relacionamento                            | Descrição                                                                                                                                               | Evidências                                                                       | Tipo | Severidade | Impacto                                                                                                                                                                        | Requisitos Violados                | Destino Recomendado                                   |
+| ------ | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ---- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------- | ----------------------------------------------------- |
+| REL-01 | Certificado → TiposCertificados           | Alias singular `TiposCertificado` usado em lugar do alias declarado `TiposCertificados` (plural)                                                        | `certificadoSSRController.js:110` usa `certificado.TiposCertificado?.texto_base` | BR   | Alto       | Texto interpolado sempre vazio na interface SSR de detalhe do certificado                                                                                                      | FR-39 (interpolação de texto)      | Corrigir no curto prazo                               |
+| REL-02 | Certificado → TiposCertificados           | `pdfService.js` contém workaround `TiposCertificado \|\| TiposCertificados` como defesa contra ambiguidade de alias                                     | `pdfService.js:79`                                                               | IP   | Médio      | Código defensivo que mascara o bug REL-01 no contexto do PDF; pode gerar falsos negativos                                                                                      | FR-42 (geração de PDF)             | Corrigir junto com REL-01                             |
+| REL-03 | Certificado → Participante / Evento       | `Certificado.belongsTo(Participante)` e `Certificado.belongsTo(Evento)` sem alias explícito (`as:`), diferente do padrão usado para `TiposCertificados` | `certificado.js:7-10`                                                            | DT   | Baixo      | Inconsistência de naming: includes com e sem alias na mesma entidade; risco de manutenção                                                                                      | –                                  | Médio prazo                                           |
+| REL-04 | Todos                                     | Nenhuma associação ORM define `onDelete`/`onUpdate`                                                                                                     | Todos os `belongsTo`/`hasMany` em `*.js`                                         | DT   | Médio      | Em operações de hard delete (nunca usadas hoje, mas possíveis via migrations/admin), FKs não propagam ação. Risco latente                                                      | NFR-4 (soft delete)                | Médio prazo                                           |
+| REL-05 | Usuario ↔ Evento (UsuarioEvento)          | Tabela pivot `usuario_eventos` tem `paranoid: true` (soft delete), comportamento atípico para join tables Sequelize                                     | `usuario_eventos.js:25`                                                          | DT   | Médio      | Queries `belongsToMany` podem incluir/excluir linhas soft-deleted dependendo da versão do Sequelize e configuração; restauração de evento restaura associações automaticamente | FR-32 (vinculação N:N)             | Médio prazo (documentar ou remover paranoid da pivot) |
+| REL-06 | Usuario ↔ Evento (UsuarioEvento)          | `UsuarioEvento.associate()` vazio — join table não declara associações para seus parents                                                                | `usuario_eventos.js:8`                                                           | ID   | Baixo      | Impossibilidade de fazer includes a partir de `UsuarioEvento` diretamente; sem impacto funcional hoje                                                                          | NFR-7 (carregamento explícito)     | Longo prazo                                           |
+| REL-07 | Participante → Evento (implícito)         | Isolamento multi-tenant de Participantes é feito via JOIN implícito através de Certificado, sem associação formal                                       | `participanteSSRController.js:34-41`                                             | DT   | Médio      | Padrão implícito não óbvio; quebra ao refatorar sem conhecer a dependência; acoplamento escondido                                                                              | FR-37 (scopedEvento)               | Médio prazo (documentar no SRS)                       |
+| REL-08 | Participante ↔ Evento                     | SRS não explicita cardinalidade entre Participante e Evento; relação é inferida via Certificado                                                         | `docs/especificacoes.md` — ausência                                              | ID   | Baixo      | Ambiguidade para novos desenvolvedores sobre como participantes se relacionam com eventos                                                                                      | –                                  | Atualização do SRS                                    |
+| REL-09 | eventoService.restore()                   | Restauração de evento restaura todas as associações `UsuarioEvento`, mesmo que o usuário vinculado esteja soft-deleted                                  | `eventoService.js:50-55`                                                         | IP   | Médio      | Ghost associations: usuário deletado pode ter vínculo de evento ativo/restaurado → possível leakage de acesso                                                                  | FR-32, FR-37                       | Curto prazo                                           |
+| REL-10 | scopedEvento / tiposCertificadosOwnership | Middleware `tiposCertificadosOwnership` usa `usuario.getEventos()` sem fallback para plain objects                                                      | `tiposCertificadosOwnership.js:31-33` (hard return 500 se método ausente)        | IP   | Alto       | Se auth mudar para retornar plain object ou em contexto diferente, retorna HTTP 500; middleware `scopedEvento` tem o mesmo padrão                                              | FR-37, FR-38                       | Curto prazo                                           |
+| REL-11 | Certificado (API pública)                 | `GET /api/certificados?email=...` retorna certificados sem eager loading de Evento, Participante ou TiposCertificados                                   | `api.js:118-121`                                                                 | IP   | Baixo      | Consumidores da API recebem apenas FK IDs sem dados úteis de contexto                                                                                                          | FR-53 (consulta pública por email) | Médio prazo                                           |
 
 ---
 
@@ -98,7 +98,7 @@ O modelo `Certificado` declara:
 ```js
 Certificado.belongsTo(models.TiposCertificados, {
   foreignKey: 'tipo_certificado_id',
-  as: 'TiposCertificados',   // alias = plural
+  as: 'TiposCertificados', // alias = plural
 })
 ```
 
@@ -116,6 +116,7 @@ Como o alias Sequelize é `TiposCertificados` (plural), `certificado.TiposCertif
 **Evidência de reação no código:**
 
 `pdfService.js:79` contém workaround defensivo:
+
 ```js
 const tipo = certificado.TiposCertificado || certificado.TiposCertificados
 ```
@@ -133,6 +134,7 @@ Esta defesa mascara o problema no PDF, mas não corrige a view SSR.
 **Descrição:**
 
 `eventoService.restore()`:
+
 ```js
 await evento.restore()
 await UsuarioEvento.restore({ where: { evento_id: id } })
@@ -153,9 +155,12 @@ Quando um evento é restaurado, todas as associações `UsuarioEvento` para aque
 **Descrição:**
 
 `tiposCertificadosOwnership.js`:
+
 ```js
 if (typeof usuario.getEventos !== 'function') {
-  return res.status(500).json({ error: 'Usuário sem método getEventos (modelo N:N)' })
+  return res
+    .status(500)
+    .json({ error: 'Usuário sem método getEventos (modelo N:N)' })
 }
 ```
 
@@ -223,12 +228,12 @@ Documentar:
 
 ## 5. Itens para Validação Humana
 
-| Item | Relacionamento | Questão | Risco |
-|---|---|---|---|
-| VH-01 | UsuarioEvento (paranoid) | É intencional manter `paranoid: true` na tabela pivot? Sequelize pode ter comportamentos sutis em N:N com soft delete na pivot | Médio |
-| VH-02 | Participante ↔ Evento | A cardinalidade implícita (Participante→Evento via Certificado) é suficiente ou é necessária uma relação direta N:N para relatórios futuros? | Médio |
-| VH-03 | onDelete / onUpdate | Qual é o comportamento esperado se um hard delete for executado diretamente no banco, fora do ORM? FK violation ou cascade? | Alto |
-| VH-04 | eventoService.restore() | A restauração automática de vínculos `usuario_eventos` é comportamento desejado ou deve ser manual? | Alto |
+| Item  | Relacionamento           | Questão                                                                                                                                      | Risco |
+| ----- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| VH-01 | UsuarioEvento (paranoid) | É intencional manter `paranoid: true` na tabela pivot? Sequelize pode ter comportamentos sutis em N:N com soft delete na pivot               | Médio |
+| VH-02 | Participante ↔ Evento    | A cardinalidade implícita (Participante→Evento via Certificado) é suficiente ou é necessária uma relação direta N:N para relatórios futuros? | Médio |
+| VH-03 | onDelete / onUpdate      | Qual é o comportamento esperado se um hard delete for executado diretamente no banco, fora do ORM? FK violation ou cascade?                  | Alto  |
+| VH-04 | eventoService.restore()  | A restauração automática de vínculos `usuario_eventos` é comportamento desejado ou deve ser manual?                                          | Alto  |
 
 ---
 
@@ -261,18 +266,18 @@ Nenhuma associação do ORM define `onDelete` / `onUpdate`. Isso significa que o
 
 ## Resumo Executivo
 
-| Categoria | Quantidade |
-|---|---|
-| Bug Real (BR) | 1 (REL-01) |
-| Implementação Parcial (IP) | 3 (REL-02, REL-09, REL-10) |
-| Dívida Técnica (DT) | 5 (REL-03, REL-04, REL-05, REL-07, REL-11) |
-| Inconsistência Documental (ID) | 2 (REL-06, REL-08) |
-| **Total** | **11** |
+| Categoria                      | Quantidade                                 |
+| ------------------------------ | ------------------------------------------ |
+| Bug Real (BR)                  | 1 (REL-01)                                 |
+| Implementação Parcial (IP)     | 3 (REL-02, REL-09, REL-10)                 |
+| Dívida Técnica (DT)            | 5 (REL-03, REL-04, REL-05, REL-07, REL-11) |
+| Inconsistência Documental (ID) | 2 (REL-06, REL-08)                         |
+| **Total**                      | **11**                                     |
 
-| Severidade | Quantidade |
-|---|---|
-| Alto | 2 (REL-01, REL-10) |
-| Médio | 5 (REL-02, REL-04, REL-05, REL-07, REL-09) |
-| Baixo | 4 (REL-03, REL-06, REL-08, REL-11) |
+| Severidade | Quantidade                                 |
+| ---------- | ------------------------------------------ |
+| Alto       | 2 (REL-01, REL-10)                         |
+| Médio      | 5 (REL-02, REL-04, REL-05, REL-07, REL-09) |
+| Baixo      | 4 (REL-03, REL-06, REL-08, REL-11)         |
 
 **Ação imediata recomendada:** Corrigir REL-01 (bug de alias em `certificadoSSRController.js`) e REL-09 (ghost associations na restauração de evento). Ambos têm impacto funcional direto.

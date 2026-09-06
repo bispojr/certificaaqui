@@ -181,26 +181,27 @@ Services afetados (`certificadoService`, `participanteService`, `tiposCertificad
 
 ## Riscos
 
-| Risco | Probabilidade | Impacto | Mitigação |
-|-------|--------------|---------|----------|
-| Controller omite repasse de `eventoIds` | Média | Crítico — acesso cross-tenant silencioso | Testes de integração cobrindo cada endpoint com usuário de escopo restrito |
-| Adoção incompleta da abstração de `eventoIds` definida pela ADR-011 em fluxos SSR | Alta | Blocker de implementação | Implementar em fases: API primeiro; SSR após convergência total ao contrato da ADR-011 |
-| Participantes sem scoping real enquanto ADR-010 não for decidida | Alta | Alto — STF-004 permanece aberto | Documentar explicitamente como limitação conhecida até a decisão |
-| Testes existentes com assinaturas antigas de service | Alta | Falhas de regressão | Atualizar testes junto com a refatoração do service |
-| Admin com `eventoIds = null` não tratado em todos os services | Média | Queries sem filtro retornam todos os registros — correto para admin, mas requer cobertura explícita | Definir convenção e testar caminho do admin em cada service |
+| Risco                                                                             | Probabilidade | Impacto                                                                                             | Mitigação                                                                              |
+| --------------------------------------------------------------------------------- | ------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Controller omite repasse de `eventoIds`                                           | Média         | Crítico — acesso cross-tenant silencioso                                                            | Testes de integração cobrindo cada endpoint com usuário de escopo restrito             |
+| Adoção incompleta da abstração de `eventoIds` definida pela ADR-011 em fluxos SSR | Alta          | Blocker de implementação                                                                            | Implementar em fases: API primeiro; SSR após convergência total ao contrato da ADR-011 |
+| Participantes sem scoping real enquanto ADR-010 não for decidida                  | Alta          | Alto — STF-004 permanece aberto                                                                     | Documentar explicitamente como limitação conhecida até a decisão                       |
+| Testes existentes com assinaturas antigas de service                              | Alta          | Falhas de regressão                                                                                 | Atualizar testes junto com a refatoração do service                                    |
+| Admin com `eventoIds = null` não tratado em todos os services                     | Média         | Queries sem filtro retornam todos os registros — correto para admin, mas requer cobertura explícita | Definir convenção e testar caminho do admin em cada service                            |
 
 ---
 
 ## Dependências
 
-| ADR / Decisão | Relação | Motivo |
-|---------------|---------|--------|
-| **ADR-011** (Contrato unificado de `req.usuario`) | **Pré-requisito para SSR** | A extração de `eventoIds` no middleware requer contrato unificado para funcionar em SSR sem dependência de `getEventos()` |
-| **ADR-010** (Scoping de Participantes sem associação direta com Evento) | **Pré-requisito para domínio de participantes** | Sem decisão sobre a arquitetura de ownership de participantes, STF-004 não pode ser corrigido |
-| **ADR-005** (Vínculo Usuário-Evento N:N) | Existente — mantida | A tabela `usuario_eventos` permanece como fonte de verdade dos vínculos |
-| **ADR-001** (ORM Sequelize) | Existente — mantida | Services continuam usando Sequelize para queries; o filtro `WHERE evento_id IN [...]` usa `Op.in` do Sequelize |
+| ADR / Decisão                                                           | Relação                                         | Motivo                                                                                                                    |
+| ----------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **ADR-011** (Contrato unificado de `req.usuario`)                       | **Pré-requisito para SSR**                      | A extração de `eventoIds` no middleware requer contrato unificado para funcionar em SSR sem dependência de `getEventos()` |
+| **ADR-010** (Scoping de Participantes sem associação direta com Evento) | **Pré-requisito para domínio de participantes** | Sem decisão sobre a arquitetura de ownership de participantes, STF-004 não pode ser corrigido                             |
+| **ADR-005** (Vínculo Usuário-Evento N:N)                                | Existente — mantida                             | A tabela `usuario_eventos` permanece como fonte de verdade dos vínculos                                                   |
+| **ADR-001** (ORM Sequelize)                                             | Existente — mantida                             | Services continuam usando Sequelize para queries; o filtro `WHERE evento_id IN [...]` usa `Op.in` do Sequelize            |
 
 A implementação desta ADR **bloqueia** as seguintes specs identificadas na triagem:
+
 - SPEC-MT-01 (Enforcement de Multi-tenancy por Domínio) — dependente desta ADR e da ADR-011
 - SPEC-CERT-01 (Correção de Integridade do Serviço de Certificados) — parcialmente bloqueada por esta ADR
 
@@ -208,15 +209,15 @@ A implementação desta ADR **bloqueia** as seguintes specs identificadas na tri
 
 ## Relação com SRS
 
-| Requisito | Relação |
-|-----------|---------|
-| **FR-37** | Requisito central. FR-37 foi reescrito no SRS (2026-05-16) para descrever o comportamento esperado — gestores e monitores operam exclusivamente sobre dados dos eventos aos quais estão vinculados, em toda operação — sem mencionar o mecanismo de implementação. Esta ADR implementa esse comportamento pelo enforcement no service layer. |
-| **FR-62** | Novo FR adicionado ao SRS (2026-05-16): listagem de eventos retorna apenas os eventos vinculados ao gestor/monitor autenticado. Admin visualiza todos. Resolve a pendência da Observação 3 desta ADR. |
-| **FR-34** | Admin tem acesso irrestrito — preservado. Services interpretam `eventoIds = null` como ausência de restrição. |
-| **FR-35, FR-36** | Gestor e monitor operam dentro de seus eventos — o enforcement desta ADR implementa esse isolamento para ambos. |
-| **FR-46** | Gestores operam apenas sobre tipos de certificados de seus eventos — enforcement desta ADR inclui `tiposCertificadosService`. |
-| **NFR-1** | Segurança — Controle de Acesso. Esta ADR é requisito para conformidade com NFR-1 em todos os domínios escopados. |
-| **NFR-6** | Arquitetura em camadas. A decisão de aplicar o enforcement no service mantém lógica de negócio fora das rotas e controllers, alinhada com NFR-6. |
+| Requisito        | Relação                                                                                                                                                                                                                                                                                                                                      |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **FR-37**        | Requisito central. FR-37 foi reescrito no SRS (2026-05-16) para descrever o comportamento esperado — gestores e monitores operam exclusivamente sobre dados dos eventos aos quais estão vinculados, em toda operação — sem mencionar o mecanismo de implementação. Esta ADR implementa esse comportamento pelo enforcement no service layer. |
+| **FR-62**        | Novo FR adicionado ao SRS (2026-05-16): listagem de eventos retorna apenas os eventos vinculados ao gestor/monitor autenticado. Admin visualiza todos. Resolve a pendência da Observação 3 desta ADR.                                                                                                                                        |
+| **FR-34**        | Admin tem acesso irrestrito — preservado. Services interpretam `eventoIds = null` como ausência de restrição.                                                                                                                                                                                                                                |
+| **FR-35, FR-36** | Gestor e monitor operam dentro de seus eventos — o enforcement desta ADR implementa esse isolamento para ambos.                                                                                                                                                                                                                              |
+| **FR-46**        | Gestores operam apenas sobre tipos de certificados de seus eventos — enforcement desta ADR inclui `tiposCertificadosService`.                                                                                                                                                                                                                |
+| **NFR-1**        | Segurança — Controle de Acesso. Esta ADR é requisito para conformidade com NFR-1 em todos os domínios escopados.                                                                                                                                                                                                                             |
+| **NFR-6**        | Arquitetura em camadas. A decisão de aplicar o enforcement no service mantém lógica de negócio fora das rotas e controllers, alinhada com NFR-6.                                                                                                                                                                                             |
 
 **~~Ambiguidade identificada no SRS~~ — Resolvida (2026-05-16):**
 FR-37 foi reescrito para descrever o comportamento esperado (isolamento de dados por evento em todas as operações), sem mencionar o mecanismo de implementação. FR-62 foi adicionado definindo o escopo de listagem de eventos para gestor/monitor.
@@ -244,6 +245,7 @@ FR-37 foi reescrito para descrever o comportamento esperado (isolamento de dados
 7. **Coexistência com `tiposCertificadosOwnership`:** o middleware `tiposCertificadosOwnership` também realiza verificações de ownership de forma ad hoc. Sua relação com o novo padrão de enforcement deve ser explicitada — se mantido, deve ser refatorado para usar o mesmo canal de `eventoIds`.
 
 **Esta ADR não cobre:**
+
 - A definição do contrato canônico de `req.usuario` entre API e SSR (ADR-011).
 - A decisão de ownership do domínio de participantes (ADR-010).
 - Rate limiting em rotas públicas (SPEC-PUBLICO-01).

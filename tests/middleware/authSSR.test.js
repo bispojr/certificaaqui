@@ -33,6 +33,15 @@ describe('authSSR middleware', () => {
       isGestor: false,
     })
     expect(res.locals.usuario).toEqual(req.usuario)
+    expect(req.principal).toEqual({
+      subjectId: 1,
+      role: 'admin',
+      authChannel: 'ssr_cookie',
+      sessionId: null,
+      tokenId: 'jwt:1',
+      tenantScopeMode: 'global',
+    })
+    expect(res.locals.principal).toEqual(req.principal)
     expect(next).toHaveBeenCalled()
   })
 
@@ -55,6 +64,15 @@ describe('authSSR middleware', () => {
       isGestor: true,
     })
     expect(res.locals.usuario).toEqual(req.usuario)
+    expect(req.principal).toEqual({
+      subjectId: 2,
+      role: 'gestor',
+      authChannel: 'ssr_cookie',
+      sessionId: null,
+      tokenId: 'jwt:2',
+      tenantScopeMode: 'scoped_events',
+    })
+    expect(res.locals.principal).toEqual(req.principal)
     expect(next).toHaveBeenCalled()
   })
 
@@ -64,7 +82,9 @@ describe('authSSR middleware', () => {
     const next = jest.fn()
     await authSSR(req, res, next)
     expect(req.usuario).toBeNull()
+    expect(req.principal).toBeNull()
     expect(res.locals.usuario).toBeNull()
+    expect(res.locals.principal).toBeNull()
     expect(next).toHaveBeenCalled()
   })
 
@@ -77,7 +97,9 @@ describe('authSSR middleware', () => {
     })
     await authSSR(req, res, next)
     expect(req.usuario).toBeNull()
+    expect(req.principal).toBeNull()
     expect(res.locals.usuario).toBeNull()
+    expect(res.locals.principal).toBeNull()
     expect(next).toHaveBeenCalled()
   })
 
@@ -89,7 +111,9 @@ describe('authSSR middleware', () => {
     Usuario.findByPk.mockResolvedValue(null)
     await authSSR(req, res, next)
     expect(req.usuario).toBeNull()
+    expect(req.principal).toBeNull()
     expect(res.locals.usuario).toBeNull()
+    expect(res.locals.principal).toBeNull()
     expect(next).toHaveBeenCalled()
   })
 })

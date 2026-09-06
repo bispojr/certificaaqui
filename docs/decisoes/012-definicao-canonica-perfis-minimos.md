@@ -58,13 +58,13 @@ Exceções por superfície só são válidas quando formalizadas em ADR compleme
 ## Alternativas Consideradas
 
 1. Perfil unificado por operação de negócio, independente da superfície (adotada).
-Trade-off: aumenta consistência arquitetural e auditabilidade, com custo de revisão de alinhamento em fluxos já divergentes.
+   Trade-off: aumenta consistência arquitetural e auditabilidade, com custo de revisão de alinhamento em fluxos já divergentes.
 
 2. Perfis distintos por superfície, desde que documentados no SRS com justificativa explícita.
-Trade-off: preserva flexibilidade localizada, porém eleva complexidade de governança, risco de drift entre canais e custo de validação contínua.
+   Trade-off: preserva flexibilidade localizada, porém eleva complexidade de governança, risco de drift entre canais e custo de validação contínua.
 
 3. Manter divergências sem regra formal, tratando ajustes de RBAC como decisão local por endpoint.
-Trade-off: menor atrito de curto prazo, porém incompatível com controle arquitetural de segurança e com rastreabilidade de requisitos.
+   Trade-off: menor atrito de curto prazo, porém incompatível com controle arquitetural de segurança e com rastreabilidade de requisitos.
 
 ## Consequências
 

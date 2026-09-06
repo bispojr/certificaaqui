@@ -25,7 +25,7 @@ describe('View: certificados/validar-resultado.hbs', () => {
         created_at: '2026-03-26',
         Participante: { nomeCompleto: 'Maria', email: 'maria@teste.com' },
         Evento: { nome: 'Evento Teste' },
-          TiposCertificados: { descricao: 'Palestrante' },
+        TiposCertificados: { descricao: 'Palestrante' },
       },
     })
     expect(html).toMatch(/✔ Certificado Válido/)
@@ -39,8 +39,8 @@ describe('View: certificados/validar-resultado.hbs', () => {
     expect(html).toMatch(
       /\d{2}\/\d{2}\/\d{2}, \d{2}h\d{2}, Horário de Brasília\./,
     )
-      // Garante que o tipo de certificado aparece
-      expect(html).toMatch(/Tipo de Certificado[\s\S]*Palestrante/)
+    // Garante que o tipo de certificado aparece
+    expect(html).toMatch(/Tipo de Certificado[\s\S]*Palestrante/)
     expect(html).toMatch(/Tipo de Certificado[\s\S]*Palestrante/)
     expect(html).toMatch(/href='\/api\/certificados\/42\/pdf'/)
     expect(html).not.toMatch(/Inválido/)

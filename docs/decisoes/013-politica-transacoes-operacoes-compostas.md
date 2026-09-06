@@ -41,13 +41,13 @@ Esta ADR não define roteiro de implementação, nem detalha assinatura de méto
 ## Alternativas Consideradas
 
 1. Transações em todas as operações compostas no service layer (adotada).
-Trade-off: maior garantia de integridade e previsibilidade sob concorrência, com custo potencial de contenção de locks e aumento de latência em fluxos de escrita.
+   Trade-off: maior garantia de integridade e previsibilidade sob concorrência, com custo potencial de contenção de locks e aumento de latência em fluxos de escrita.
 
 2. Transações apenas em operações consideradas críticas (certificados e vínculos usuário-evento).
-Trade-off: menor custo operacional de curto prazo, porém mantém lacunas de consistência e risco de regressão em outros domínios que também executam mutações compostas.
+   Trade-off: menor custo operacional de curto prazo, porém mantém lacunas de consistência e risco de regressão em outros domínios que também executam mutações compostas.
 
 3. Uso de sequência de banco para geração de código, sem política transacional ampla.
-Trade-off: reduz uma classe específica de corrida na geração de código, mas não resolve falhas de atomicidade em cascatas de soft delete/restore nem em outras operações compostas multi-entidade.
+   Trade-off: reduz uma classe específica de corrida na geração de código, mas não resolve falhas de atomicidade em cascatas de soft delete/restore nem em outras operações compostas multi-entidade.
 
 ## Consequências
 

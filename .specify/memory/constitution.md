@@ -4,19 +4,20 @@ SYNC IMPACT REPORT
 Version change: (template) → 1.0.0
 Modified principles: N/A (initial ratification from template)
 Added sections:
-  - Core Principles (5 principles)
-  - Technology Stack
-  - Development Workflow
-  - Governance
-Removed sections: N/A
-Templates updated:
-  - .specify/templates/plan-template.md ✅ Constitution Check gates aligned
-  - .specify/templates/spec-template.md ✅ Requirements section aligned
-  - .specify/templates/tasks-template.md ✅ Task structure aligned
-Follow-up TODOs: none
--->
 
-# Certifique-me Constitution
+- Core Principles (5 principles)
+- Technology Stack
+- Development Workflow
+- Governance
+  Removed sections: N/A
+  Templates updated:
+- .specify/templates/plan-template.md ✅ Constitution Check gates aligned
+- .specify/templates/spec-template.md ✅ Requirements section aligned
+- .specify/templates/tasks-template.md ✅ Task structure aligned
+  Follow-up TODOs: none
+  -->
+
+# CertificaAqui Constitution
 
 ## Core Principles
 
@@ -30,6 +31,7 @@ timestamp no formato `YYYY-MM-DD HH:mm (BRT)` obtido do sistema operacional.
 ### II. Test-First Development (NON-NEGOTIABLE)
 
 TDD é mandatório para toda funcionalidade nova:
+
 - Testes DEVEM ser escritos antes da implementação.
 - O ciclo Red → Green → Refactor DEVE ser respeitado.
 - A suíte completa (`npm run check`) DEVE passar antes de qualquer commit.
@@ -39,6 +41,7 @@ TDD é mandatório para toda funcionalidade nova:
 ### III. Arquitetura MVC em Camadas
 
 O sistema DEVE seguir separação estrita de responsabilidades:
+
 - `models` — entidades e acesso a dados (Sequelize).
 - `services` — regras de negócio; sem referências a `req`/`res`.
 - `controllers` — orquestração HTTP; delega lógica para services.

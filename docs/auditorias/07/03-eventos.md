@@ -9,47 +9,47 @@
 
 ## Fontes investigadas
 
-| Camada | Arquivos |
-|---|---|
-| Routes (API) | `src/routes/eventos.js` |
-| Routes (SSR) | `src/routes/admin.js` (seção eventos) |
-| Controllers (API) | `src/controllers/eventoController.js` |
-| Controllers (SSR) | `src/controllers/eventoSSRController.js` |
-| Service | `src/services/eventoService.js` |
-| Model | `src/models/evento.js`, `src/models/usuario_eventos.js`, `src/models/index.js` |
-| Middlewares | `src/middlewares/auth.js`, `src/middlewares/authSSR.js`, `src/middlewares/rbac.js`, `src/middlewares/scopedEvento.js`, `src/middlewares/uploadTemplate.js` |
-| Validators | `src/validators/evento.js` |
-| Migrations | `20260311175950-create-eventos.js`, `20260416092527-add-url-template-base-to-eventos.js`, `20260416201114-add-layout-fields-to-eventos.js`, `20260313190000-create-usuario_eventos.js` |
-| Views | `views/admin/eventos/index.hbs`, `views/admin/eventos/form.hbs` |
-| Tests | `tests/routes/eventos.test.js`, `tests/routes/eventos.gestor.test.js`, `tests/services/eventoService.test.js`, `tests/routes/adminEntidades.test.js` |
-| SRS | `docs/especificacoes.md` |
+| Camada            | Arquivos                                                                                                                                                                               |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Routes (API)      | `src/routes/eventos.js`                                                                                                                                                                |
+| Routes (SSR)      | `src/routes/admin.js` (seção eventos)                                                                                                                                                  |
+| Controllers (API) | `src/controllers/eventoController.js`                                                                                                                                                  |
+| Controllers (SSR) | `src/controllers/eventoSSRController.js`                                                                                                                                               |
+| Service           | `src/services/eventoService.js`                                                                                                                                                        |
+| Model             | `src/models/evento.js`, `src/models/usuario_eventos.js`, `src/models/index.js`                                                                                                         |
+| Middlewares       | `src/middlewares/auth.js`, `src/middlewares/authSSR.js`, `src/middlewares/rbac.js`, `src/middlewares/scopedEvento.js`, `src/middlewares/uploadTemplate.js`                             |
+| Validators        | `src/validators/evento.js`                                                                                                                                                             |
+| Migrations        | `20260311175950-create-eventos.js`, `20260416092527-add-url-template-base-to-eventos.js`, `20260416201114-add-layout-fields-to-eventos.js`, `20260313190000-create-usuario_eventos.js` |
+| Views             | `views/admin/eventos/index.hbs`, `views/admin/eventos/form.hbs`                                                                                                                        |
+| Tests             | `tests/routes/eventos.test.js`, `tests/routes/eventos.gestor.test.js`, `tests/services/eventoService.test.js`, `tests/routes/adminEntidades.test.js`                                   |
+| SRS               | `docs/especificacoes.md`                                                                                                                                                               |
 
 ---
 
 # 1. Matriz de Achados
 
-| ID | Descrição | Severidade | Tipo | Impacto | Evidência Principal | FR/NFR |
-|---|---|---|---|---|---|---|
-| EVT-01 | `rbac('monitor')` em rotas de mutação de eventos via API permite gestor e monitor alterar eventos | Crítica | VU | Gestor/monitor podem atualizar, deletar e restaurar eventos sem autorização | `src/routes/eventos.js` linhas 140–169 | FR-34, FR-35, FR-36 |
-| EVT-02 | `scopedEvento` bloqueia efetivamente criação de eventos por não-admin via API (por ausência de `evento_id` no body) com mensagem enganosa | Alta | BR | `POST /eventos` retorna 403 para qualquer non-admin, mas a rota declara `rbac('monitor')` sugerindo que seria permitido | `src/middlewares/scopedEvento.js` linhas 36–40; `src/routes/eventos.js` linha 139 | FR-34, FR-37 |
-| EVT-03 | `eventoController.update()` retorna HTTP 200 com corpo `null` quando o evento não é encontrado | Alta | BR | Cliente não recebe 404 em recurso inexistente; detecta falha apenas por corpo vazio | `src/controllers/eventoController.js` linhas 37–44; `src/services/eventoService.js` linhas 36–40 | NFR-6 |
-| EVT-04 | `eventoController.restore()` retorna HTTP 200 com corpo `null` quando o evento não é encontrado | Alta | BR | Mesmo problema de EVT-03 para a rota de restauração | `src/controllers/eventoController.js` linhas 51–57; `src/services/eventoService.js` linhas 52–57 | NFR-6 |
-| EVT-05 | `eventoController.delete()` retorna HTTP 204 quando o evento não existe | Média | BR | Cliente não consegue distinguir deleção bem-sucedida de recurso inexistente | `src/controllers/eventoController.js` linhas 44–50; `src/services/eventoService.js` linhas 43–52 | NFR-6 |
-| EVT-06 | Zod valida `url_template_base` como URL (`z.string().url()`), mas FR-44 e o modelo de dados especificam que o campo armazena uma _key_ (caminho) do R2 | Alta | BR | Via API, nenhuma key R2 válida pode ser gravada nesse campo (falharia na validação Zod); formato diverge da SSR que armazena key corretamente | `src/validators/evento.js` linha 7; `src/controllers/eventoSSRController.js` linhas 12–21 | FR-44 |
-| EVT-07 | Campos de layout (`texto_x`, `texto_y`, `validacao_x`, `validacao_y`) ausentes do schema Zod; Zod remove campos desconhecidos | Alta | GI | FR-48 é inacessível via API — coordenadas de layout do PDF não podem ser configuradas por essa superfície | `src/validators/evento.js`; comentário de `eventoSSRController.js` que converte esses campos | FR-48 |
-| EVT-08 | `eventoSSRController.index` consulta `Evento.findAll()` e `Evento.findAll()` com paranoid:false diretamente, bypassando a camada de service | Média | VA | Lógica de negócio duplicada entre service e controller SSR; violação de NFR-6 | `src/controllers/eventoSSRController.js` linhas 37–74 | NFR-6 |
-| EVT-09 | `scopedEvento` injeta `req.query.evento_id` na listagem mas `eventoService.findAll` ignora completamente esse campo e aplica seu próprio filtro via `usuario.id` | Média | VA | Middleware e service aplicam filtro de escopo de maneiras independentes e redundantes; qualquer divergência futura entre os dois pode causar bugs de multi-tenant | `src/middlewares/scopedEvento.js` linhas 24–30; `src/services/eventoService.js` linhas 9–20 | FR-37 |
-| EVT-10 | `rbac` middleware retorna JSON 403 em qualquer contexto, inclusive SSR | Média | VA | Gestors que clicam em "Editar" / "Remover" na SSR recebem JSON bruto em vez de uma página de erro adequada | `src/middlewares/rbac.js` linhas 17–19; `src/routes/admin.js` linhas 68-78 | FR-49 |
-| EVT-11 | View `eventos/index.hbs` exibe botões "Editar", "Remover" e "+ Novo Evento" para todos os gestors autenticados, mas as respectivas rotas requerem `rbac('admin')` | Média | VA | Gestor vê botões de ação que resultam em 403 JSON ao serem clicados; experiência de usuário confusa | `views/admin/eventos/index.hbs` linhas 33–46 e 1–5; `src/routes/admin.js` linhas 68–78 | FR-49 |
-| EVT-12 | `eventoService.destroy()` é método órfão (não chamado por nenhum controller) que não inclui cascade para `UsuarioEvento` | Baixa | DT | Risco de confusão com `eventoService.delete()` que tem comportamento diferente (inclui cascade) | `src/services/eventoService.js` linhas 42–46 | NFR-6 |
-| EVT-13 | `eventoService.restore()` restaura TODOS os registros `UsuarioEvento` do evento, incluindo vínculos removidos individualmente antes do soft-delete do evento | Média | IP | Semântica incorreta: restaurar um evento também restaura vínculos de usuários que tinham sido desvinculados do evento por razão própria | `src/services/eventoService.js` linhas 52–57 | FR-9, FR-32 |
-| EVT-14 | `require('../../src/models')` inline dentro dos métodos `delete` e `restore` do service | Baixa | DT | Antipadrão: imports implícitos dentro de funções dificultam análise de dependências e mocking em testes | `src/services/eventoService.js` linhas 48–50, 56–57 | NFR-6 |
-| EVT-15 | Modelo Sequelize `Evento` não valida `nome` mínimo de 3 caracteres nem `ano >= 2000` a nível de model | Média | GI | Via SSR (sem Zod), eventos podem ser criados com nome vazio/curto ou ano inválido (ex: `ano=1999`) | `src/models/evento.js` linhas 26–30, 34–38; `src/validators/evento.js` apenas na API | FR-6, FR-7 |
-| EVT-16 | `authSSR` popula `req.usuario` como objeto simples sem o método `getEventos()` da instância Sequelize | Média | VA | Qualquer uso futuro de `scopedEvento` em rotas SSR retornaria HTTP 500 imediato | `src/middlewares/authSSR.js` linhas 47–55; `src/middlewares/scopedEvento.js` linhas 4–9 | NFR-1, FR-37 |
-| EVT-17 | FR-44 é internamente ambíguo: declara `url_template_base` como "URL válida" mas a seção de modelo de dados especifica "key (caminho) do Cloudflare R2" | Baixa | ID | Gera implementação contraditória entre o validator Zod (valida como URL) e o controller SSR (armazena key) | `docs/especificacoes.md` FR-44 e tabela `eventos` | FR-44 |
-| EVT-18 | SRS não especifica o comportamento do API para campos de layout (FR-48) — se são setáveis via API ou exclusivamente via SSR | Baixa | AM | Não é possível determinar por especificação se a ausência no schema Zod é intencional ou omissão | `docs/especificacoes.md` FR-48 | FR-48 |
-| EVT-19 | SRS não especifica a sensibilidade a maiúsculas/minúsculas na unicidade de `codigo_base` | Baixa | AM | PostgreSQL usa unicidade case-sensitive por default; `EDU` e `edu` seriam tratados como diferentes, mas o comportamento esperado não está documentado | `src/models/evento.js` linhas 31–41; migration `20260311175950` | FR-8 |
-| EVT-20 | Swagger schema `Evento` em `app.js` não documenta os campos `url_template_base`, `texto_x`, `texto_y`, `validacao_x`, `validacao_y` | Baixa | DT | Documentação da API incompleta para campos introduzidos nas migrations `20260416*` | `app.js` linhas 114–128 | FR-44, FR-48 |
+| ID     | Descrição                                                                                                                                                         | Severidade | Tipo | Impacto                                                                                                                                                           | Evidência Principal                                                                              | FR/NFR              |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------- |
+| EVT-01 | `rbac('monitor')` em rotas de mutação de eventos via API permite gestor e monitor alterar eventos                                                                 | Crítica    | VU   | Gestor/monitor podem atualizar, deletar e restaurar eventos sem autorização                                                                                       | `src/routes/eventos.js` linhas 140–169                                                           | FR-34, FR-35, FR-36 |
+| EVT-02 | `scopedEvento` bloqueia efetivamente criação de eventos por não-admin via API (por ausência de `evento_id` no body) com mensagem enganosa                         | Alta       | BR   | `POST /eventos` retorna 403 para qualquer non-admin, mas a rota declara `rbac('monitor')` sugerindo que seria permitido                                           | `src/middlewares/scopedEvento.js` linhas 36–40; `src/routes/eventos.js` linha 139                | FR-34, FR-37        |
+| EVT-03 | `eventoController.update()` retorna HTTP 200 com corpo `null` quando o evento não é encontrado                                                                    | Alta       | BR   | Cliente não recebe 404 em recurso inexistente; detecta falha apenas por corpo vazio                                                                               | `src/controllers/eventoController.js` linhas 37–44; `src/services/eventoService.js` linhas 36–40 | NFR-6               |
+| EVT-04 | `eventoController.restore()` retorna HTTP 200 com corpo `null` quando o evento não é encontrado                                                                   | Alta       | BR   | Mesmo problema de EVT-03 para a rota de restauração                                                                                                               | `src/controllers/eventoController.js` linhas 51–57; `src/services/eventoService.js` linhas 52–57 | NFR-6               |
+| EVT-05 | `eventoController.delete()` retorna HTTP 204 quando o evento não existe                                                                                           | Média      | BR   | Cliente não consegue distinguir deleção bem-sucedida de recurso inexistente                                                                                       | `src/controllers/eventoController.js` linhas 44–50; `src/services/eventoService.js` linhas 43–52 | NFR-6               |
+| EVT-06 | Zod valida `url_template_base` como URL (`z.string().url()`), mas FR-44 e o modelo de dados especificam que o campo armazena uma _key_ (caminho) do R2            | Alta       | BR   | Via API, nenhuma key R2 válida pode ser gravada nesse campo (falharia na validação Zod); formato diverge da SSR que armazena key corretamente                     | `src/validators/evento.js` linha 7; `src/controllers/eventoSSRController.js` linhas 12–21        | FR-44               |
+| EVT-07 | Campos de layout (`texto_x`, `texto_y`, `validacao_x`, `validacao_y`) ausentes do schema Zod; Zod remove campos desconhecidos                                     | Alta       | GI   | FR-48 é inacessível via API — coordenadas de layout do PDF não podem ser configuradas por essa superfície                                                         | `src/validators/evento.js`; comentário de `eventoSSRController.js` que converte esses campos     | FR-48               |
+| EVT-08 | `eventoSSRController.index` consulta `Evento.findAll()` e `Evento.findAll()` com paranoid:false diretamente, bypassando a camada de service                       | Média      | VA   | Lógica de negócio duplicada entre service e controller SSR; violação de NFR-6                                                                                     | `src/controllers/eventoSSRController.js` linhas 37–74                                            | NFR-6               |
+| EVT-09 | `scopedEvento` injeta `req.query.evento_id` na listagem mas `eventoService.findAll` ignora completamente esse campo e aplica seu próprio filtro via `usuario.id`  | Média      | VA   | Middleware e service aplicam filtro de escopo de maneiras independentes e redundantes; qualquer divergência futura entre os dois pode causar bugs de multi-tenant | `src/middlewares/scopedEvento.js` linhas 24–30; `src/services/eventoService.js` linhas 9–20      | FR-37               |
+| EVT-10 | `rbac` middleware retorna JSON 403 em qualquer contexto, inclusive SSR                                                                                            | Média      | VA   | Gestors que clicam em "Editar" / "Remover" na SSR recebem JSON bruto em vez de uma página de erro adequada                                                        | `src/middlewares/rbac.js` linhas 17–19; `src/routes/admin.js` linhas 68-78                       | FR-49               |
+| EVT-11 | View `eventos/index.hbs` exibe botões "Editar", "Remover" e "+ Novo Evento" para todos os gestors autenticados, mas as respectivas rotas requerem `rbac('admin')` | Média      | VA   | Gestor vê botões de ação que resultam em 403 JSON ao serem clicados; experiência de usuário confusa                                                               | `views/admin/eventos/index.hbs` linhas 33–46 e 1–5; `src/routes/admin.js` linhas 68–78           | FR-49               |
+| EVT-12 | `eventoService.destroy()` é método órfão (não chamado por nenhum controller) que não inclui cascade para `UsuarioEvento`                                          | Baixa      | DT   | Risco de confusão com `eventoService.delete()` que tem comportamento diferente (inclui cascade)                                                                   | `src/services/eventoService.js` linhas 42–46                                                     | NFR-6               |
+| EVT-13 | `eventoService.restore()` restaura TODOS os registros `UsuarioEvento` do evento, incluindo vínculos removidos individualmente antes do soft-delete do evento      | Média      | IP   | Semântica incorreta: restaurar um evento também restaura vínculos de usuários que tinham sido desvinculados do evento por razão própria                           | `src/services/eventoService.js` linhas 52–57                                                     | FR-9, FR-32         |
+| EVT-14 | `require('../../src/models')` inline dentro dos métodos `delete` e `restore` do service                                                                           | Baixa      | DT   | Antipadrão: imports implícitos dentro de funções dificultam análise de dependências e mocking em testes                                                           | `src/services/eventoService.js` linhas 48–50, 56–57                                              | NFR-6               |
+| EVT-15 | Modelo Sequelize `Evento` não valida `nome` mínimo de 3 caracteres nem `ano >= 2000` a nível de model                                                             | Média      | GI   | Via SSR (sem Zod), eventos podem ser criados com nome vazio/curto ou ano inválido (ex: `ano=1999`)                                                                | `src/models/evento.js` linhas 26–30, 34–38; `src/validators/evento.js` apenas na API             | FR-6, FR-7          |
+| EVT-16 | `authSSR` popula `req.usuario` como objeto simples sem o método `getEventos()` da instância Sequelize                                                             | Média      | VA   | Qualquer uso futuro de `scopedEvento` em rotas SSR retornaria HTTP 500 imediato                                                                                   | `src/middlewares/authSSR.js` linhas 47–55; `src/middlewares/scopedEvento.js` linhas 4–9          | NFR-1, FR-37        |
+| EVT-17 | FR-44 é internamente ambíguo: declara `url_template_base` como "URL válida" mas a seção de modelo de dados especifica "key (caminho) do Cloudflare R2"            | Baixa      | ID   | Gera implementação contraditória entre o validator Zod (valida como URL) e o controller SSR (armazena key)                                                        | `docs/especificacoes.md` FR-44 e tabela `eventos`                                                | FR-44               |
+| EVT-18 | SRS não especifica o comportamento do API para campos de layout (FR-48) — se são setáveis via API ou exclusivamente via SSR                                       | Baixa      | AM   | Não é possível determinar por especificação se a ausência no schema Zod é intencional ou omissão                                                                  | `docs/especificacoes.md` FR-48                                                                   | FR-48               |
+| EVT-19 | SRS não especifica a sensibilidade a maiúsculas/minúsculas na unicidade de `codigo_base`                                                                          | Baixa      | AM   | PostgreSQL usa unicidade case-sensitive por default; `EDU` e `edu` seriam tratados como diferentes, mas o comportamento esperado não está documentado             | `src/models/evento.js` linhas 31–41; migration `20260311175950`                                  | FR-8                |
+| EVT-20 | Swagger schema `Evento` em `app.js` não documenta os campos `url_template_base`, `texto_x`, `texto_y`, `validacao_x`, `validacao_y`                               | Baixa      | DT   | Documentação da API incompleta para campos introduzidos nas migrations `20260416*`                                                                                | `app.js` linhas 114–128                                                                          | FR-44, FR-48        |
 
 ---
 
@@ -61,21 +61,50 @@
 
 ```javascript
 // src/routes/eventos.js
-router.put('/:id', auth, rbac('monitor'), scopedEvento, validate(eventoSchema.partial()), eventoController.update)
-router.delete('/:id', auth, rbac('monitor'), scopedEvento, eventoController.delete)
-router.post('/:id/restore', auth, rbac('monitor'), scopedEvento, eventoController.restore)
+router.put(
+  '/:id',
+  auth,
+  rbac('monitor'),
+  scopedEvento,
+  validate(eventoSchema.partial()),
+  eventoController.update,
+)
+router.delete(
+  '/:id',
+  auth,
+  rbac('monitor'),
+  scopedEvento,
+  eventoController.delete,
+)
+router.post(
+  '/:id/restore',
+  auth,
+  rbac('monitor'),
+  scopedEvento,
+  eventoController.restore,
+)
 ```
 
 A especificação estabelece que apenas admin deve gerir eventos (FR-34 a FR-36). O SRS confirma isso com a SSR:
 
 ```javascript
 // src/routes/admin.js
-router.post('/eventos/:id', rbac('admin'), uploadTemplate, eventoSSRController.atualizar)
+router.post(
+  '/eventos/:id',
+  rbac('admin'),
+  uploadTemplate,
+  eventoSSRController.atualizar,
+)
 router.post('/eventos/:id/deletar', rbac('admin'), eventoSSRController.deletar)
-router.post('/eventos/:id/restaurar', rbac('admin'), eventoSSRController.restaurar)
+router.post(
+  '/eventos/:id/restaurar',
+  rbac('admin'),
+  eventoSSRController.restaurar,
+)
 ```
 
 Um gestor ou monitor com token JWT válido e vinculado ao evento alvo pode chamar:
+
 - `PUT /eventos/:id` e alterar `nome`, `codigo_base`, `ano`
 - `DELETE /eventos/:id` e deletar logicamente um evento inteiro
 - `POST /eventos/:id/restore` e reativar um evento arquivado
@@ -179,7 +208,7 @@ const usuarioData = {
   isAdmin: usuario.perfil === 'admin',
   isGestor: usuario.perfil === 'gestor',
 }
-req.usuario = usuarioData  // Objeto simples, sem métodos Sequelize
+req.usuario = usuarioData // Objeto simples, sem métodos Sequelize
 ```
 
 O `scopedEvento` exige `req.usuario.getEventos()`, disponível apenas em instâncias Sequelize:
@@ -187,7 +216,9 @@ O `scopedEvento` exige `req.usuario.getEventos()`, disponível apenas em instân
 ```javascript
 // src/middlewares/scopedEvento.js
 if (typeof req.usuario.getEventos !== 'function') {
-  return res.status(500).json({ error: 'Usuário sem método getEventos (modelo N:N)' })
+  return res
+    .status(500)
+    .json({ error: 'Usuário sem método getEventos (modelo N:N)' })
 }
 ```
 
@@ -197,16 +228,16 @@ Qualquer adição de `scopedEvento` a uma rota SSR resultará em HTTP 500 imedia
 
 # 4. Divergências API vs SSR
 
-| Operação | API (`src/routes/eventos.js`) | SSR (`src/routes/admin.js`) | Divergência |
-|---|---|---|---|
-| Criar evento | `rbac('monitor')` + `scopedEvento` | `rbac('admin')` + `uploadTemplate` | RBAC diferente; SSR suporta upload de template, API não |
-| Listar eventos | `rbac('monitor')` + `scopedEvento` + paginação | `rbac('gestor')` — monitor não acessa | Roles diferentes; SSR nega monitor, API permite |
-| Atualizar evento | `rbac('monitor')` + `scopedEvento` | `rbac('admin')` | Gestor/monitor podem editar via API, não via SSR |
-| Deletar evento | `rbac('monitor')` + `scopedEvento` | `rbac('admin')` | Gestor/monitor podem deletar via API, não via SSR |
-| Restaurar evento | `rbac('monitor')` + `scopedEvento` | `rbac('admin')` | Mesma divergência |
-| Validação de payload | Schema Zod (inclui `url_template_base` como URL) | Sem Zod — Sequelize apenas | API valida formato URL; SSR armazena key sem validação de formato |
-| Campos de layout | Stripped pelo Zod (ausentes do schema) | Convertidos e persistidos corretamente | Configuração de layout possível apenas via SSR |
-| Resposta 404 (update/restore) | HTTP 200 com `null` | Redirect com flash de erro | Comportamento HTTP inconsistente por superfície |
+| Operação                      | API (`src/routes/eventos.js`)                    | SSR (`src/routes/admin.js`)            | Divergência                                                       |
+| ----------------------------- | ------------------------------------------------ | -------------------------------------- | ----------------------------------------------------------------- |
+| Criar evento                  | `rbac('monitor')` + `scopedEvento`               | `rbac('admin')` + `uploadTemplate`     | RBAC diferente; SSR suporta upload de template, API não           |
+| Listar eventos                | `rbac('monitor')` + `scopedEvento` + paginação   | `rbac('gestor')` — monitor não acessa  | Roles diferentes; SSR nega monitor, API permite                   |
+| Atualizar evento              | `rbac('monitor')` + `scopedEvento`               | `rbac('admin')`                        | Gestor/monitor podem editar via API, não via SSR                  |
+| Deletar evento                | `rbac('monitor')` + `scopedEvento`               | `rbac('admin')`                        | Gestor/monitor podem deletar via API, não via SSR                 |
+| Restaurar evento              | `rbac('monitor')` + `scopedEvento`               | `rbac('admin')`                        | Mesma divergência                                                 |
+| Validação de payload          | Schema Zod (inclui `url_template_base` como URL) | Sem Zod — Sequelize apenas             | API valida formato URL; SSR armazena key sem validação de formato |
+| Campos de layout              | Stripped pelo Zod (ausentes do schema)           | Convertidos e persistidos corretamente | Configuração de layout possível apenas via SSR                    |
+| Resposta 404 (update/restore) | HTTP 200 com `null`                              | Redirect com flash de erro             | Comportamento HTTP inconsistente por superfície                   |
 
 ---
 
@@ -214,7 +245,8 @@ Qualquer adição de `scopedEvento` a uma rota SSR resultará em HTTP 500 imedia
 
 ## 5.1 — FR-44: Esclarecer natureza do campo `url_template_base`
 
-**Ambiguidade atual:**  
+**Ambiguidade atual:**
+
 > FR-44: "deve conter uma URL válida (ou ser null)"  
 > Modelo de dados: "armazena a **key** (caminho) do arquivo de template-base no Cloudflare R2"
 
@@ -242,14 +274,14 @@ Qualquer adição de `scopedEvento` a uma rota SSR resultará em HTTP 500 imedia
 
 # 6. Itens para Validação Humana
 
-| ID | Questão | Contexto | Impacto da Decisão |
-|---|---|---|---|
-| VH-01 | Gestores vinculados a um evento devem poder atualizar/deletar esse evento via API? | EVT-01 — O SRS não declara isso explicitamente para a superfície API | Define se `rbac('admin')` ou `rbac('gestor')` deve ser usado nas rotas de mutação da API |
-| VH-02 | O campo `url_template_base` armazena uma key R2 ou uma URL completa? | EVT-06/EVT-17 — SRS auto-contraditório em FR-44 | Define se o validator Zod deve usar `.url()` ou aceitar string livre (ou regex de key) |
-| VH-03 | Os campos de layout (`texto_x/y`, `validacao_x/y`) devem ser configuráveis via API? | EVT-07 — Ausentes do schema Zod; presentes na SSR | Se sim, o schema Zod precisa ser atualizado |
-| VH-04 | A restauração de um evento deve restaurar todos os vínculos user-evento `UsuarioEvento`, incluindo os que foram removidos individualmente antes do soft-delete do evento? | EVT-13 — comportamento atual: restaura tudo indiscriminadamente | Define se o restore de UsuarioEvento deve ser seletivo (apenas registros deletados junto com o evento) |
-| VH-05 | Gestores devem ver botões de Editar/Remover na SSR de eventos, mesmo sem autorização para usá-los? | EVT-11 — view não condiciona botões ao perfil do usuário | Define se a view deve usar `{{#if isAdmin}}` para ocultar ações restritas |
-| VH-06 | O `codigo_base` deve ser tratado como case-insensitive para fins de unicidade? | EVT-19 — comportamento do PostgreSQL é case-sensitive por padrão | Pode exigir índice `LOWER(codigo_base)` ou normalização na camada de service/model |
+| ID    | Questão                                                                                                                                                                   | Contexto                                                             | Impacto da Decisão                                                                                     |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| VH-01 | Gestores vinculados a um evento devem poder atualizar/deletar esse evento via API?                                                                                        | EVT-01 — O SRS não declara isso explicitamente para a superfície API | Define se `rbac('admin')` ou `rbac('gestor')` deve ser usado nas rotas de mutação da API               |
+| VH-02 | O campo `url_template_base` armazena uma key R2 ou uma URL completa?                                                                                                      | EVT-06/EVT-17 — SRS auto-contraditório em FR-44                      | Define se o validator Zod deve usar `.url()` ou aceitar string livre (ou regex de key)                 |
+| VH-03 | Os campos de layout (`texto_x/y`, `validacao_x/y`) devem ser configuráveis via API?                                                                                       | EVT-07 — Ausentes do schema Zod; presentes na SSR                    | Se sim, o schema Zod precisa ser atualizado                                                            |
+| VH-04 | A restauração de um evento deve restaurar todos os vínculos user-evento `UsuarioEvento`, incluindo os que foram removidos individualmente antes do soft-delete do evento? | EVT-13 — comportamento atual: restaura tudo indiscriminadamente      | Define se o restore de UsuarioEvento deve ser seletivo (apenas registros deletados junto com o evento) |
+| VH-05 | Gestores devem ver botões de Editar/Remover na SSR de eventos, mesmo sem autorização para usá-los?                                                                        | EVT-11 — view não condiciona botões ao perfil do usuário             | Define se a view deve usar `{{#if isAdmin}}` para ocultar ações restritas                              |
+| VH-06 | O `codigo_base` deve ser tratado como case-insensitive para fins de unicidade?                                                                                            | EVT-19 — comportamento do PostgreSQL é case-sensitive por padrão     | Pode exigir índice `LOWER(codigo_base)` ou normalização na camada de service/model                     |
 
 ---
 

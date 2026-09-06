@@ -168,6 +168,7 @@ Identificar:
 Construir roadmap arquitetural completo contendo:
 
 ### Fase 0 — Emergencial
+
 - vulnerabilidades críticas
 - vazamentos multi-tenant
 - falhas graves de RBAC
@@ -175,6 +176,7 @@ Construir roadmap arquitetural completo contendo:
 - falhas de ownership
 
 ### Fase 1 — Estabilização Arquitetural
+
 - enforcement consistente
 - contratos entre camadas
 - unificação de RBAC
@@ -183,12 +185,14 @@ Construir roadmap arquitetural completo contendo:
 - isolamento multi-tenant
 
 ### Fase 2 — Consolidação Estrutural
+
 - redução de acoplamento
 - simplificação arquitetural
 - padronização transversal
 - eliminação de duplicação
 
 ### Fase 3 — Evolução Segura
+
 - novas funcionalidades
 - otimizações
 - escalabilidade
@@ -219,6 +223,7 @@ Construir roadmap arquitetural completo contendo:
 ## Somente evidência
 
 Todo achado deve:
+
 - possuir rastreabilidade;
 - referenciar auditorias;
 - referenciar FRs/NFRs;
@@ -340,6 +345,7 @@ Listar:
 - specs bloqueadoras
 
 com:
+
 - objetivo
 - motivação
 - domínios afetados
@@ -363,6 +369,7 @@ Consolidar:
 # 9. Itens para Validação Humana
 
 Somente:
+
 - decisões de produto
 - decisões arquiteturais
 - ambiguidades reais
@@ -375,11 +382,15 @@ Somente:
 Separar em:
 
 ## Fase 0 — Emergencial
+
 ## Fase 1 — Estabilização
+
 ## Fase 2 — Consolidação
+
 ## Fase 3 — Evolução
 
 Cada item deve conter:
+
 - objetivo
 - impacto
 - criticidade

@@ -4,6 +4,7 @@
 **Data da auditoria:** 2026-05-09 19:14 (BRT)  
 **Escopo:** Domínio de Participantes — CRUD, API REST, SSR, associações, RBAC, escopo multi-tenant  
 **Fontes auditadas:**
+
 - `docs/especificacoes.md` (SRS v2.0, 2026-04-30)
 - `src/routes/participantes.js`
 - `src/routes/admin.js` (seção de participantes)
@@ -31,28 +32,28 @@
 
 ## 1. Matriz de Achados
 
-| ID  | Descrição                                                                         | Severidade | Tipo | Impacto                                                      | Evidência Principal                                                                                         | FR/NFR Relacionado          |
-|-----|-----------------------------------------------------------------------------------|------------|------|--------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|-----------------------------|
-| F01 | API `GET /participantes` retorna todos os participantes sem filtro de evento       | Crítica    | VU   | Vazamento multi-tenant: gestor/monitor vê participantes de outros eventos | `src/routes/participantes.js:L151` — sem `scopedEvento`; `src/services/participanteService.js:L6-L16` — `findAndCountAll` sem filtro | FR-37, NFR-1                |
-| F02 | API `PUT /participantes/:id` retorna HTTP 200 com `null` para participante inexistente | Alta    | BR   | Resposta HTTP semânticamente inválida; cliente não detecta falha | `src/controllers/participanteController.js:L37-L44`; `src/services/participanteService.js:L23-L26`          | FR-1                        |
-| F03 | API `DELETE /participantes/:id` retorna HTTP 204 para participante inexistente     | Média      | BR   | Exclusão silenciosa de ID inexistente; falsa confirmação de sucesso | `src/controllers/participanteController.js:L46-L52`; `src/services/participanteService.js:L27-L33`          | FR-1, FR-4                  |
-| F04 | API `POST /participantes/:id/restore` retorna HTTP 200 com `null` para inexistente | Alta      | BR   | Restauração silenciosa sem confirmação real                    | `src/controllers/participanteController.js:L54-L60`; `src/services/participanteService.js:L38-L43`          | FR-4                        |
-| F05 | SSR: rotas de participantes sem middleware RBAC                                    | Crítica    | VU   | Monitor pode criar, editar, deletar e restaurar participantes via SSR | `src/routes/admin.js:L89-L98` — comentário "todos os perfis autenticados", sem `rbac()` em nenhuma rota   | FR-35, FR-36, FR-38, NFR-1  |
-| F06 | SSR: operações por `:id` sem verificação de escopo por evento                     | Alta       | VU   | Gestor/monitor pode editar ou deletar participante de outro evento via SSR | `src/controllers/participanteSSRController.js:L79-L168` — nenhuma verificação de `evento_id` nas funções `editar`, `atualizar`, `deletar`, `restaurar` | FR-37, NFR-1 |
-| F07 | SSR: flash de sucesso exibido mesmo quando participante não existe                 | Baixa      | BR   | Falsa confirmação de sucesso ao usuário em operações sobre ID inexistente | `src/controllers/participanteSSRController.js:L120-L128` (`atualizar`), L130-L139 (`deletar`) — service retorna `null` sem lançar exceção | FR-1 |
-| F08 | SSR: sem validação server-side de `nomeCompleto.min(3)` ao criar/atualizar        | Média      | GI   | Participantes com nome de 1-2 caracteres podem ser criados via SSR | `src/routes/admin.js:L92-L96` — sem `validate(participanteSchema)`; modelo Sequelize sem validação de comprimento | FR-3 |
-| F09 | SSR: participantes sem certificado são invisíveis para gestor/monitor              | Alta       | GI   | Participantes registrados mas ainda sem certificados somem da listagem para gestores/monitores | `src/controllers/participanteSSRController.js:L35-L46` — `required: eventoIds ? true : false` gera INNER JOIN para não-admins | FR-36, FR-49 |
-| F10 | SSR: filtro `?q=` não é aplicado à seção de arquivados                           | Baixa      | BR   | Pesquisa por nome/email filtra ativos, mas todos os arquivados aparecem | `src/controllers/participanteSSRController.js:L48-L58` — `arquivados` não inclui `textWhere`               | FR-49                       |
-| F11 | `scopedEvento` middleware incompatível semanticamente com rotas de participante    | Alta       | VA   | Middleware não pode proteger participantes pois usa `req.params.id` como `evento_id` | `src/middlewares/scopedEvento.js:L33` — `const eventoId = req.body.evento_id \|\| req.params.eventoId \|\| req.params.id` | FR-37 |
-| F12 | Estratégias de escopo divergentes entre API e SSR para participantes              | Alta       | VA   | API não aplica escopo; SSR usa JOIN em certificados — comportamentos opostos | API: `src/routes/participantes.js` (sem scope); SSR: `src/controllers/participanteSSRController.js:L19-L58` | FR-37, NFR-6                |
-| F13 | `authSSR` retorna objeto plano: `getEventos()` ausente — `scopedEvento` inaplicável no SSR | Alta | VA | Impossiblidade arquitetural de usar o middleware `scopedEvento` em rotas SSR | `src/middlewares/authSSR.js:L50-L59` — `req.usuario` é objeto literal; `src/middlewares/scopedEvento.js:L4-L7` — exige `getEventos()` | FR-37, NFR-6 |
-| F14 | `participanteService.findAll()` sem suporte a filtros de evento                   | Alta       | GI   | Nenhuma forma de obter participantes filtrados por evento via serviço | `src/services/participanteService.js:L5-L17` — assinatura `{ page, perPage }` sem `evento_id`              | FR-37                       |
-| F15 | `PUT /participantes/:id` usa `schema.partial()` — semântica PATCH via PUT         | Baixa      | DT   | Aceita corpo vazio `{}` como válido; diverge da semântica REST | `src/routes/participantes.js:L148-L151` — `validate(participanteSchema.partial())`                         | FR-1                        |
-| F16 | Duplicação de métodos `destroy` e `delete` no service                             | Baixa      | DT   | Manutenção dupla e risco de divergência futura                 | `src/services/participanteService.js:L27-L36` — `destroy` e `delete` com mesma implementação               | —                           |
-| F17 | Unicidade de email sem índice parcial: soft-delete bloqueia re-cadastro           | Média      | AM   | Após soft-delete, email fica bloqueado para novos cadastros   | `migrations/20260311180742-create-participantes.js:L15` — `unique: true` sem filtro parcial; `migrations/20260324083059-create-performance-indexes.js:L30` — índice `idx_participantes_email` sem `where` | FR-4 |
-| F18 | Busca pública por email é case-sensitive                                           | Baixa      | DT   | Busca de "joao@TESTE.com" falha para "joao@teste.com"         | `src/routes/public.js:L29` — `Participante.findOne({ where: { email } })` sem `Op.iLike` ou normalização  | FR-23, FR-53                |
-| F19 | API sem capacidade de busca textual (`?q=`)                                       | Média      | GI   | Integrações via API não podem filtrar participantes por nome ou email | `src/controllers/participanteController.js:L12-L19` — apenas `page` e `perPage`; sem `q`                  | FR-49                       |
-| F20 | Modelo `Participante` sem associação direta a `Evento`                            | Alta       | VA   | Impossibilidade de filtrar participantes por evento diretamente via ORM | `src/models/participante.js:L6-L10` — apenas `hasMany(Certificado)`, sem relação com `Evento`              | FR-37                       |
+| ID  | Descrição                                                                                  | Severidade | Tipo | Impacto                                                                                        | Evidência Principal                                                                                                                                                                                       | FR/NFR Relacionado         |
+| --- | ------------------------------------------------------------------------------------------ | ---------- | ---- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| F01 | API `GET /participantes` retorna todos os participantes sem filtro de evento               | Crítica    | VU   | Vazamento multi-tenant: gestor/monitor vê participantes de outros eventos                      | `src/routes/participantes.js:L151` — sem `scopedEvento`; `src/services/participanteService.js:L6-L16` — `findAndCountAll` sem filtro                                                                      | FR-37, NFR-1               |
+| F02 | API `PUT /participantes/:id` retorna HTTP 200 com `null` para participante inexistente     | Alta       | BR   | Resposta HTTP semânticamente inválida; cliente não detecta falha                               | `src/controllers/participanteController.js:L37-L44`; `src/services/participanteService.js:L23-L26`                                                                                                        | FR-1                       |
+| F03 | API `DELETE /participantes/:id` retorna HTTP 204 para participante inexistente             | Média      | BR   | Exclusão silenciosa de ID inexistente; falsa confirmação de sucesso                            | `src/controllers/participanteController.js:L46-L52`; `src/services/participanteService.js:L27-L33`                                                                                                        | FR-1, FR-4                 |
+| F04 | API `POST /participantes/:id/restore` retorna HTTP 200 com `null` para inexistente         | Alta       | BR   | Restauração silenciosa sem confirmação real                                                    | `src/controllers/participanteController.js:L54-L60`; `src/services/participanteService.js:L38-L43`                                                                                                        | FR-4                       |
+| F05 | SSR: rotas de participantes sem middleware RBAC                                            | Crítica    | VU   | Monitor pode criar, editar, deletar e restaurar participantes via SSR                          | `src/routes/admin.js:L89-L98` — comentário "todos os perfis autenticados", sem `rbac()` em nenhuma rota                                                                                                   | FR-35, FR-36, FR-38, NFR-1 |
+| F06 | SSR: operações por `:id` sem verificação de escopo por evento                              | Alta       | VU   | Gestor/monitor pode editar ou deletar participante de outro evento via SSR                     | `src/controllers/participanteSSRController.js:L79-L168` — nenhuma verificação de `evento_id` nas funções `editar`, `atualizar`, `deletar`, `restaurar`                                                    | FR-37, NFR-1               |
+| F07 | SSR: flash de sucesso exibido mesmo quando participante não existe                         | Baixa      | BR   | Falsa confirmação de sucesso ao usuário em operações sobre ID inexistente                      | `src/controllers/participanteSSRController.js:L120-L128` (`atualizar`), L130-L139 (`deletar`) — service retorna `null` sem lançar exceção                                                                 | FR-1                       |
+| F08 | SSR: sem validação server-side de `nomeCompleto.min(3)` ao criar/atualizar                 | Média      | GI   | Participantes com nome de 1-2 caracteres podem ser criados via SSR                             | `src/routes/admin.js:L92-L96` — sem `validate(participanteSchema)`; modelo Sequelize sem validação de comprimento                                                                                         | FR-3                       |
+| F09 | SSR: participantes sem certificado são invisíveis para gestor/monitor                      | Alta       | GI   | Participantes registrados mas ainda sem certificados somem da listagem para gestores/monitores | `src/controllers/participanteSSRController.js:L35-L46` — `required: eventoIds ? true : false` gera INNER JOIN para não-admins                                                                             | FR-36, FR-49               |
+| F10 | SSR: filtro `?q=` não é aplicado à seção de arquivados                                     | Baixa      | BR   | Pesquisa por nome/email filtra ativos, mas todos os arquivados aparecem                        | `src/controllers/participanteSSRController.js:L48-L58` — `arquivados` não inclui `textWhere`                                                                                                              | FR-49                      |
+| F11 | `scopedEvento` middleware incompatível semanticamente com rotas de participante            | Alta       | VA   | Middleware não pode proteger participantes pois usa `req.params.id` como `evento_id`           | `src/middlewares/scopedEvento.js:L33` — `const eventoId = req.body.evento_id \|\| req.params.eventoId \|\| req.params.id`                                                                                 | FR-37                      |
+| F12 | Estratégias de escopo divergentes entre API e SSR para participantes                       | Alta       | VA   | API não aplica escopo; SSR usa JOIN em certificados — comportamentos opostos                   | API: `src/routes/participantes.js` (sem scope); SSR: `src/controllers/participanteSSRController.js:L19-L58`                                                                                               | FR-37, NFR-6               |
+| F13 | `authSSR` retorna objeto plano: `getEventos()` ausente — `scopedEvento` inaplicável no SSR | Alta       | VA   | Impossiblidade arquitetural de usar o middleware `scopedEvento` em rotas SSR                   | `src/middlewares/authSSR.js:L50-L59` — `req.usuario` é objeto literal; `src/middlewares/scopedEvento.js:L4-L7` — exige `getEventos()`                                                                     | FR-37, NFR-6               |
+| F14 | `participanteService.findAll()` sem suporte a filtros de evento                            | Alta       | GI   | Nenhuma forma de obter participantes filtrados por evento via serviço                          | `src/services/participanteService.js:L5-L17` — assinatura `{ page, perPage }` sem `evento_id`                                                                                                             | FR-37                      |
+| F15 | `PUT /participantes/:id` usa `schema.partial()` — semântica PATCH via PUT                  | Baixa      | DT   | Aceita corpo vazio `{}` como válido; diverge da semântica REST                                 | `src/routes/participantes.js:L148-L151` — `validate(participanteSchema.partial())`                                                                                                                        | FR-1                       |
+| F16 | Duplicação de métodos `destroy` e `delete` no service                                      | Baixa      | DT   | Manutenção dupla e risco de divergência futura                                                 | `src/services/participanteService.js:L27-L36` — `destroy` e `delete` com mesma implementação                                                                                                              | —                          |
+| F17 | Unicidade de email sem índice parcial: soft-delete bloqueia re-cadastro                    | Média      | AM   | Após soft-delete, email fica bloqueado para novos cadastros                                    | `migrations/20260311180742-create-participantes.js:L15` — `unique: true` sem filtro parcial; `migrations/20260324083059-create-performance-indexes.js:L30` — índice `idx_participantes_email` sem `where` | FR-4                       |
+| F18 | Busca pública por email é case-sensitive                                                   | Baixa      | DT   | Busca de "joao@TESTE.com" falha para "joao@teste.com"                                          | `src/routes/public.js:L29` — `Participante.findOne({ where: { email } })` sem `Op.iLike` ou normalização                                                                                                  | FR-23, FR-53               |
+| F19 | API sem capacidade de busca textual (`?q=`)                                                | Média      | GI   | Integrações via API não podem filtrar participantes por nome ou email                          | `src/controllers/participanteController.js:L12-L19` — apenas `page` e `perPage`; sem `q`                                                                                                                  | FR-49                      |
+| F20 | Modelo `Participante` sem associação direta a `Evento`                                     | Alta       | VA   | Impossibilidade de filtrar participantes por evento diretamente via ORM                        | `src/models/participante.js:L6-L10` — apenas `hasMany(Certificado)`, sem relação com `Evento`                                                                                                             | FR-37                      |
 
 ---
 
@@ -113,16 +114,17 @@ Todas as rotas SSR de participantes administradas em `/admin/participantes/*` ca
 // src/routes/admin.js — linhas 89-98
 // Gestão de participantes (todos os perfis autenticados)
 router.get('/participantes', participanteSSRController.index)
-router.get('/participantes/novo', participanteSSRController.novo)          // sem rbac
-router.get('/participantes/:id/editar', participanteSSRController.editar)  // sem rbac
-router.post('/participantes', participanteSSRController.criar)              // sem rbac
-router.post('/participantes/:id', participanteSSRController.atualizar)      // sem rbac
-router.post('/participantes/:id/deletar', participanteSSRController.deletar)    // sem rbac
+router.get('/participantes/novo', participanteSSRController.novo) // sem rbac
+router.get('/participantes/:id/editar', participanteSSRController.editar) // sem rbac
+router.post('/participantes', participanteSSRController.criar) // sem rbac
+router.post('/participantes/:id', participanteSSRController.atualizar) // sem rbac
+router.post('/participantes/:id/deletar', participanteSSRController.deletar) // sem rbac
 router.post('/participantes/:id/restaurar', participanteSSRController.restaurar) // sem rbac
 ```
 
 **Impacto:**  
 Um usuário com perfil `monitor` pode, via interface web:
+
 - Criar participantes
 - Editar dados de participantes (nome, email, instituição)
 - Deletar (soft delete) participantes
@@ -201,13 +203,15 @@ const usuarioData = {
   isAdmin: usuario.perfil === 'admin',
   isGestor: usuario.perfil === 'gestor',
 }
-req.usuario = usuarioData  // ← objeto literal, não instância Sequelize
+req.usuario = usuarioData // ← objeto literal, não instância Sequelize
 ```
 
 ```js
 // src/middlewares/scopedEvento.js:4-7
 if (typeof req.usuario.getEventos !== 'function') {
-  return res.status(500).json({ error: 'Usuário sem método getEventos (modelo N:N)' })
+  return res
+    .status(500)
+    .json({ error: 'Usuário sem método getEventos (modelo N:N)' })
 }
 ```
 
@@ -229,11 +233,11 @@ Isso é um workaround de N+1 que expõe a incompatibilidade arquitetural entre a
 
 As duas superfícies (`API REST` e `SSR`) implementam estratégias completamente divergentes de escopo:
 
-| Superfície | Estratégia de Escopo | Resultado |
-|------------|----------------------|-----------|
-| API REST   | Nenhuma (sem `scopedEvento`) | Sem escopo — todos os participantes visíveis |
-| SSR (listagem) | JOIN com `Certificado` WHERE `evento_id IN [...]` | Escopo indireto via certificados |
-| SSR (`:id` ops) | Nenhuma | Sem escopo — qualquer participante acessível |
+| Superfície      | Estratégia de Escopo                              | Resultado                                    |
+| --------------- | ------------------------------------------------- | -------------------------------------------- |
+| API REST        | Nenhuma (sem `scopedEvento`)                      | Sem escopo — todos os participantes visíveis |
+| SSR (listagem)  | JOIN com `Certificado` WHERE `evento_id IN [...]` | Escopo indireto via certificados             |
+| SSR (`:id` ops) | Nenhuma                                           | Sem escopo — qualquer participante acessível |
 
 Não existe uma estratégia comum. O escopo via JOIN em certificados usado pelo SSR cria uma dependência funcional indireta e não explícita entre participante e evento. A API não implementa nada equivalente.
 
@@ -241,18 +245,18 @@ Não existe uma estratégia comum. O escopo via JOIN em certificados usado pelo 
 
 ## 4. Divergências API vs SSR
 
-| Aspecto                                | API REST (`/participantes`)                                       | SSR Admin (`/admin/participantes`)                                     |
-|----------------------------------------|------------------------------------------------------------------|------------------------------------------------------------------------|
-| **Autenticação**                       | `auth` (JWT Bearer, instância Sequelize)                         | `authSSR` (cookie JWT, objeto plano)                                   |
-| **RBAC**                               | `rbac('monitor')` em todas as rotas                             | Nenhum `rbac()` em nenhuma rota                                        |
-| **Escopo por evento (listagem)**       | Nenhum — retorna todos os participantes                         | Gestor/monitor: JOIN em Certificado por `evento_id`                    |
-| **Escopo por evento (ops por `:id`)**  | Nenhum                                                           | Nenhum                                                                 |
-| **Busca textual**                      | Inexistente (`?page` e `?perPage` apenas)                       | `?q=` com `iLike` em `nomeCompleto` e `email`                         |
-| **Participantes arquivados**           | `POST /:id/restore` disponível                                  | Seção `<details>` na listagem + `POST /:id/restaurar`                 |
-| **Validação de input**                 | Zod (`validate` middleware) aplicado em POST e PUT             | Sem validação server-side além de Sequelize (sem min length)          |
-| **Resposta para `:id` inexistente**    | `update`: HTTP 200 null; `delete`: HTTP 204; `restore`: HTTP 200 null | Flash de sucesso sem verificação de existência                    |
-| **Acesso do monitor a modificações**   | Permitido (rbac('monitor'))                                     | Permitido (sem rbac)                                                   |
-| **Paginação**                          | Sim (`page`, `perPage`)                                         | Não (retorna todos de uma vez)                                         |
+| Aspecto                               | API REST (`/participantes`)                                           | SSR Admin (`/admin/participantes`)                           |
+| ------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------ |
+| **Autenticação**                      | `auth` (JWT Bearer, instância Sequelize)                              | `authSSR` (cookie JWT, objeto plano)                         |
+| **RBAC**                              | `rbac('monitor')` em todas as rotas                                   | Nenhum `rbac()` em nenhuma rota                              |
+| **Escopo por evento (listagem)**      | Nenhum — retorna todos os participantes                               | Gestor/monitor: JOIN em Certificado por `evento_id`          |
+| **Escopo por evento (ops por `:id`)** | Nenhum                                                                | Nenhum                                                       |
+| **Busca textual**                     | Inexistente (`?page` e `?perPage` apenas)                             | `?q=` com `iLike` em `nomeCompleto` e `email`                |
+| **Participantes arquivados**          | `POST /:id/restore` disponível                                        | Seção `<details>` na listagem + `POST /:id/restaurar`        |
+| **Validação de input**                | Zod (`validate` middleware) aplicado em POST e PUT                    | Sem validação server-side além de Sequelize (sem min length) |
+| **Resposta para `:id` inexistente**   | `update`: HTTP 200 null; `delete`: HTTP 204; `restore`: HTTP 200 null | Flash de sucesso sem verificação de existência               |
+| **Acesso do monitor a modificações**  | Permitido (rbac('monitor'))                                           | Permitido (sem rbac)                                         |
+| **Paginação**                         | Sim (`page`, `perPage`)                                               | Não (retorna todos de uma vez)                               |
 
 ---
 
@@ -263,6 +267,7 @@ Não existe uma estratégia comum. O escopo via JOIN em certificados usado pelo 
 **Lacuna identificada:** FR-3 define que `nomeCompleto` deve ter mínimo 3 caracteres, mas não explicita que essa restrição deve ser aplicada em **ambas as superfícies** (API e SSR). A implementação atual aplica a regra apenas via Zod (API), ignorando o SSR.
 
 **Adição sugerida ao FR-3:**
+
 > "A validação de formato e comprimento mínimo de todos os campos do participante deve ser aplicada em todas as superfícies de entrada (API REST e interface SSR)."
 
 ---
@@ -272,6 +277,7 @@ Não existe uma estratégia comum. O escopo via JOIN em certificados usado pelo 
 **Ambiguidade identificada:** FR-36 diz que monitor "pode listar e visualizar certificados e participantes dos seus eventos". A frase não proíbe explicitamente que monitores modifiquem participantes; apenas omite essa permissão.
 
 **Adição sugerida ao FR-36:**
+
 > "O perfil `monitor` não possui permissão para criar, editar, remover ou restaurar participantes."
 
 ---
@@ -281,6 +287,7 @@ Não existe uma estratégia comum. O escopo via JOIN em certificados usado pelo 
 **Lacuna identificada:** FR-37 descreve que o filtro de `evento_id` é "injetado automaticamente" pelo `scopedEvento`, mas não aborda entidades que não possuem `evento_id` diretamente (como participantes, cuja vinculação a eventos é indireta via certificados). O SRS não é claro sobre qual estratégia deve ser usada nesses casos.
 
 **Adição sugerida ao FR-37:**
+
 > "Para entidades sem `evento_id` direto (e.g., participantes), o escopo multi-tenant deve ser definido explicitamente: o sistema deve especificar se o escopo é inferido via certificados ou via associação direta. Na ausência de definição explícita, participantes são considerados globais e acessíveis a todos os usuários autenticados."
 
 ---
@@ -290,6 +297,7 @@ Não existe uma estratégia comum. O escopo via JOIN em certificados usado pelo 
 **Ambiguidade identificada:** FR-4 garante que registros de participantes podem ser restaurados, mas não define o comportamento de `email` (campo único) quando participante é soft-deletado: se o mesmo email pode ser re-cadastrado antes da restauração.
 
 **Adição sugerida ao FR-4:**
+
 > "O campo `email` de um participante soft-deletado deve permanecer reservado, impedindo o cadastro de novo participante com o mesmo email até que o registro original seja permanentemente removido ou restaurado."  
 > — **OU** —  
 > "O campo `email` de um participante soft-deletado não deve bloquear o cadastro de novos participantes. A unicidade deve ser garantida por índice parcial que exclua registros com `deleted_at IS NOT NULL`."
@@ -309,6 +317,7 @@ Não existe uma estratégia comum. O escopo via JOIN em certificados usado pelo 
 **Questão:** Participantes não têm `evento_id` direto. O scoping via JOIN em certificados (adotado pelo SSR) exclui participantes **sem certificado** do escopo de gestores/monitores (F09). Isso é intencional?
 
 **Opções:**
+
 1. Participantes são **globais** (sem escopo por evento) — qualquer usuário autenticado pode ver qualquer participante.
 2. Participantes pertencem ao escopo via **certificados** — apenas participantes com pelo menos um certificado no evento do usuário são visíveis.
 3. Criar associação direta `participante ↔ evento` (via nova tabela ou campo `evento_id` em participante) para permitir scoping nativo.
@@ -351,6 +360,7 @@ Não existe uma estratégia comum. O escopo via JOIN em certificados usado pelo 
 ### IFS01 — Especificação de Scoping de Participantes por Evento
 
 Criar uma spec formal que defina:
+
 - Se participantes devem ter `evento_id` direto ou manter relação apenas via certificados
 - Como o `scopedEvento` middleware deve ser adaptado para entidades sem FK direta de evento
 - Consenso sobre quais perfis veem quais participantes
@@ -359,18 +369,19 @@ Criar uma spec formal que defina:
 
 Criar uma spec que explicite o mapeamento completo de permissões para participantes:
 
-| Operação                  | admin | gestor | monitor |
-|---------------------------|-------|--------|---------|
-| Listar participantes      | ✓     | ✓ (escopo) | ✓ (escopo) |
-| Visualizar participante   | ✓     | ?      | ?       |
-| Criar participante        | ✓     | ?      | ✗       |
-| Editar participante       | ✓     | ?      | ✗       |
-| Deletar (soft) participante | ✓   | ?      | ✗       |
-| Restaurar participante    | ✓     | ?      | ✗       |
+| Operação                    | admin | gestor     | monitor    |
+| --------------------------- | ----- | ---------- | ---------- |
+| Listar participantes        | ✓     | ✓ (escopo) | ✓ (escopo) |
+| Visualizar participante     | ✓     | ?          | ?          |
+| Criar participante          | ✓     | ?          | ✗          |
+| Editar participante         | ✓     | ?          | ✗          |
+| Deletar (soft) participante | ✓     | ?          | ✗          |
+| Restaurar participante      | ✓     | ?          | ✗          |
 
 ### IFS03 — Especificação de Busca/Filtro de Participantes na API
 
 A API REST atualmente oferece apenas paginação. Definir se a API deve suportar:
+
 - Busca por `?q=` (nome/email)
 - Filtro por `?evento_id=`
 - Ordenação e paginação cursor-based
@@ -399,6 +410,6 @@ O `participanteController` não trata o retorno `null` do service para as opera�
 
 **Achados críticos:** 2 (F01 e F05)  
 **Achados de alta severidade:** 7 (F02, F04, F06, F09, F11, F12, F14)  
-**Total de achados:** 20  
+**Total de achados:** 20
 
 O domínio requer priorização de correção dos achados F01 e F05 antes de qualquer expansão funcional, pois ambos representam vetores de acesso não autorizado a dados de outros eventos (violação multi-tenant e escalada de privilégio via SSR).

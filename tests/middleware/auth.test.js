@@ -15,12 +15,16 @@ if (!secret) throw new Error('JWT_SECRET não configurado')
 describe('Middleware auth', () => {
   let app
   let usuario
+  const uniqueEmail = `teste.${Date.now()}@email.com`
 
   beforeAll(async () => {
     app = express()
     app.use(express.json())
     app.get('/protegida', auth, (req, res) => {
-      res.json({ usuario: req.usuario.email })
+      res.json({
+        usuario: req.usuario.email,
+        principal: req.principal,
+      })
     })
     // Garante que a tabela usuarios existe
     await migrationUsuarios.up(
@@ -30,7 +34,7 @@ describe('Middleware auth', () => {
     await Usuario.destroy({ where: {}, force: true })
     usuario = await Usuario.create({
       nome: 'Teste',
-      email: 'teste@email.com',
+      email: uniqueEmail,
       senha: 'senha123',
       perfil: 'admin',
     })
@@ -46,7 +50,15 @@ describe('Middleware auth', () => {
       .get('/protegida')
       .set('Authorization', `Bearer ${token}`)
     expect(res.status).toBe(200)
-    expect(res.body.usuario).toBe('teste@email.com')
+    expect(res.body.usuario).toBe(uniqueEmail)
+    expect(res.body.principal).toEqual({
+      subjectId: usuario.id,
+      role: 'admin',
+      authChannel: 'api_bearer',
+      sessionId: null,
+      tokenId: `jwt:${usuario.id}`,
+      tenantScopeMode: 'global',
+    })
   })
 
   it('deve bloquear acesso sem token', async () => {
