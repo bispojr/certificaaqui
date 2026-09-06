@@ -5,12 +5,12 @@ on:
     branches:
       - main
       - dev
-      - bug-fix-rota-geracao-pdf
+      - 002-insercao-massa-participantes
   pull_request:
     branches:
       - main
       - dev
-      - bug-fix-rota-geracao-pdf
+      - 002-insercao-massa-participantes
   workflow_dispatch:
 
 jobs:
