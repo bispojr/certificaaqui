@@ -5,12 +5,12 @@ on:
     branches:
       - main
       - dev
-      - 001-auth-scope-convergence
+      - bug-fix-rota-geracao-pdf
   pull_request:
     branches:
       - main
       - dev
-      - 001-auth-scope-convergence
+      - bug-fix-rota-geracao-pdf
   workflow_dispatch:
 
 jobs:
