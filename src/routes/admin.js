@@ -12,7 +12,9 @@ const usuarioSSRController = require('../controllers/usuarioSSRController')
 const certificadoSSRController = require('../controllers/certificadoSSRController')
 const perfilSSRController = require('../controllers/perfilSSRController')
 
-const uploadImportacaoParticipantes = multer({ storage: multer.memoryStorage() })
+const uploadImportacaoParticipantes = multer({
+  storage: multer.memoryStorage(),
+})
 
 // Todas as rotas admin exigem sessão SSR válida
 router.use(authSSR)

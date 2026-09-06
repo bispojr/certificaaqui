@@ -121,14 +121,21 @@ module.exports = {
 
   async importar(req, res) {
     try {
-      const resultadoImportacao = await participanteImportService.importarParticipantes({
-        eventoId: Number(req.body.evento_id),
-        origem: req.body.origem,
-        conteudo: req.body.conteudo,
-        arquivoCsv: req.file ? req.file.buffer.toString('utf8') : req.body.arquivoCsv,
-        principal: req.usuario,
-        eventoIds: req.contextoAutorizacao?.eventoIds || null,
-      })
+      const origem =
+        req.body.origem ||
+        (req.file ? 'csv' : req.body.conteudo ? 'colado' : null)
+
+      const resultadoImportacao =
+        await participanteImportService.importarParticipantes({
+          eventoId: Number(req.body.evento_id),
+          origem,
+          conteudo: req.body.conteudo,
+          arquivoCsv: req.file
+            ? req.file.buffer.toString('utf8')
+            : req.body.arquivoCsv,
+          principal: req.usuario,
+          eventoIds: req.contextoAutorizacao?.eventoIds || null,
+        })
 
       return res.render(
         'admin/participantes/index',

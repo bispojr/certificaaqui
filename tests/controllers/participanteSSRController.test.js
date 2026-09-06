@@ -1,6 +1,10 @@
 const request = require('supertest')
 const app = require('../../app')
 const { Participante, Certificado, sequelize } = require('../../src/models')
+const {
+  payloadColadoValido,
+  autenticarAdminSSR,
+} = require('../helpers/participantesImportacao')
 
 // Utilitário para limpar e popular o banco de dados de teste
 async function setupDb() {
@@ -225,29 +229,25 @@ describe('Admin SSR - Participante', () => {
 
   it('POST /admin/participantes/importar processa colagem com sucesso parcial', async () => {
     const agent = request.agent(app)
-    await agent
-      .post('/login')
-      .send({ email: 'admin@email.com', senha: '123456' })
-      .redirects(1)
+    await autenticarAdminSSR(agent)
+
+    const payload = payloadColadoValido()
+    const conteudoParcial = [
+      payload.conteudo.trim(),
+      'Linha Ruim\tnao-email\tUSP',
+    ].join('\n')
 
     const res = await agent
       .post('/admin/participantes/importar')
-      .field('evento_id', '1')
-      .field('origem', 'colado')
-      .field(
-        'conteudo',
-        [
-          'nomeCompleto\temail\tinstituicao',
-          'Novo Participante\tnovo@exemplo.com\tIFSP',
-          'Linha Ruim\tnao-email\tUSP',
-        ].join('\n'),
-      )
+      .field('evento_id', payload.evento_id)
+      .field('origem', payload.origem)
+      .field('conteudo', conteudoParcial)
 
     expect(res.status).toBe(200)
     expect(res.text).toContain('Importação concluída')
-    expect(res.text).toContain('1 participantes criados')
+    expect(res.text).toContain('2 participantes criados')
     expect(res.text).toContain('1 falhas')
-    expect(res.text).toContain('Linha 2')
+    expect(res.text).toContain('Linha 3')
     expect(res.text).toContain('email inválido')
   })
 })

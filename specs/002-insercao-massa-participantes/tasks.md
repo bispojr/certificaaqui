@@ -13,8 +13,8 @@
 
 **Purpose**: preparar fixtures e helpers compartilhados para os testes da feature.
 
-- [ ] T001 [P] Criar fixtures de entrada para importação em `tests/fixtures/participantes-importacao/` com exemplos de texto colado e CSV
-- [ ] T002 [P] Criar helper de autenticação SSR e montagem de upload em `tests/helpers/participantesImportacao.js`
+- [x] T001 [P] Criar fixtures de entrada para importação em `tests/fixtures/participantes-importacao/` com exemplos de texto colado e CSV
+- [x] T002 [P] Criar helper de autenticação SSR e montagem de upload em `tests/helpers/participantesImportacao.js`
 
 ---
 
@@ -24,8 +24,8 @@
 
 **⚠️ CRITICAL**: Nenhuma task da história de usuário deve começar antes desta base mínima estar pronta.
 
-- [ ] T003 [P] Criar factory de cenário para participantes e eventos em `tests/helpers/participantesImportacao.js`
-- [ ] T004 [P] Criar helper para montar payloads `multipart/form-data` de colagem e CSV em `tests/helpers/participantesImportacao.js`
+- [x] T003 [P] Criar factory de cenário para participantes e eventos em `tests/helpers/participantesImportacao.js`
+- [x] T004 [P] Criar helper para montar payloads `multipart/form-data` de colagem e CSV em `tests/helpers/participantesImportacao.js`
 
 **Checkpoint**: base de testes pronta para iniciar a história de usuário.
 
@@ -44,7 +44,7 @@
 - [x] T005 [P] [US1] Cobrir parsing e consolidação do importador em `tests/services/participanteImportService.test.js`
 - [x] T006 [P] [US1] Cobrir a action SSR de importação em `tests/controllers/participanteSSRController.test.js`
 - [x] T007 [P] [US1] Cobrir a renderização do formulário e do resumo em `tests/views/admin/participantesIndexView.test.js`
-- [ ] T008 [P] [US1] Cobrir o fluxo ponta a ponta em `tests/e2e/participantes-importacao.spec.js`
+- [x] T008 [P] [US1] Cobrir o fluxo ponta a ponta em `tests/e2e/participantes-importacao.spec.js`
 
 ### Implementation for User Story 1
 
@@ -62,8 +62,8 @@
 
 **Purpose**: consolidar validação final, regressões e acabamento da feature.
 
-- [ ] T014 [P] Revalidar a navegação e o CRUD atual de participantes em `tests/controllers/participanteSSRController.test.js`, `tests/routes/participantes.test.js` e `tests/views/admin/participantesIndexView.test.js`
-- [ ] T015 Executar a suíte focada da feature e `npm run check`, corrigindo regressões em `src/services/participanteImportService.js`, `src/services/participanteService.js`, `src/controllers/participanteSSRController.js`, `src/routes/admin.js` e `views/admin/participantes/index.hbs`
+- [x] T014 [P] Revalidar a navegação e o CRUD atual de participantes em `tests/controllers/participanteSSRController.test.js`, `tests/routes/participantes.test.js` e `tests/views/admin/participantesIndexView.test.js`
+- [x] T015 Executar a suíte focada da feature e `npm run check`, corrigindo regressões em `src/services/participanteImportService.js`, `src/services/participanteService.js`, `src/controllers/participanteSSRController.js`, `src/routes/admin.js` e `views/admin/participantes/index.hbs`
 
 ---
 

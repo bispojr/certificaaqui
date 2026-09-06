@@ -24,7 +24,14 @@
           required
         />
       </div>
-      <div class='col-md-10'>
+      <div class='col-md-2'>
+        <label for='origem' class='form-label'>Origem</label>
+        <select class='form-select' name='origem' id='origem'>
+          <option value='colado' selected>Colagem</option>
+          <option value='csv'>CSV</option>
+        </select>
+      </div>
+      <div class='col-md-8'>
         <label for='conteudo' class='form-label'>Colar planilha</label>
         <textarea
           class='form-control'

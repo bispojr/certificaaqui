@@ -75,6 +75,7 @@ describe('admin/participantes/index.hbs', () => {
     })
 
     expect(html).toMatch(/Importação em massa/)
+    expect(html).toMatch(/name='origem'/)
     expect(html).toMatch(/name='conteudo'/)
     expect(html).toMatch(/name='arquivoCsv'/)
     expect(html).toMatch(/Importação concluída/)
