@@ -10,7 +10,7 @@ const {
 async function setupDb() {
   // Limpa tabelas relacionadas para garantir ambiente limpo
   await sequelize.query(
-    'TRUNCATE TABLE usuario_eventos, certificados, participantes, usuarios, eventos, tipos_certificados RESTART IDENTITY CASCADE',
+    'TRUNCATE TABLE participante_eventos, usuario_eventos, certificados, participantes, usuarios, eventos, tipos_certificados RESTART IDENTITY CASCADE',
   )
   // Evento 1 (vinculado ao gestor/monitor)
   await sequelize.models.Evento.create({
@@ -249,5 +249,37 @@ describe('Admin SSR - Participante', () => {
     expect(res.text).toContain('1 falhas')
     expect(res.text).toContain('Linha 3')
     expect(res.text).toContain('email inválido')
+  })
+
+  it('POST /admin/participantes/importar cria vínculo para participante já existente por email', async () => {
+    const agent = request.agent(app)
+    await agent
+      .post('/login')
+      .send({ email: 'admin@email.com', senha: '123456' })
+      .redirects(1)
+
+    const res = await agent
+      .post('/admin/participantes/importar')
+      .field('evento_id', '2')
+      .field('origem', 'colado')
+      .field(
+        'conteudo',
+        [
+          'nomeCompleto\temail\tinstituicao',
+          'João da Silva\tjoao@email.com\tUFSC',
+        ].join('\n'),
+      )
+
+    expect(res.status).toBe(200)
+    expect(res.text).toContain('0 participantes criados')
+    expect(res.text).toContain('1 vínculos reaproveitados')
+
+    const vinculo = await sequelize.models.ParticipanteEvento.findOne({
+      where: {
+        participante_id: 1,
+        evento_id: 2,
+      },
+    })
+    expect(vinculo).toBeTruthy()
   })
 })

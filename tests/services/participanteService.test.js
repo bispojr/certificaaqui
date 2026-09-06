@@ -6,12 +6,19 @@ jest.mock('../../src/models', () => ({
     findAll: jest.fn(),
     findAndCountAll: jest.fn(),
     findByPk: jest.fn(),
+    findOne: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
     destroy: jest.fn(),
     restore: jest.fn(),
   },
+  ParticipanteEvento: {
+    findOne: jest.fn(),
+    create: jest.fn(),
+  },
 }))
+
+const { ParticipanteEvento } = require('../../src/models')
 
 describe('participanteService', () => {
   beforeEach(() => {
@@ -86,5 +93,48 @@ describe('participanteService', () => {
     Participante.findByPk.mockResolvedValue(mockParticipante)
     await participanteService.restore(1)
     expect(mockParticipante.restore).toHaveBeenCalled()
+  })
+
+  it('createOrLinkByEmail cria participante e vínculo quando email não existe', async () => {
+    Participante.findOne.mockResolvedValue(null)
+    Participante.create.mockResolvedValue({ id: 8 })
+    ParticipanteEvento.findOne.mockResolvedValue(null)
+
+    const result = await participanteService.createOrLinkByEmail({
+      nomeCompleto: 'Pessoa Nova',
+      email: 'nova@exemplo.com',
+      evento_id: 2,
+    })
+
+    expect(Participante.create).toHaveBeenCalledWith({
+      nomeCompleto: 'Pessoa Nova',
+      email: 'nova@exemplo.com',
+      evento_id: 2,
+    })
+    expect(ParticipanteEvento.create).toHaveBeenCalledWith({
+      participante_id: 8,
+      evento_id: 2,
+    })
+    expect(result.createdParticipante).toBe(true)
+    expect(result.createdLink).toBe(true)
+  })
+
+  it('createOrLinkByEmail cria vínculo quando email já existe', async () => {
+    Participante.findOne.mockResolvedValue({ id: 3 })
+    ParticipanteEvento.findOne.mockResolvedValue(null)
+
+    const result = await participanteService.createOrLinkByEmail({
+      nomeCompleto: 'Pessoa Existente',
+      email: 'existente@exemplo.com',
+      evento_id: 9,
+    })
+
+    expect(Participante.create).not.toHaveBeenCalled()
+    expect(ParticipanteEvento.create).toHaveBeenCalledWith({
+      participante_id: 3,
+      evento_id: 9,
+    })
+    expect(result.createdParticipante).toBe(false)
+    expect(result.createdLink).toBe(true)
   })
 })

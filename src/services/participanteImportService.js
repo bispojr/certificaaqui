@@ -1,4 +1,3 @@
-const { Participante } = require('../../src/models')
 const participanteService = require('./participanteService')
 const participanteSchema = require('../validators/participante')
 
@@ -79,6 +78,17 @@ async function importarParticipantes({
   principal = null,
   eventoIds = null,
 } = {}) {
+  const conteudoInformado =
+    typeof conteudo === 'string' && conteudo.trim() !== ''
+  const arquivoInformado =
+    typeof arquivoCsv === 'string' && arquivoCsv.trim() !== ''
+
+  if (conteudoInformado === arquivoInformado) {
+    throw new Error(
+      'Informe exatamente uma origem de dados: conteúdo colado ou arquivo CSV.',
+    )
+  }
+
   const rawContent = origem === 'csv' ? arquivoCsv : conteudo
 
   if (!eventoId) {
@@ -122,17 +132,7 @@ async function importarParticipantes({
     }
 
     const dadosNormalizados = validation.data
-    const participanteExistente = await Participante.findOne({
-      where: { email: dadosNormalizados.email },
-      paranoid: false,
-    })
-
-    if (participanteExistente) {
-      vinculosCriados += 1
-      continue
-    }
-
-    await participanteService.create(
+    const resultadoCriacao = await participanteService.createOrLinkByEmail(
       {
         ...dadosNormalizados,
         evento_id: eventoId,
@@ -143,7 +143,11 @@ async function importarParticipantes({
       },
     )
 
-    criados += 1
+    if (resultadoCriacao.createdParticipante) {
+      criados += 1
+    } else if (resultadoCriacao.createdLink) {
+      vinculosCriados += 1
+    }
   }
 
   return {
