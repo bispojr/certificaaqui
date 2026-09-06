@@ -38,7 +38,7 @@ describe('views/admin/certificados/detalhe.hbs', () => {
     expect($('.list-group-item').text()).toContain('Tipo A')
     expect($('.list-group-item').text()).toContain('emitido')
     expect($('.btn-outline-primary').attr('href')).toMatch(
-      /\/public\/certificados\/1\/pdf/,
+      /\/api\/certificados\/1\/pdf/,
     )
     expect($('.btn-outline-primary').attr('target')).toBe('_blank')
     // Aceita tanto undefined (cheerio antigo) quanto 'pre-wrap' (cheerio novo)
