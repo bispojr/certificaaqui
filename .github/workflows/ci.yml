@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - main
+      - dev
       - 001-auth-scope-convergence
   pull_request:
     branches:
       - main
+      - dev
       - 001-auth-scope-convergence
   workflow_dispatch:
 
