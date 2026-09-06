@@ -22,16 +22,16 @@ Domínios **não auditados** (ex.: eventos, usuários, autenticação isolada) *
 
 ## Legenda de Tipos
 
-| Código | Tipo                    |
-| ------ | ----------------------- |
-| BR     | Bug real                |
-| GI     | Gap de implementação    |
-| IP     | Implementação parcial   |
+| Código | Tipo                      |
+| ------ | ------------------------- |
+| BR     | Bug real                  |
+| GI     | Gap de implementação      |
+| IP     | Implementação parcial     |
 | ID     | Inconsistência documental |
-| DT     | Dívida técnica          |
-| VU     | Vulnerabilidade         |
-| AM     | Ambiguidade             |
-| VA     | Violação arquitetural   |
+| DT     | Dívida técnica            |
+| VU     | Vulnerabilidade           |
+| AM     | Ambiguidade               |
+| VA     | Violação arquitetural     |
 
 ---
 
@@ -39,25 +39,25 @@ Domínios **não auditados** (ex.: eventos, usuários, autenticação isolada) *
 
 # 1. Matriz Consolidada de Achados
 
-| ID       | Domínio               | Descrição                                                                                   | Severidade | Tipo | Impacto                        | Destino Recomendado                        |
-| -------- | --------------------- | ------------------------------------------------------------------------------------------- | ---------- | ---- | ------------------------------ | ------------------------------------------ |
-| CERT-01  | Certificados / Escopo | `scopedEvento` injeta `evento_id` na query, mas o service de certificados ignora o filtro; rotas com `:id` comparam o id do certificado com `evento_id`, causando falso bloqueio ou acesso indevido | **Crítico** | BR   | Segurança, Multi-tenant        | Spec corretiva imediata                    |
-| CERT-02  | Certificados SSR      | Handlers SSR (detalhe, editar, atualizar, cancelar, deletar, restaurar) usam `findByPk` sem validar vínculo do usuário com o evento do certificado | **Crítico** | BR   | Segurança, Multi-tenant        | Spec corretiva imediata                    |
-| CERT-03  | Certificados SSR      | Formulários de criar/editar SSR listam todos os eventos, todos os tipos e todos os participantes sem filtro de escopo; evento enviado no form não é validado contra o escopo do usuário | **Alto**   | IP   | Segurança, Multi-tenant        | Spec corretiva imediata                    |
-| CERT-04  | Participantes / Escopo | Rotas e service de participantes na API não aplicam nenhum escopo por evento; gestores/monitores obtêm todos os participantes do sistema | **Crítico** | GI   | Segurança, Multi-tenant (PII)  | Spec corretiva imediata                    |
-| CERT-05  | Participantes SSR     | Listagem SSR filtra participantes por eventos do usuário, mas editar/atualizar/deletar/restaurar não validam ownership — inconsistência intra-módulo | **Alto**   | IP   | Multi-tenant                   | Spec corretiva imediata                    |
-| CERT-06  | Tipos de Certificados | GET da API de tipos de certificados não é filtrado por evento do usuário; service aceita `eventoId` mas o controller não o repassa | **Médio**  | GI   | Multi-tenant                   | Spec incremental                           |
-| CERT-07  | RBAC / Restauração    | API permite `restore` de certificado com `rbac('monitor')`; SSR exige `rbac('admin')` — comportamento diverge e contradiz FR-22 | **Médio**  | ID   | Segurança, Arquitetura         | Atualização do SRS + spec corretiva        |
-| CERT-08  | Certificados / API    | Validator Zod de criação remove `valores_dinamicos` do payload (falha silenciosa) e exige `status` explícito — contradiz FR-19 (status padrão `"emitido"`) e FR-20/FR-54 (campos dinâmicos obrigatórios) | **Alto**   | BR   | Integridade de Dados           | Spec corretiva imediata                    |
-| CERT-09  | Certificados / API    | `update`, `delete`, `restore` e `cancel` retornam HTTP 200/204 com payload nulo quando o registro não existe, em vez de HTTP 404 | **Médio**  | BR   | UX, Arquitetura                | Backlog técnico                            |
-| CERT-10  | Certificados SSR      | No handler de detalhe SSR, o include usa `TiposCertificado` (singular) mas o alias do modelo é `TiposCertificados` (plural), causando associação vazia e interpolação de texto incorreta | **Médio**  | BR   | UX, Integridade de Dados       | Spec corretiva imediata                    |
-| CERT-11  | Certificados / Código | Geração do código único (`CODIGO_BASE-YY-TIPO-N`) usa `count + 1` sem transação atômica — race condition pode gerar colisão de `codigo` e erro de `unique constraint` em alta concorrência | **Alto**   | DT   | Integridade de Dados           | ADR / discussão arquitetural               |
-| CERT-12  | Certificados / Código | O `count` para geração do código não inclui registros soft-deletados; reativação de certificados pode reutilizar um código já existente e violar a `unique constraint` | **Médio**  | BR   | Integridade de Dados           | Spec corretiva imediata                    |
-| CERT-13  | Certificados / Update | `update` de certificado não valida se `valores_dinamicos` cobre todos os campos exigidos por `dados_dinamicos` do tipo — permite dados parciais/inconsistentes | **Médio**  | GI   | Integridade de Dados           | Spec incremental                           |
-| CERT-14  | Consultas Públicas    | `GET /api/certificados?email` e `GET /api/validar/:codigo` retornam certificados independentemente do `status` (inclusive `cancelado` e `pendente`) — comportamento não documentado no SRS | **Baixo**  | AM   | UX                             | Validação humana                           |
-| CERT-15  | Arquitetura / Escopo  | Padrão sistêmico: `scopedEvento` injeta filtros em `req.query`, mas os services não consomem esses filtros — violação arquitetural transversal que invalida a camada de middleware como enforcement de segurança | **Crítico** | VA   | Segurança, Multi-tenant, Arquitetura | ADR / discussão arquitetural          |
-| CERT-16  | Autenticação SSR      | `authSSR` popula `req.usuario` como objeto simples (sem `getEventos`); controllers SSR que precisam dos eventos do usuário buscam via `UsuarioEvento` diretamente — dependência implícita, frágil | **Médio**  | DT   | Manutenção, Arquitetura        | Backlog técnico                            |
-| CERT-17  | Tipos de Certificados SSR | SSR de tipos exibe todos os registros globalmente, mas ownership de edição é local ao evento do usuário — ambiguidade funcional não resolvida no SRS | **Baixo**  | AM   | UX, Multi-tenant               | Validação humana                           |
+| ID      | Domínio                   | Descrição                                                                                                                                                                                                        | Severidade  | Tipo | Impacto                              | Destino Recomendado                 |
+| ------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ---- | ------------------------------------ | ----------------------------------- |
+| CERT-01 | Certificados / Escopo     | `scopedEvento` injeta `evento_id` na query, mas o service de certificados ignora o filtro; rotas com `:id` comparam o id do certificado com `evento_id`, causando falso bloqueio ou acesso indevido              | **Crítico** | BR   | Segurança, Multi-tenant              | Spec corretiva imediata             |
+| CERT-02 | Certificados SSR          | Handlers SSR (detalhe, editar, atualizar, cancelar, deletar, restaurar) usam `findByPk` sem validar vínculo do usuário com o evento do certificado                                                               | **Crítico** | BR   | Segurança, Multi-tenant              | Spec corretiva imediata             |
+| CERT-03 | Certificados SSR          | Formulários de criar/editar SSR listam todos os eventos, todos os tipos e todos os participantes sem filtro de escopo; evento enviado no form não é validado contra o escopo do usuário                          | **Alto**    | IP   | Segurança, Multi-tenant              | Spec corretiva imediata             |
+| CERT-04 | Participantes / Escopo    | Rotas e service de participantes na API não aplicam nenhum escopo por evento; gestores/monitores obtêm todos os participantes do sistema                                                                         | **Crítico** | GI   | Segurança, Multi-tenant (PII)        | Spec corretiva imediata             |
+| CERT-05 | Participantes SSR         | Listagem SSR filtra participantes por eventos do usuário, mas editar/atualizar/deletar/restaurar não validam ownership — inconsistência intra-módulo                                                             | **Alto**    | IP   | Multi-tenant                         | Spec corretiva imediata             |
+| CERT-06 | Tipos de Certificados     | GET da API de tipos de certificados não é filtrado por evento do usuário; service aceita `eventoId` mas o controller não o repassa                                                                               | **Médio**   | GI   | Multi-tenant                         | Spec incremental                    |
+| CERT-07 | RBAC / Restauração        | API permite `restore` de certificado com `rbac('monitor')`; SSR exige `rbac('admin')` — comportamento diverge e contradiz FR-22                                                                                  | **Médio**   | ID   | Segurança, Arquitetura               | Atualização do SRS + spec corretiva |
+| CERT-08 | Certificados / API        | Validator Zod de criação remove `valores_dinamicos` do payload (falha silenciosa) e exige `status` explícito — contradiz FR-19 (status padrão `"emitido"`) e FR-20/FR-54 (campos dinâmicos obrigatórios)         | **Alto**    | BR   | Integridade de Dados                 | Spec corretiva imediata             |
+| CERT-09 | Certificados / API        | `update`, `delete`, `restore` e `cancel` retornam HTTP 200/204 com payload nulo quando o registro não existe, em vez de HTTP 404                                                                                 | **Médio**   | BR   | UX, Arquitetura                      | Backlog técnico                     |
+| CERT-10 | Certificados SSR          | No handler de detalhe SSR, o include usa `TiposCertificado` (singular) mas o alias do modelo é `TiposCertificados` (plural), causando associação vazia e interpolação de texto incorreta                         | **Médio**   | BR   | UX, Integridade de Dados             | Spec corretiva imediata             |
+| CERT-11 | Certificados / Código     | Geração do código único (`CODIGO_BASE-YY-TIPO-N`) usa `count + 1` sem transação atômica — race condition pode gerar colisão de `codigo` e erro de `unique constraint` em alta concorrência                       | **Alto**    | DT   | Integridade de Dados                 | ADR / discussão arquitetural        |
+| CERT-12 | Certificados / Código     | O `count` para geração do código não inclui registros soft-deletados; reativação de certificados pode reutilizar um código já existente e violar a `unique constraint`                                           | **Médio**   | BR   | Integridade de Dados                 | Spec corretiva imediata             |
+| CERT-13 | Certificados / Update     | `update` de certificado não valida se `valores_dinamicos` cobre todos os campos exigidos por `dados_dinamicos` do tipo — permite dados parciais/inconsistentes                                                   | **Médio**   | GI   | Integridade de Dados                 | Spec incremental                    |
+| CERT-14 | Consultas Públicas        | `GET /api/certificados?email` e `GET /api/validar/:codigo` retornam certificados independentemente do `status` (inclusive `cancelado` e `pendente`) — comportamento não documentado no SRS                       | **Baixo**   | AM   | UX                                   | Validação humana                    |
+| CERT-15 | Arquitetura / Escopo      | Padrão sistêmico: `scopedEvento` injeta filtros em `req.query`, mas os services não consomem esses filtros — violação arquitetural transversal que invalida a camada de middleware como enforcement de segurança | **Crítico** | VA   | Segurança, Multi-tenant, Arquitetura | ADR / discussão arquitetural        |
+| CERT-16 | Autenticação SSR          | `authSSR` popula `req.usuario` como objeto simples (sem `getEventos`); controllers SSR que precisam dos eventos do usuário buscam via `UsuarioEvento` diretamente — dependência implícita, frágil                | **Médio**   | DT   | Manutenção, Arquitetura              | Backlog técnico                     |
+| CERT-17 | Tipos de Certificados SSR | SSR de tipos exibe todos os registros globalmente, mas ownership de edição é local ao evento do usuário — ambiguidade funcional não resolvida no SRS                                                             | **Baixo**   | AM   | UX, Multi-tenant                     | Validação humana                    |
 
 ---
 
@@ -115,32 +115,32 @@ Domínios **não auditados** (ex.: eventos, usuários, autenticação isolada) *
 
 ## Curto Prazo (Correctivas — antes de qualquer novo desenvolvimento)
 
-| ID      | Descrição                                                                 | Justificativa                                              |
-| ------- | ------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| CERT-01 | Corrigir `scopedEvento` na API de certificados: service deve filtrar por `evento_id` e rotas com `:id` devem validar ownership após fetch | Segurança crítica — multi-tenant |
-| CERT-02 | Adicionar validação de ownership nos handlers SSR de certificados por `:id` | Segurança crítica — multi-tenant |
-| CERT-03 | Filtrar eventos, tipos e participantes nos formulários SSR pelo escopo do usuário; validar `evento_id` recebido no form | Multi-tenant, segurança |
-| CERT-04 | Aplicar escopo de evento na API de participantes (middleware + service) | Crítico — PII exposta |
-| CERT-05 | Unificar validação de ownership em todas as operações SSR de participantes (não apenas listagem) | Coerência de segurança |
-| CERT-08 | Corrigir schema Zod de criação de certificado: manter `valores_dinamicos`, tornar `status` opcional com default `"emitido"` | Integridade funcional — bloqueia criação |
-| CERT-10 | Corrigir typo `TiposCertificado` → `TiposCertificados` no include SSR | Bug de associação — texto interpolado incorreto |
-| CERT-12 | Incluir registros soft-deletados no `count` para geração de código de certificado | Integridade de dados — evitar colisão |
+| ID      | Descrição                                                                                                                                 | Justificativa                                   |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| CERT-01 | Corrigir `scopedEvento` na API de certificados: service deve filtrar por `evento_id` e rotas com `:id` devem validar ownership após fetch | Segurança crítica — multi-tenant                |
+| CERT-02 | Adicionar validação de ownership nos handlers SSR de certificados por `:id`                                                               | Segurança crítica — multi-tenant                |
+| CERT-03 | Filtrar eventos, tipos e participantes nos formulários SSR pelo escopo do usuário; validar `evento_id` recebido no form                   | Multi-tenant, segurança                         |
+| CERT-04 | Aplicar escopo de evento na API de participantes (middleware + service)                                                                   | Crítico — PII exposta                           |
+| CERT-05 | Unificar validação de ownership em todas as operações SSR de participantes (não apenas listagem)                                          | Coerência de segurança                          |
+| CERT-08 | Corrigir schema Zod de criação de certificado: manter `valores_dinamicos`, tornar `status` opcional com default `"emitido"`               | Integridade funcional — bloqueia criação        |
+| CERT-10 | Corrigir typo `TiposCertificado` → `TiposCertificados` no include SSR                                                                     | Bug de associação — texto interpolado incorreto |
+| CERT-12 | Incluir registros soft-deletados no `count` para geração de código de certificado                                                         | Integridade de dados — evitar colisão           |
 
 ## Médio Prazo (Incrementais — após estabilização das correções críticas)
 
-| ID      | Descrição                                                                 | Justificativa                                              |
-| ------- | ------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| CERT-06 | Filtrar a API de tipos de certificados por `evento_id` do usuário autenticado (mediante decisão da validação humana de CERT-17) | Isolamento multi-tenant |
-| CERT-07 | Alinhar RBAC de restauração de certificados entre API e SSR (definir regra única após validação humana) | Consistência de RBAC |
-| CERT-09 | Retornar HTTP 404 em `update`, `delete`, `restore` e `cancel` quando registro não existe | Contrato de API |
-| CERT-13 | Validar `valores_dinamicos` completos também na rota de `update` de certificado | Integridade de dados |
+| ID      | Descrição                                                                                                                                                  | Justificativa            |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| CERT-06 | Filtrar a API de tipos de certificados por `evento_id` do usuário autenticado (mediante decisão da validação humana de CERT-17)                            | Isolamento multi-tenant  |
+| CERT-07 | Alinhar RBAC de restauração de certificados entre API e SSR (definir regra única após validação humana)                                                    | Consistência de RBAC     |
+| CERT-09 | Retornar HTTP 404 em `update`, `delete`, `restore` e `cancel` quando registro não existe                                                                   | Contrato de API          |
+| CERT-13 | Validar `valores_dinamicos` completos também na rota de `update` de certificado                                                                            | Integridade de dados     |
 | CERT-16 | Refinar `authSSR` para disponibilizar método ou atributo de eventos do usuário de forma explícita, evitando dependência de `UsuarioEvento` nos controllers | Arquitetura / manutenção |
 
 ## Longo Prazo (Estratégicos — requerem discussão e design)
 
-| ID      | Descrição                                                                 | Justificativa                                              |
-| ------- | ------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| CERT-11 | Tornar geração de código de certificado transacionalmente segura (lock ou sequência atômica) | Integridade de dados em concorrência |
+| ID      | Descrição                                                                                                                                                                            | Justificativa                                                            |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| CERT-11 | Tornar geração de código de certificado transacionalmente segura (lock ou sequência atômica)                                                                                         | Integridade de dados em concorrência                                     |
 | CERT-15 | Definir e aplicar estratégia única de enforcement de escopo: (a) services recebem `eventoIds` explicitamente dos controllers, ou (b) camada de autorização separada no service layer | Decisão arquitetural transversal — elimina a classe de bugs multi-tenant |
 
 ---
@@ -174,7 +174,7 @@ Domínios **não auditados** (ex.: eventos, usuários, autenticação isolada) *
 
 ## SRS-04 — FR-46 / FR-37: Visibilidade de leitura de tipos de certificados por perfil
 
-**Situação atual:** FR-46 restringe *mutações* de tipos ao gestor do evento. FR-37 restringe operações a eventos do usuário. Não há especificação clara sobre se a *leitura* de tipos de certificados é global ou restrita por evento.  
+**Situação atual:** FR-46 restringe _mutações_ de tipos ao gestor do evento. FR-37 restringe operações a eventos do usuário. Não há especificação clara sobre se a _leitura_ de tipos de certificados é global ou restrita por evento.  
 **Problema:** Ambiguidade funcional que gera implementação divergente (SSR global, API sem filtro).  
 **Ação recomendada:** Após validação humana (ver Seção 5), documentar explicitamente no SRS se `GET /tipos-certificados` deve retornar apenas os tipos dos eventos do usuário ou todos os tipos do sistema.  
 **Rastreabilidade:** FR-46, FR-37, CERT-06, CERT-17.
@@ -279,7 +279,7 @@ Domínios **não auditados** (ex.: eventos, usuários, autenticação isolada) *
 ## 7.2 Inconsistência Recorrente: Middleware e Service Layer Desacoplados
 
 **Evidência:** Mesmo padrão em certificados (API), participantes (API) e tipos de certificados (API): middleware aplica lógica, service ignora.  
-**Natureza:** Violação de NFR-6 (arquitetura em camadas: lógica de negócio não deve residir em rotas ou models — mas também não deve ficar *apenas* no middleware sem propagação ao service).  
+**Natureza:** Violação de NFR-6 (arquitetura em camadas: lógica de negócio não deve residir em rotas ou models — mas também não deve ficar _apenas_ no middleware sem propagação ao service).  
 **Impacto:** Falsa sensação de segurança por middleware presente mas ineficaz.  
 **Achados:** CERT-01, CERT-04, CERT-06, CERT-15.
 
@@ -292,14 +292,14 @@ Domínios **não auditados** (ex.: eventos, usuários, autenticação isolada) *
 
 ## 7.4 Dependências Identificadas entre Certificados e RBAC
 
-| Dependência                                  | Descrição                                                                                                       |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Dependência                                  | Descrição                                                                                                              |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | `scopedEvento` → service layer               | Sem propagação do `evento_id` para os services, todo o RBAC de escopo é inoperante (CERT-15 bloqueia CERT-01, CERT-04) |
-| `authSSR` → `UsuarioEvento`                  | Ausência de `getEventos` em `req.usuario` força dependência direta de `UsuarioEvento` nos controllers SSR (CERT-16) |
-| VH-01 → CERT-06                              | A decisão sobre visibilidade de tipos (global vs. escopo) determina se CERT-06 é correção ou non-issue        |
-| VH-02 → CERT-07                              | A decisão sobre RBAC de restore determina se a API ou o SSR está correto                                      |
-| CERT-11 + CERT-12 → geração de código       | Os dois bugs se combinam: sem transação e sem incluir soft-deleted, o código pode colidir em cenários de restore |
-| SPEC-01 → CERT-01, CERT-02, CERT-04, CERT-05 | A spec de enforcement de escopo é pré-requisito das specs corretivas para evitar divergência na implementação  |
+| `authSSR` → `UsuarioEvento`                  | Ausência de `getEventos` em `req.usuario` força dependência direta de `UsuarioEvento` nos controllers SSR (CERT-16)    |
+| VH-01 → CERT-06                              | A decisão sobre visibilidade de tipos (global vs. escopo) determina se CERT-06 é correção ou non-issue                 |
+| VH-02 → CERT-07                              | A decisão sobre RBAC de restore determina se a API ou o SSR está correto                                               |
+| CERT-11 + CERT-12 → geração de código        | Os dois bugs se combinam: sem transação e sem incluir soft-deleted, o código pode colidir em cenários de restore       |
+| SPEC-01 → CERT-01, CERT-02, CERT-04, CERT-05 | A spec de enforcement de escopo é pré-requisito das specs corretivas para evitar divergência na implementação          |
 
 ## 7.5 Necessidade de Auditorias Futuras
 
@@ -316,4 +316,4 @@ Domínios **não auditados** (ex.: eventos, usuários, autenticação isolada) *
 
 ---
 
-*Este documento é produto exclusivo da triagem dos achados das auditorias 07/07-certificados.md e 07/02-rbac-escopo.md, confrontados com o SRS v2.0. Nenhuma implementação foi proposta. Todos os achados mantêm rastreabilidade explícita aos FRs e evidências de código das auditorias fonte.*
+_Este documento é produto exclusivo da triagem dos achados das auditorias 07/07-certificados.md e 07/02-rbac-escopo.md, confrontados com o SRS v2.0. Nenhuma implementação foi proposta. Todos os achados mantêm rastreabilidade explícita aos FRs e evidências de código das auditorias fonte._

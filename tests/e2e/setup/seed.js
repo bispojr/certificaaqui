@@ -46,6 +46,8 @@ async function seedE2E() {
     evento_id: evento.id,
   })
 
+  await UsuarioEvento.create({ usuario_id: monitor.id, evento_id: evento.id })
+
   const tipo = await TiposCertificados.create({
     evento_id: evento.id,
     codigo: 'EE', // apenas letras
@@ -94,6 +96,9 @@ async function seedE2E() {
       expiresIn: '1h',
     }),
     gestorToken: jwt.sign({ id: gestor.id, perfil: 'gestor' }, JWT_SECRET, {
+      expiresIn: '1h',
+    }),
+    monitorToken: jwt.sign({ id: monitor.id, perfil: 'monitor' }, JWT_SECRET, {
       expiresIn: '1h',
     }),
   }

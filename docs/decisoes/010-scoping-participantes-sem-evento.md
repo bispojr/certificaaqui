@@ -66,11 +66,11 @@ Essa ambiguidade é a raiz do problema: o sistema não tomou uma decisão de pro
 
 Decisão confirmada pelo stakeholder de produto em 2026-05-16. As três questões de produto foram respondidas e registradas:
 
-| Questão | Decisão do produto |
-|---------|-------------------|
-| Participante sem certificado é visível na listagem do gestor/monitor? | **Sim** — visibilidade via `participante_eventos`, independente de certificados |
+| Questão                                                                | Decisão do produto                                                                                                                                                                                                             |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Participante sem certificado é visível na listagem do gestor/monitor?  | **Sim** — visibilidade via `participante_eventos`, independente de certificados                                                                                                                                                |
 | Gestor/monitor vincula o participante ao evento no momento da criação? | **Sim** — vínculo explícito em `participante_eventos` é criado na criação do participante; o lookup por e-mail é o mecanismo: se participante já existe, cria apenas o vínculo; se não existe, cria o participante e o vínculo |
-| Exclusão de participante por gestor remove o quê? | **Apenas o vínculo** (`participante_eventos`) — o participante permanece globalmente; certificados em outros eventos não são afetados |
+| Exclusão de participante por gestor remove o quê?                      | **Apenas o vínculo** (`participante_eventos`) — o participante permanece globalmente; certificados em outros eventos não são afetados                                                                                          |
 
 **Justificativa da escolha:**
 
@@ -89,6 +89,7 @@ Decisão confirmada pelo stakeholder de produto em 2026-05-16. As três questõe
 Adicionar tabela `participante_eventos` com colunas `participante_id` e `evento_id`, analogamente à tabela `usuario_eventos` (ADR-005). O vínculo explícito seria criado no momento do cadastro do participante em um evento.
 
 **Trade-offs positivos:**
+
 - Permite `WHERE evento_id IN [...]` via JOIN em `participante_eventos` sem depender de certificados.
 - Participantes sem certificados são visíveis ao gestor/monitor do evento ao qual foram vinculados.
 - Consistência semântica: o conceito de "participante do evento" tem representação direta no schema.
@@ -96,6 +97,7 @@ Adicionar tabela `participante_eventos` com colunas `participante_id` e `evento_
 - Permite metadados adicionais no vínculo futuramente (ex.: `papel_no_evento`, `carga_horaria`).
 
 **Trade-offs negativos:**
+
 - Impacto em migrações: nova tabela `participante_eventos`, nova migration.
 - Impacto no model `Participante` e model `Evento`: novos relacionamentos `BelongsToMany`.
 - Impacto em controllers e services: operações de criação de participante precisam registrar o vínculo; operações de listagem precisam JOIN na nova tabela.
@@ -111,11 +113,13 @@ Adicionar tabela `participante_eventos` com colunas `participante_id` e `evento_
 Manter o schema atual sem `evento_id` em `participantes`. Definir formalmente que gestores/monitores visualizam participantes que possuem **ao menos um certificado em seus eventos**. O scoping é aplicado via JOIN em `certificados`.
 
 **Trade-offs positivos:**
+
 - Não requer migração de schema.
 - Semanticamente simples: "participante do evento" = "participante com certificado no evento".
 - Nenhum impacto em models ou migrations além de corrigir a query de listagem.
 
 **Trade-offs negativos:**
+
 - **Viola FR-36 e FR-49**: participantes cadastrados sem certificados são invisíveis na listagem do gestor/monitor.
 - **Viola STF-038**: o bug documentado pela triagem seria aceitado como comportamento esperado — requer decisão explícita de produto para descartar FR-36 e FR-49 como entendidos atualmente.
 - Operações por ID (editar, deletar) permanecem sem âncora de scoping confiável: um participante pode ter certificados em múltiplos eventos, tornando ambíguo quem tem ownership.
@@ -131,10 +135,12 @@ Manter o schema atual sem `evento_id` em `participantes`. Definir formalmente qu
 Adicionar uma FK `evento_id` nullable na tabela `participantes`, definindo um "evento principal" para o participante.
 
 **Trade-offs positivos:**
+
 - Permite `WHERE evento_id IN [...]` diretamente em `participantes`.
 - Scoping simples e direto no service, análogo a outros domínios.
 
 **Trade-offs negativos:**
+
 - **Semanticamente incorreto para o domínio**: um participante real pode participar de múltiplos eventos. FK única implica que um participante pertence a exatamente um evento, o que contradiz a existência de múltiplos certificados por participante em eventos distintos.
 - `NULL` para participantes não vinculados gera ambiguidade de scoping: admins veem todos, gestores veem apenas os seus, mas participantes `NULL` ficam em limbo.
 - Não segue o padrão N:N adotado no projeto (ADR-005) para vínculos usuário-evento.
@@ -177,6 +183,7 @@ Aplicar políticas RLS na tabela `participantes` usando um JOIN implícito com `
 ### Camada de Models
 
 Se adotada a Alternativa A:
+
 - Novo model `ParticipanteEvento` com colunas `participante_id` e `evento_id`, soft delete (`paranoid: true`).
 - `Participante.belongsToMany(Evento, { through: 'participante_eventos' })` e recíproco em `Evento`.
 - A tabela `participante_eventos` precisa de constraint `UNIQUE(participante_id, evento_id)` com `WHERE deleted_at IS NULL` (alinhado com NFR-4).
@@ -184,6 +191,7 @@ Se adotada a Alternativa A:
 ### Camada de Services
 
 Se adotada a Alternativa A:
+
 - `participanteService.findAll()` passa a incluir `eventoIds` como parâmetro explícito (alinhado com ADR-009), com JOIN em `participante_eventos`.
 - `participanteService.findById()` (e variantes) valida que o participante possui vínculo em um dos `eventoIds` antes de retornar ou modificar.
 - `participanteService.create()` precisa aceitar `eventoId` como parâmetro para registrar o vínculo na criação.
@@ -191,47 +199,50 @@ Se adotada a Alternativa A:
 ### Camada de Controllers
 
 Se adotada a Alternativa A:
+
 - Controllers API e SSR de participantes passam a repassar `eventoIds` para o service (alinhado com ADR-009).
 - O controller de criação (`POST /participantes`) precisa derivar `eventoId` do contexto: para gestor/monitor com único evento vinculado, pode ser derivado automaticamente; para admin ou multi-evento, requer parâmetro explícito no request.
 
 ### Camada de Migrations
 
 Se adotada a Alternativa A:
+
 - Nova migration para criação de `participante_eventos`.
 - Potencial migration de normalização para registros existentes, dependendo de como o produto decide tratar participantes já cadastrados.
 
 ### Impacto em STF abertos
 
-| STF | Descrição resumida | Resolvido por esta ADR? |
-|-----|--------------------|------------------------|
-| STF-004 | Listagem API expõe todos os participantes | Sim (Alternativa A) |
-| STF-037 | Operações SSR por ID sem verificação de escopo | Sim (Alternativa A) |
-| STF-038 | Participantes sem certificados invisíveis | Sim (Alternativa A); NÃO (Alternativa B — decisão de produto) |
+| STF     | Descrição resumida                             | Resolvido por esta ADR?                                       |
+| ------- | ---------------------------------------------- | ------------------------------------------------------------- |
+| STF-004 | Listagem API expõe todos os participantes      | Sim (Alternativa A)                                           |
+| STF-037 | Operações SSR por ID sem verificação de escopo | Sim (Alternativa A)                                           |
+| STF-038 | Participantes sem certificados invisíveis      | Sim (Alternativa A); NÃO (Alternativa B — decisão de produto) |
 
 ---
 
 ## Riscos
 
-| Risco | Probabilidade | Impacto | Mitigação |
-|-------|--------------|---------|----------|
-| Produto decide que participantes sem certificados não têm visibilidade para gestor/monitor | Média | Alto — STF-038 permanece como comportamento aceito; FR-36 e FR-49 precisam ser revisados no SRS | Validação explícita com stakeholder do produto antes de iniciar implementação |
-| Migration de normalização cria registros `participante_eventos` incorretos para participantes existentes | Alta | Alto — dados de produção corrompidos ou vínculos ausentes | Definir critério claro de migração; testar em ambientes de staging com dados reais |
-| Controller omite `eventoId` ao criar participante | Média | Alto — participante criado sem vínculo, invisível para gestor/monitor | Validação no service: criação sem `eventoId` por gestor/monitor resulta em erro 400 |
-| Participante com certificados em múltiplos eventos: ownership ambíguo em operações destrutivas | Média | Médio — gestor de evento A pode não conseguir deletar participante com certificado em evento B | Documentar: soft delete de participante deleta vínculo `participante_eventos`, não o participante global |
-| Alternativa B adotada sem revisão explícita dos requisitos FR-36 e FR-49 | Baixa | Alto — violação silenciosa de requisito funcional | Registrar formalmente no SRS qualquer revisão de comportamento esperado |
+| Risco                                                                                                    | Probabilidade | Impacto                                                                                         | Mitigação                                                                                                |
+| -------------------------------------------------------------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Produto decide que participantes sem certificados não têm visibilidade para gestor/monitor               | Média         | Alto — STF-038 permanece como comportamento aceito; FR-36 e FR-49 precisam ser revisados no SRS | Validação explícita com stakeholder do produto antes de iniciar implementação                            |
+| Migration de normalização cria registros `participante_eventos` incorretos para participantes existentes | Alta          | Alto — dados de produção corrompidos ou vínculos ausentes                                       | Definir critério claro de migração; testar em ambientes de staging com dados reais                       |
+| Controller omite `eventoId` ao criar participante                                                        | Média         | Alto — participante criado sem vínculo, invisível para gestor/monitor                           | Validação no service: criação sem `eventoId` por gestor/monitor resulta em erro 400                      |
+| Participante com certificados em múltiplos eventos: ownership ambíguo em operações destrutivas           | Média         | Médio — gestor de evento A pode não conseguir deletar participante com certificado em evento B  | Documentar: soft delete de participante deleta vínculo `participante_eventos`, não o participante global |
+| Alternativa B adotada sem revisão explícita dos requisitos FR-36 e FR-49                                 | Baixa         | Alto — violação silenciosa de requisito funcional                                               | Registrar formalmente no SRS qualquer revisão de comportamento esperado                                  |
 
 ---
 
 ## Dependências
 
-| ADR / Decisão | Relação | Motivo |
-|---------------|---------|--------|
-| **ADR-009** (Enforcement Multi-tenant) | **Pré-requisito** | O contrato de `eventoIds` passado pelos controllers para services é o mecanismo base; esta ADR especifica como `participanteService` implementa esse contrato dado o schema sem `evento_id` direto |
-| **ADR-005** (Vínculo Usuário-Evento N:N) | Referência de padrão | A tabela `usuario_eventos` é o precedente arquitetural para `participante_eventos`; o padrão N:N é o padrão do projeto para vínculos contextuais |
-| **ADR-001** (ORM Sequelize) | Existente — mantida | `BelongsToMany` via Sequelize é o mecanismo de implementação; `Op.in` para filtros de `eventoIds` |
-| **ADR-AUTH-01** (Contrato unificado de `req.usuario`) | Dependência indireta | A extração de `eventoIds` em contexto SSR depende da resolução do contrato de `req.usuario` entre API e SSR (STF-020) |
+| ADR / Decisão                                         | Relação              | Motivo                                                                                                                                                                                             |
+| ----------------------------------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ADR-009** (Enforcement Multi-tenant)                | **Pré-requisito**    | O contrato de `eventoIds` passado pelos controllers para services é o mecanismo base; esta ADR especifica como `participanteService` implementa esse contrato dado o schema sem `evento_id` direto |
+| **ADR-005** (Vínculo Usuário-Evento N:N)              | Referência de padrão | A tabela `usuario_eventos` é o precedente arquitetural para `participante_eventos`; o padrão N:N é o padrão do projeto para vínculos contextuais                                                   |
+| **ADR-001** (ORM Sequelize)                           | Existente — mantida  | `BelongsToMany` via Sequelize é o mecanismo de implementação; `Op.in` para filtros de `eventoIds`                                                                                                  |
+| **ADR-AUTH-01** (Contrato unificado de `req.usuario`) | Dependência indireta | A extração de `eventoIds` em contexto SSR depende da resolução do contrato de `req.usuario` entre API e SSR (STF-020)                                                                              |
 
 Esta ADR é **pré-requisito** para:
+
 - Resolução de STF-004 (listagem API de participantes sem filtro)
 - Resolução de STF-037 (operações SSR de participantes sem verificação de escopo)
 - Resolução de STF-038 (participantes invisíveis na listagem)
@@ -241,18 +252,18 @@ Esta ADR é **pré-requisito** para:
 
 ## Relação com SRS
 
-| Requisito | Relação |
-|-----------|---------|
-| **FR-1** | Define CRUD de participantes como entidade global. A Alternativa A não contradiz FR-1, mas adiciona o conceito de vínculo contextual com evento. A ambiguidade entre "participante global" e "participante do evento" precisa ser resolvida no SRS. |
-| **FR-2** | Unicidade de `email` de participante permanece global — não é afetada pela adoção de `participante_eventos`. |
-| **FR-4** | Soft delete de participante mantido. Com `participante_eventos`, o soft delete do vínculo e do participante precisam de semântica distinta e documentada. |
-| **FR-36** | Requisito central afetado. Monitor "lista e visualiza [...] participantes dos seus eventos" — requer definição de o que é "participante do evento". Esta ADR documenta a tensão e propõe resolução via Alternativa A. |
-| **FR-37** | Scoping de gestor/monitor por evento. O enforcement de scoping do domínio de participantes é o problema central desta ADR. |
-| **FR-49** | Interface SSR completa inclui gerenciamento de participantes. Participantes invisíveis por ausência de certificado (STF-038) violam FR-49. |
-| **FR-56** | Dashboard mostra "participantes únicos filtrados por seus eventos" para gestor/monitor. Sem scoping correto do domínio de participantes, FR-56 não pode ser satisfeito com precisão. |
-| **NFR-4** | Soft delete e restauração preservados. `participante_eventos` com `paranoid: true` mantém conformidade com NFR-4. |
-| **NFR-5** | Schema gerenciado exclusivamente via migrations. Nova migration de `participante_eventos` é mandatória. |
-| **NFR-6** | Arquitetura em camadas. O vínculo de escopo é responsabilidade do service, não de rotas ou middlewares isolados. |
+| Requisito | Relação                                                                                                                                                                                                                                             |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **FR-1**  | Define CRUD de participantes como entidade global. A Alternativa A não contradiz FR-1, mas adiciona o conceito de vínculo contextual com evento. A ambiguidade entre "participante global" e "participante do evento" precisa ser resolvida no SRS. |
+| **FR-2**  | Unicidade de `email` de participante permanece global — não é afetada pela adoção de `participante_eventos`.                                                                                                                                        |
+| **FR-4**  | Soft delete de participante mantido. Com `participante_eventos`, o soft delete do vínculo e do participante precisam de semântica distinta e documentada.                                                                                           |
+| **FR-36** | Requisito central afetado. Monitor "lista e visualiza [...] participantes dos seus eventos" — requer definição de o que é "participante do evento". Esta ADR documenta a tensão e propõe resolução via Alternativa A.                               |
+| **FR-37** | Scoping de gestor/monitor por evento. O enforcement de scoping do domínio de participantes é o problema central desta ADR.                                                                                                                          |
+| **FR-49** | Interface SSR completa inclui gerenciamento de participantes. Participantes invisíveis por ausência de certificado (STF-038) violam FR-49.                                                                                                          |
+| **FR-56** | Dashboard mostra "participantes únicos filtrados por seus eventos" para gestor/monitor. Sem scoping correto do domínio de participantes, FR-56 não pode ser satisfeito com precisão.                                                                |
+| **NFR-4** | Soft delete e restauração preservados. `participante_eventos` com `paranoid: true` mantém conformidade com NFR-4.                                                                                                                                   |
+| **NFR-5** | Schema gerenciado exclusivamente via migrations. Nova migration de `participante_eventos` é mandatória.                                                                                                                                             |
+| **NFR-6** | Arquitetura em camadas. O vínculo de escopo é responsabilidade do service, não de rotas ou middlewares isolados.                                                                                                                                    |
 
 **Ambiguidade identificada no SRS:**
 FR-1 trata participantes como entidade global sem menção a evento. FR-36 implica que participantes pertencem a eventos, mas não define o mecanismo. Essa contradição interna no SRS é a origem arquitetural deste problema. A resolução desta ADR requer que o SRS seja atualizado para definir formalmente se participantes são entidades globais com vínculos contextuais (suporte à Alternativa A) ou se a visibilidade por evento é derivada exclusivamente da existência de certificados (suporte à Alternativa B).
@@ -278,6 +289,7 @@ FR-1 trata participantes como entidade global sem menção a evento. FR-36 impli
 7. **Implicação LGPD registrada:** O vínculo em `participante_eventos` é o registro de responsabilidade LGPD. O gestor que cria o vínculo declara ter base legal para tratar os dados daquele participante naquele evento. Esta responsabilidade deve ser formalizada por termo de aceite no sistema (novo FR — ver SRS). Revisão jurídica do termo é necessária antes de produção.
 
 **Esta ADR não cobre:**
+
 - A implementação detalhada das queries de `participanteService`.
 - O formato exato da migration de `participante_eventos`.
 - A definição do contrato de `req.usuario` entre API e SSR (ADR-AUTH-01).

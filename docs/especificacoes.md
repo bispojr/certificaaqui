@@ -329,7 +329,6 @@ PDF A4 landscape gerado por PDFKit. Imagem de fundo e fonte Lato-Medium obtidas 
 
 ---
 
-
 ## Consulta e Validação Pública
 
 - `GET /api/certificados?email=<email>` — lista certificados por e-mail.

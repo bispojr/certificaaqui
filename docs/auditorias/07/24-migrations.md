@@ -10,36 +10,36 @@
 
 ## Migrations analisadas (ordem de execução)
 
-| # | Arquivo | Operação |
-|---|---------|----------|
-| 1 | `20260311175950-create-eventos.js` | CREATE TABLE eventos |
-| 2 | `20260311180308-create-tipos-certificados.js` | CREATE TABLE tipos_certificados |
-| 3 | `20260311180742-create-participantes.js` | CREATE TABLE participantes |
-| 4 | `20260311180841-create-certificados.js` | CREATE TABLE certificados |
-| 5 | `20260312180000-create-usuarios.js` | CREATE TABLE usuarios |
-| 6 | `20260313190000-create-usuario_eventos.js` | CREATE TABLE usuario_eventos |
-| 7 | `20260324083059-create-performance-indexes.js` | CREATE INDEX (múltiplos) |
-| 8 | `20260416092527-add-url-template-base-to-eventos.js` | ALTER TABLE eventos ADD url_template_base |
-| 9 | `20260416201114-add-layout-fields-to-eventos.js` | ALTER TABLE eventos ADD texto_x/y, validacao_x/y |
-| 10 | `20260418232720-add-evento-id-to-tipos-certificados.js` | ALTER TABLE tipos_certificados ADD evento_id + refactoring de constraints |
+| #   | Arquivo                                                 | Operação                                                                  |
+| --- | ------------------------------------------------------- | ------------------------------------------------------------------------- |
+| 1   | `20260311175950-create-eventos.js`                      | CREATE TABLE eventos                                                      |
+| 2   | `20260311180308-create-tipos-certificados.js`           | CREATE TABLE tipos_certificados                                           |
+| 3   | `20260311180742-create-participantes.js`                | CREATE TABLE participantes                                                |
+| 4   | `20260311180841-create-certificados.js`                 | CREATE TABLE certificados                                                 |
+| 5   | `20260312180000-create-usuarios.js`                     | CREATE TABLE usuarios                                                     |
+| 6   | `20260313190000-create-usuario_eventos.js`              | CREATE TABLE usuario_eventos                                              |
+| 7   | `20260324083059-create-performance-indexes.js`          | CREATE INDEX (múltiplos)                                                  |
+| 8   | `20260416092527-add-url-template-base-to-eventos.js`    | ALTER TABLE eventos ADD url_template_base                                 |
+| 9   | `20260416201114-add-layout-fields-to-eventos.js`        | ALTER TABLE eventos ADD texto_x/y, validacao_x/y                          |
+| 10  | `20260418232720-add-evento-id-to-tipos-certificados.js` | ALTER TABLE tipos_certificados ADD evento_id + refactoring de constraints |
 
 ---
 
 ## 1. Matriz Consolidada de Achados
 
-| ID | Migration | Descrição | Evidências | Tipo | Severidade | Impacto | Requisitos Violados | Destino Recomendado |
-|----|-----------|-----------|------------|------|------------|---------|---------------------|---------------------|
-| M-01 | `20260418232720` | Unique constraint composto em `tipos_certificados(codigo, evento_id)` é FULL no banco, mas o model define índice PARCIAL (`WHERE deleted_at IS NULL`) | Migration usa `addConstraint` (full unique); model usa `indexes: [{ where: { deleted_at: null } }]` | BR | Crítico | Impede reuso de `codigo` após soft delete de um tipo no mesmo evento | FR-11 |  Nova migration: remover constraint full, criar partial index `WHERE deleted_at IS NULL` |
-| M-02 | `20260311180308` | Migration inicial de `tipos_certificados` cria `unique: true` global em `codigo` — constraint incoerente com o requisito `FR-11` desde o início | Campo `codigo` com `unique: true` simples; FR-11 exige unicidade composta por evento | BR | Alto | Schema historicamente inconsistente com SRS; constraint global usada por semanas/sprints | FR-11 | Documentar decisão; a migration 10 corrige, mas gap existiu no histórico |
-| M-03 | `20260313190000` | `usuario_eventos` não possui unique constraint `(usuario_id, evento_id)` — duplicatas silenciosas possíveis | Migration cria tabela sem qualquer unique constraint; sem índice único | GI | Alto | Mesmo usuário pode ser associado ao mesmo evento múltiplas vezes; comportamento inesperado em RBAC | FR-32 | Nova migration adicionando `UNIQUE(usuario_id, evento_id)` em `usuario_eventos` |
-| M-04 | `20260311180841` | FKs de `certificados` para parents soft-deletáveis usam `ON DELETE CASCADE` — hard delete em parent apagaria certificados permanentemente | `participante_id`, `evento_id`, `tipo_certificado_id`: todos com `onDelete: 'CASCADE'` | DT | Alto | Se parent for deletado diretamente no banco (ou via down migration), certificados são permanentemente perdidos; viola espírito de NFR-4 | NFR-4 | Avaliar mudança para `ON DELETE RESTRICT` ou `SET NULL` adequado; documentar decisão |
-| M-05 | `20260324083059` | Índices de performance ausentes para `tipos_certificados.evento_id` e `usuario_eventos.*` | Migration cobre somente: `certificados(evento_id, participante_id, status)`, `participantes(email)`, `usuarios(email)` | GI | Médio | Queries de escopo por evento em tipos e queries de auth/RBAC em usuario_eventos sem suporte de índice | NFR-5 (implícito de performance) | Nova migration adicionando indexes em `tipos_certificados(evento_id)`, `usuario_eventos(usuario_id)`, `usuario_eventos(evento_id)` |
-| M-06 | `20260312180000` | Down migration de `usuarios` usa SQL bruto PostgreSQL-específico em vez de `queryInterface.dropTable` | `queryInterface.sequelize.query('DROP TABLE IF EXISTS "usuarios";')` + `DROP TYPE IF EXISTS "enum_usuarios_perfil"` | DT | Médio | Não-portável; desvia do padrão Sequelize; `DROP TABLE IF EXISTS` sem CASCADE pode ignorar erros silenciosos | NFR-5 | Refatorar down para `queryInterface.dropTable('usuarios')` + remoção explícita de ENUM via `queryInterface.sequelize.query` consistente |
-| M-07 | `20260311180841` | Down migration de `certificados` não remove o ENUM type `enum_certificados_status` | `dropTable('certificados', {})` sem drop do tipo ENUM equivalente ao feito em `usuarios` | IP | Médio | Orphan ENUM type no banco após rollback; inconsistência entre rollbacks de usuarios vs certificados | — | Adicionar `DROP TYPE IF EXISTS "enum_certificados_status"` no down de certificados |
-| M-08 | Todas as migrations | Nenhuma constraint `CHECK` em nível de banco para validações de formato: `codigo_base` (3 letras), `codigo` em tipos (2 letras), `ano >= 2000` | Validações existem apenas em ORM/validators; DB não as impõe | GI | Médio | Inserts diretos no banco (seeders, scripts de migração, adminPGAdmin) violam regras de negócio sem ser rejeitados | FR-7, FR-8, FR-11 | Adicionar migrations com `CHECK` constraints, ao menos para `codigo_base` e `codigo` tipos |
-| M-09 | `20260313190000` | `usuario_eventos` tem `deleted_at` (paranoid), mas NFR-4 não inclui esta tabela na lista de entidades com soft delete obrigatório | NFR-4 lista: participantes, eventos, certificados, tipos_certificados, usuarios — não lista usuario_eventos | AM | Baixo | Over-implementation não documentada; comportamento de soft delete em junction table é ambíguo | NFR-4 | Documentar decisão no SRS ou ADR |
-| M-10 | `20260311175950` | Migration de `eventos` não define `defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')` em `created_at`/`updated_at`, ao contrário de todas as demais tabelas | Campos sem `defaultValue`; outras migrations (participantes, tipos_certificados, certificados) têm o default | DT | Baixo | Inserts via SQL bruto em `eventos` sem timestamp explícito falham; inconsistência comportamental | — | Nova migration/correção ou documentar que ORM sempre provê o valor |
-| M-11 | `20260313190000` | `usuario_eventos` define `onDelete: 'CASCADE'` nas FKs mas não `onUpdate: 'CASCADE'`, ao contrário de `certificados` que define ambos | FK de `usuario_id` e `evento_id` sem `onUpdate`; certificados tem `onUpdate: 'CASCADE'` | DT | Baixo | Inconsistência de convenção; `onUpdate` rara em prática mas pode gerar comportamentos inesperados em cenários de migração de IDs | — | Padronizar `onUpdate: 'CASCADE'` em todas as FKs |
+| ID   | Migration           | Descrição                                                                                                                                                      | Evidências                                                                                                             | Tipo | Severidade | Impacto                                                                                                                                 | Requisitos Violados              | Destino Recomendado                                                                                                                     |
+| ---- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| M-01 | `20260418232720`    | Unique constraint composto em `tipos_certificados(codigo, evento_id)` é FULL no banco, mas o model define índice PARCIAL (`WHERE deleted_at IS NULL`)          | Migration usa `addConstraint` (full unique); model usa `indexes: [{ where: { deleted_at: null } }]`                    | BR   | Crítico    | Impede reuso de `codigo` após soft delete de um tipo no mesmo evento                                                                    | FR-11                            | Nova migration: remover constraint full, criar partial index `WHERE deleted_at IS NULL`                                                 |
+| M-02 | `20260311180308`    | Migration inicial de `tipos_certificados` cria `unique: true` global em `codigo` — constraint incoerente com o requisito `FR-11` desde o início                | Campo `codigo` com `unique: true` simples; FR-11 exige unicidade composta por evento                                   | BR   | Alto       | Schema historicamente inconsistente com SRS; constraint global usada por semanas/sprints                                                | FR-11                            | Documentar decisão; a migration 10 corrige, mas gap existiu no histórico                                                                |
+| M-03 | `20260313190000`    | `usuario_eventos` não possui unique constraint `(usuario_id, evento_id)` — duplicatas silenciosas possíveis                                                    | Migration cria tabela sem qualquer unique constraint; sem índice único                                                 | GI   | Alto       | Mesmo usuário pode ser associado ao mesmo evento múltiplas vezes; comportamento inesperado em RBAC                                      | FR-32                            | Nova migration adicionando `UNIQUE(usuario_id, evento_id)` em `usuario_eventos`                                                         |
+| M-04 | `20260311180841`    | FKs de `certificados` para parents soft-deletáveis usam `ON DELETE CASCADE` — hard delete em parent apagaria certificados permanentemente                      | `participante_id`, `evento_id`, `tipo_certificado_id`: todos com `onDelete: 'CASCADE'`                                 | DT   | Alto       | Se parent for deletado diretamente no banco (ou via down migration), certificados são permanentemente perdidos; viola espírito de NFR-4 | NFR-4                            | Avaliar mudança para `ON DELETE RESTRICT` ou `SET NULL` adequado; documentar decisão                                                    |
+| M-05 | `20260324083059`    | Índices de performance ausentes para `tipos_certificados.evento_id` e `usuario_eventos.*`                                                                      | Migration cobre somente: `certificados(evento_id, participante_id, status)`, `participantes(email)`, `usuarios(email)` | GI   | Médio      | Queries de escopo por evento em tipos e queries de auth/RBAC em usuario_eventos sem suporte de índice                                   | NFR-5 (implícito de performance) | Nova migration adicionando indexes em `tipos_certificados(evento_id)`, `usuario_eventos(usuario_id)`, `usuario_eventos(evento_id)`      |
+| M-06 | `20260312180000`    | Down migration de `usuarios` usa SQL bruto PostgreSQL-específico em vez de `queryInterface.dropTable`                                                          | `queryInterface.sequelize.query('DROP TABLE IF EXISTS "usuarios";')` + `DROP TYPE IF EXISTS "enum_usuarios_perfil"`    | DT   | Médio      | Não-portável; desvia do padrão Sequelize; `DROP TABLE IF EXISTS` sem CASCADE pode ignorar erros silenciosos                             | NFR-5                            | Refatorar down para `queryInterface.dropTable('usuarios')` + remoção explícita de ENUM via `queryInterface.sequelize.query` consistente |
+| M-07 | `20260311180841`    | Down migration de `certificados` não remove o ENUM type `enum_certificados_status`                                                                             | `dropTable('certificados', {})` sem drop do tipo ENUM equivalente ao feito em `usuarios`                               | IP   | Médio      | Orphan ENUM type no banco após rollback; inconsistência entre rollbacks de usuarios vs certificados                                     | —                                | Adicionar `DROP TYPE IF EXISTS "enum_certificados_status"` no down de certificados                                                      |
+| M-08 | Todas as migrations | Nenhuma constraint `CHECK` em nível de banco para validações de formato: `codigo_base` (3 letras), `codigo` em tipos (2 letras), `ano >= 2000`                 | Validações existem apenas em ORM/validators; DB não as impõe                                                           | GI   | Médio      | Inserts diretos no banco (seeders, scripts de migração, adminPGAdmin) violam regras de negócio sem ser rejeitados                       | FR-7, FR-8, FR-11                | Adicionar migrations com `CHECK` constraints, ao menos para `codigo_base` e `codigo` tipos                                              |
+| M-09 | `20260313190000`    | `usuario_eventos` tem `deleted_at` (paranoid), mas NFR-4 não inclui esta tabela na lista de entidades com soft delete obrigatório                              | NFR-4 lista: participantes, eventos, certificados, tipos_certificados, usuarios — não lista usuario_eventos            | AM   | Baixo      | Over-implementation não documentada; comportamento de soft delete em junction table é ambíguo                                           | NFR-4                            | Documentar decisão no SRS ou ADR                                                                                                        |
+| M-10 | `20260311175950`    | Migration de `eventos` não define `defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')` em `created_at`/`updated_at`, ao contrário de todas as demais tabelas | Campos sem `defaultValue`; outras migrations (participantes, tipos_certificados, certificados) têm o default           | DT   | Baixo      | Inserts via SQL bruto em `eventos` sem timestamp explícito falham; inconsistência comportamental                                        | —                                | Nova migration/correção ou documentar que ORM sempre provê o valor                                                                      |
+| M-11 | `20260313190000`    | `usuario_eventos` define `onDelete: 'CASCADE'` nas FKs mas não `onUpdate: 'CASCADE'`, ao contrário de `certificados` que define ambos                          | FK de `usuario_id` e `evento_id` sem `onUpdate`; certificados tem `onUpdate: 'CASCADE'`                                | DT   | Baixo      | Inconsistência de convenção; `onUpdate` rara em prática mas pode gerar comportamentos inesperados em cenários de migração de IDs        | —                                | Padronizar `onUpdate: 'CASCADE'` em todas as FKs                                                                                        |
 
 ---
 
@@ -67,13 +67,15 @@ indexes: [
 
 O Sequelize `sync()` (em testes) usa a definição do model (com `WHERE`) para criar o índice. A migration de produção cria uma constraint FULL com o mesmo nome. Os dois objetos têm o **mesmo nome mas semântica diferente**.
 
-**Impacto:**  
-- Em produção: após soft-deletar um `tipo_certificado` com `{codigo: 'PA', evento_id: 1}`, qualquer tentativa de criar um novo com os mesmos valores falha por violação de unique constraint no banco — mesmo o registro deletado "bloqueando" a criação de um substituto.  
-- Contradiz diretamente FR-11: *"deve ser único dentro do mesmo evento (unicidade composta `codigo + evento_id`, excluindo registros soft-deletados)"*.
+**Impacto:**
+
+- Em produção: após soft-deletar um `tipo_certificado` com `{codigo: 'PA', evento_id: 1}`, qualquer tentativa de criar um novo com os mesmos valores falha por violação de unique constraint no banco — mesmo o registro deletado "bloqueando" a criação de um substituto.
+- Contradiz diretamente FR-11: _"deve ser único dentro do mesmo evento (unicidade composta `codigo + evento_id`, excluindo registros soft-deletados)"_.
 - Em testes (com `sync()`): o índice gerado é parcial, cobrindo apenas o cenário correto. O comportamento difere entre produção e testes.
 
 **Correção necessária:**  
 Nova migration que:
+
 1. Remove a constraint full `tipos_certificados_codigo_evento_id_key`.
 2. Cria um índice parcial PostgreSQL: `CREATE UNIQUE INDEX tipos_certificados_codigo_evento_id_key ON tipos_certificados (codigo, evento_id) WHERE deleted_at IS NULL`.
 
@@ -147,7 +149,7 @@ O SRS define regras de formato (FR-7, FR-8, FR-11) que são atualmente validadas
 
 ### 4.3 — Comportamento de unicidade `(codigo, evento_id)` após soft delete
 
-FR-11 menciona *"excluindo registros soft-deletados"* para unicidade, mas não especifica como isso deve ser implementado no banco. Deve-se documentar explicitamente que a implementação exige um partial unique index PostgreSQL e que esta garantia não é universalmente suportada em todos os dialetos SQL.
+FR-11 menciona _"excluindo registros soft-deletados"_ para unicidade, mas não especifica como isso deve ser implementado no banco. Deve-se documentar explicitamente que a implementação exige um partial unique index PostgreSQL e que esta garantia não é universalmente suportada em todos os dialetos SQL.
 
 ---
 
@@ -212,12 +214,12 @@ O down migration de `usuarios` limpa o tipo ENUM `enum_usuarios_perfil`, mas o d
 
 ## Resumo Executivo
 
-| Severidade | Quantidade | IDs |
-|------------|------------|-----|
-| Crítico | 1 | M-01 |
-| Alto | 3 | M-02, M-03, M-04 |
-| Médio | 4 | M-05, M-06, M-07, M-08 |
-| Baixo | 3 | M-09, M-10, M-11 |
-| **Total** | **11** | |
+| Severidade | Quantidade | IDs                    |
+| ---------- | ---------- | ---------------------- |
+| Crítico    | 1          | M-01                   |
+| Alto       | 3          | M-02, M-03, M-04       |
+| Médio      | 4          | M-05, M-06, M-07, M-08 |
+| Baixo      | 3          | M-09, M-10, M-11       |
+| **Total**  | **11**     |                        |
 
 **Prioridade imediata:** O achado M-01 (unique full vs. partial) é um bug silencioso que afeta produção diretamente no fluxo de soft delete de tipos de certificados — core do produto. Deve ser corrigido com nova migration na próxima sprint.

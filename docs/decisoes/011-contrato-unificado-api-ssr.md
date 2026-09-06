@@ -53,16 +53,19 @@ Capacidades ORM e métodos de associação não fazem parte do contrato canônic
 ## Alternativas Consideradas
 
 1. `authSSR` carregar entidade ORM completa para espelhar API
+
 - Vantagem: compatibilidade imediata com middlewares atuais baseados em capacidades ORM.
 - Desvantagem: custo recorrente por requisição SSR, aumento de acoplamento com ORM, expansão de superfície de dados no contexto de renderização.
 - Conclusão: não adotada como direção arquitetural padrão por custo sistêmico e acoplamento.
 
 2. API e SSR produzirem objeto canônico explícito; resolução de escopo por abstração dedicada
+
 - Vantagem: contrato estável, portável entre superfícies, redução de acoplamento com ORM, alinhamento com arquitetura em camadas.
 - Desvantagem: exige convergência de pontos de consumo de autorização para depender de abstrações explícitas de escopo.
 - Conclusão: alternativa adotada.
 
 3. Resolver eventos apenas nos services via helper centralizado
+
 - Vantagem: centraliza acesso a escopo no domínio.
 - Desvantagem: não resolve por si só a divergência de contrato em middlewares e controllers; mantém ambiguidade em fronteiras de autorização.
 - Conclusão: tratada como complemento possível da decisão adotada, não como decisão principal de contrato.
@@ -122,8 +125,10 @@ Não introduz novos requisitos funcionais. Formaliza decisão de contrato arquit
 
 1. Esta ADR não altera o mecanismo de autenticação de API ou SSR; altera apenas o contrato arquitetural consumido por autorização.
 2. Ambiguidades de fronteira resolvidas (2026-06-05):
+
 - Delimitação entre atributos obrigatórios de identidade e atributos derivados de escopo.
 - Canal canônico de escopo no request (`req.contextoAutorizacao.eventoIds`).
 - Critério de negação segura quando o escopo não puder ser resolvido de forma determinística para perfis restritos.
+
 3. Política de coexistência e descontinuação de contratos legados deve ser controlada por janela de transição explícita em plano de execução, sem alterar esta decisão arquitetural.
 4. A decisão foi formulada com base em `docs/especificacoes.md`, `docs/auditorias/07/triagem-arquitetural-final.md` e no conjunto de ADRs vigentes em `docs/decisoes`.

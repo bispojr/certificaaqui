@@ -12,6 +12,16 @@ Always prioritize these instructions over generic coding suggestions.
 - Commit messages must be written in **Portuguese (pt-BR)**.
 - Code, identifiers, and technical terminology should remain **in English**.
 
+## Speckit Artifact Language Rules
+
+When generating or updating Spec Kit artifacts (`spec.md`, `plan.md`, `tasks.md`, checklists, contracts and related docs):
+
+- Write all narrative content in **Portuguese (pt-BR)**.
+- Use **official Brazilian Portuguese orthography**.
+- **Do not remove accents or cedillas** (`ç`).
+- Keep terminology consistent across all artifacts of the same feature.
+- Before finalizing any artifact, perform a quick orthography and nomenclature review.
+
 ---
 
 # Time and Date Rules
@@ -187,6 +197,9 @@ Never:
 - Ignore the backlog or specifications
 
 <!-- SPECKIT START -->
+
 For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
+shell commands, and other important information, read the current plan:
+specs/001-auth-scope-convergence/plan.md
+
 <!-- SPECKIT END -->

@@ -50,7 +50,8 @@
 
 ## Achados Confirmados
 
-1) Certificados API: escopo por evento nao e aplicado no service e o middleware consulta o id errado em rotas com :id.
+1. Certificados API: escopo por evento nao e aplicado no service e o middleware consulta o id errado em rotas com :id.
+
 - Severidade: alto
 - Classificacao: bug real
 - Evidencias:
@@ -60,7 +61,8 @@
   - Controller nao passa evento_id nem valida ownership: [src/controllers/certificadoController.js](src/controllers/certificadoController.js#L16-L34)
 - Impacto: listagem pode retornar certificados fora do escopo e rotas por id podem permitir acesso a certificados de outros eventos quando o id do certificado coincide com algum evento do usuario, alem de bloquear acessos validos quando nao coincide.
 
-2) Certificados SSR: ausencia de validacao de ownership em detalhe/editar/atualizar/cancelar/deletar/restaurar.
+2. Certificados SSR: ausencia de validacao de ownership em detalhe/editar/atualizar/cancelar/deletar/restaurar.
+
 - Severidade: alto
 - Classificacao: bug real
 - Evidencias:
@@ -68,7 +70,8 @@
   - Rotas SSR aplicam apenas rbac e nao aplicam scopedEvento: [src/routes/admin.js](src/routes/admin.js#L146-L179)
 - Impacto: gestor/monitor pode acessar ou alterar certificados fora do escopo se conhecer o id.
 
-3) Certificados SSR: criacao e edicao exibem eventos, tipos e participantes sem filtro de escopo.
+3. Certificados SSR: criacao e edicao exibem eventos, tipos e participantes sem filtro de escopo.
+
 - Severidade: alto
 - Classificacao: implementacao parcial
 - Evidencias:
@@ -76,7 +79,8 @@
   - Criacao usa evento_id do form sem validar ownership: [src/controllers/certificadoSSRController.js](src/controllers/certificadoSSRController.js#L154-L176)
 - Impacto: gestor pode emitir certificado para evento fora do seu escopo (multi-tenancy violado).
 
-4) Participantes API: rotas e services nao aplicam escopo por evento.
+4. Participantes API: rotas e services nao aplicam escopo por evento.
+
 - Severidade: alto
 - Classificacao: gap de implementacao
 - Evidencias:
@@ -85,7 +89,8 @@
   - Controller nao aplica filtros de escopo: [src/controllers/participanteController.js](src/controllers/participanteController.js#L13-L31)
 - Impacto: gestores/monitores podem listar e acessar participantes de qualquer evento (vazamento de dados pessoais).
 
-5) Participantes SSR: index filtra por eventos, mas edicao/atualizacao/remocao nao validam ownership.
+5. Participantes SSR: index filtra por eventos, mas edicao/atualizacao/remocao nao validam ownership.
+
 - Severidade: medio
 - Classificacao: implementacao parcial
 - Evidencias:
@@ -93,7 +98,8 @@
   - Editar/atualizar/deletar/restaurar usam service sem validar escopo: [src/controllers/participanteSSRController.js](src/controllers/participanteSSRController.js#L79-L145)
 - Impacto: operacoes por id podem atingir participantes fora do escopo, mesmo que a listagem esteja filtrada.
 
-6) Tipos de certificados API: leitura nao e filtrada por evento do usuario.
+6. Tipos de certificados API: leitura nao e filtrada por evento do usuario.
+
 - Severidade: medio
 - Classificacao: gap de implementacao
 - Evidencias:
@@ -102,7 +108,8 @@
   - Service aceita eventoId, mas nao e usado: [src/services/tiposCertificadosService.js](src/services/tiposCertificadosService.js#L5-L21)
 - Impacto: monitores/gestores podem visualizar tipos de outros eventos, contrariando o principio de isolamento.
 
-7) RBAC de restauracao de certificados diverge da especificacao.
+7. RBAC de restauracao de certificados diverge da especificacao.
+
 - Severidade: medio
 - Classificacao: inconsistencia
 - Evidencias:
