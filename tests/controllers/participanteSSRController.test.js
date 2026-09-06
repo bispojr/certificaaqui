@@ -88,6 +88,9 @@ async function setupDb() {
     email: 'carlos2@email.com',
     instituicao: 'UFRJ',
   })
+  await sequelize.query(
+    "SELECT setval(pg_get_serial_sequence('participantes', 'id'), COALESCE(MAX(id), 1)) FROM participantes",
+  )
 
   await Certificado.create({
     nome: 'Certificado de Participação',
@@ -218,5 +221,33 @@ describe('Admin SSR - Participante', () => {
     expect(mainTable).not.toContain('Maria Souza')
     // Arquivado na seção <details>
     expect(res.text).toMatch(/<details[\s\S]*Maria Souza[\s\S]*<\/details>/)
+  })
+
+  it('POST /admin/participantes/importar processa colagem com sucesso parcial', async () => {
+    const agent = request.agent(app)
+    await agent
+      .post('/login')
+      .send({ email: 'admin@email.com', senha: '123456' })
+      .redirects(1)
+
+    const res = await agent
+      .post('/admin/participantes/importar')
+      .field('evento_id', '1')
+      .field('origem', 'colado')
+      .field(
+        'conteudo',
+        [
+          'nomeCompleto\temail\tinstituicao',
+          'Novo Participante\tnovo@exemplo.com\tIFSP',
+          'Linha Ruim\tnao-email\tUSP',
+        ].join('\n'),
+      )
+
+    expect(res.status).toBe(200)
+    expect(res.text).toContain('Importação concluída')
+    expect(res.text).toContain('1 participantes criados')
+    expect(res.text).toContain('1 falhas')
+    expect(res.text).toContain('Linha 2')
+    expect(res.text).toContain('email inválido')
   })
 })

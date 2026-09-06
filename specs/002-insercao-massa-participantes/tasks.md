@@ -41,18 +41,18 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T005 [P] [US1] Cobrir parsing e consolidação do importador em `tests/services/participanteImportService.test.js`
-- [ ] T006 [P] [US1] Cobrir a action SSR de importação em `tests/controllers/participanteSSRController.test.js`
-- [ ] T007 [P] [US1] Cobrir a renderização do formulário e do resumo em `tests/views/admin/participantesIndexView.test.js`
+- [x] T005 [P] [US1] Cobrir parsing e consolidação do importador em `tests/services/participanteImportService.test.js`
+- [x] T006 [P] [US1] Cobrir a action SSR de importação em `tests/controllers/participanteSSRController.test.js`
+- [x] T007 [P] [US1] Cobrir a renderização do formulário e do resumo em `tests/views/admin/participantesIndexView.test.js`
 - [ ] T008 [P] [US1] Cobrir o fluxo ponta a ponta em `tests/e2e/participantes-importacao.spec.js`
 
 ### Implementation for User Story 1
 
-- [ ] T009 [US1] Implementar `src/services/participanteImportService.js` para normalizar texto colado, ler CSV, ignorar linhas em branco e consolidar sucesso parcial
-- [ ] T010 [US1] Reaproveitar a criação unitária por e-mail em `src/services/participanteService.js` para a importação linha a linha
-- [ ] T011 [US1] Implementar a action `importar` em `src/controllers/participanteSSRController.js` e repassar o resultado para a view SSR
-- [ ] T012 [US1] Registrar `POST /admin/participantes/importar` em `src/routes/admin.js` com `authSSR` e o RBAC existente para participantes
-- [ ] T013 [US1] Atualizar `views/admin/participantes/index.hbs` com textarea de colagem, upload CSV, resumo da importação e exibição dos erros por linha
+- [x] T009 [US1] Implementar `src/services/participanteImportService.js` para normalizar texto colado, ler CSV, ignorar linhas em branco e consolidar sucesso parcial
+- [x] T010 [US1] Reaproveitar a criação unitária por e-mail em `src/services/participanteService.js` para a importação linha a linha
+- [x] T011 [US1] Implementar a action `importar` em `src/controllers/participanteSSRController.js` e repassar o resultado para a view SSR
+- [x] T012 [US1] Registrar `POST /admin/participantes/importar` em `src/routes/admin.js` com `authSSR` e o RBAC existente para participantes
+- [x] T013 [US1] Atualizar `views/admin/participantes/index.hbs` com textarea de colagem, upload CSV, resumo da importação e exibição dos erros por linha
 
 **Checkpoint**: a importação SSR deve estar funcional e testável de forma independente.
 
