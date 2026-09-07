@@ -2,7 +2,7 @@
 
 **Feature Branch**: `[001-auth-scope-convergence]`
 **Created**: 2026-06-05
-**Status**: Draft
+**Status**: Completed
 **Input**: User description: "Convergência transversal: contrato canônico de principal autenticado + scoping unificado por evento"
 
 ## User Scenarios & Testing _(mandatory)_
