@@ -227,6 +227,19 @@ describe('Admin SSR - Participante', () => {
     expect(res.text).toMatch(/<details[\s\S]*Maria Souza[\s\S]*<\/details>/)
   })
 
+  it('GET /admin/participantes/importar renderiza a página de importação em lote', async () => {
+    const agent = request.agent(app)
+    await autenticarAdminSSR(agent)
+
+    const res = await agent.get('/admin/participantes/importar')
+    expect(res.status).toBe(200)
+    expect(res.text).toContain('Importação em massa')
+    expect(res.text).toMatch(/name='evento_id'/)
+    expect(res.text).toMatch(/name='origem'/)
+    expect(res.text).toMatch(/name='conteudo'/)
+    expect(res.text).toMatch(/name='arquivoCsv'/)
+  })
+
   it('POST /admin/participantes/importar processa colagem com sucesso parcial', async () => {
     const agent = request.agent(app)
     await autenticarAdminSSR(agent)

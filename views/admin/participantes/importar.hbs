@@ -1,0 +1,82 @@
+<div class='d-flex justify-content-between align-items-center mb-3'>
+  <h1>Importação em massa</h1>
+  <a href='/admin/participantes' class='btn btn-outline-secondary'>Voltar para Participantes</a>
+</div>
+
+<section class='card mb-4'>
+  <div class='card-body'>
+    <form
+      method='POST'
+      action='/admin/participantes/importar'
+      enctype='multipart/form-data'
+      class='row g-3'
+    >
+      <div class='col-md-2'>
+        <label for='evento_id' class='form-label'>ID do evento</label>
+        <input
+          type='number'
+          min='1'
+          class='form-control'
+          name='evento_id'
+          id='evento_id'
+          required
+        />
+      </div>
+      <div class='col-md-2'>
+        <label for='origem' class='form-label'>Origem</label>
+        <select class='form-select' name='origem' id='origem'>
+          <option value='colado' selected>Colagem</option>
+          <option value='csv'>CSV</option>
+        </select>
+      </div>
+      <div class='col-md-8'>
+        <label for='conteudo' class='form-label'>Colar planilha</label>
+        <textarea
+          class='form-control'
+          name='conteudo'
+          id='conteudo'
+          rows='4'
+          placeholder='nomeCompleto&#9;email&#9;instituicao'
+        ></textarea>
+      </div>
+      <div class='col-md-6'>
+        <label for='arquivoCsv' class='form-label'>Arquivo CSV</label>
+        <input
+          type='file'
+          class='form-control'
+          name='arquivoCsv'
+          id='arquivoCsv'
+          accept='.csv,text/csv'
+        />
+      </div>
+      <div class='col-12'>
+        <button type='submit' class='btn btn-success'>Importar</button>
+        <a href='/admin/participantes' class='btn btn-secondary ms-2'>Cancelar</a>
+      </div>
+    </form>
+
+    {{#if resultadoImportacao}}
+      <div class='alert alert-info mt-4 mb-0'>
+        <strong>Importação concluída.</strong>
+        {{resultadoImportacao.criados}} participantes criados,
+        {{resultadoImportacao.vinculosCriados}} vínculos reaproveitados e
+        {{resultadoImportacao.falhas}} falhas.
+      </div>
+      {{#if resultadoImportacao.errosPorLinha.length}}
+        <div class='mt-3'>
+          <h3 class='h6'>Erros por linha</h3>
+          <ul class='list-group'>
+            {{#each resultadoImportacao.errosPorLinha}}
+              <li class='list-group-item'>
+                <strong>Linha {{numeroLinha}}</strong>
+                <div>{{nomeCompleto}} - {{email}}</div>
+                <div>{{#each erros}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</div>
+              </li>
+            {{/each}}
+          </ul>
+        </div>
+      {{/if}}
+    {{/if}}
+  </div>
+</section>
+

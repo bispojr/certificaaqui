@@ -7,11 +7,11 @@ async function montarContextoListagem(req, extras = {}) {
   const { q } = req.query
   const textWhere = q
     ? {
-        [Op.or]: [
-          { nomeCompleto: { [Op.iLike]: `%${q}%` } },
-          { email: { [Op.iLike]: `%${q}%` } },
-        ],
-      }
+      [Op.or]: [
+        { nomeCompleto: { [Op.iLike]: `%${q}%` } },
+        { email: { [Op.iLike]: `%${q}%` } },
+      ],
+    }
     : {}
 
   let eventoIds = null
@@ -40,13 +40,13 @@ async function montarContextoListagem(req, extras = {}) {
     where: { deleted_at: { [Op.ne]: null } },
     include: eventoIds
       ? [
-          {
-            model: Certificado,
-            as: 'certificados',
-            where: certWhere,
-            required: true,
-          },
-        ]
+        {
+          model: Certificado,
+          as: 'certificados',
+          where: certWhere,
+          required: true,
+        },
+      ]
       : [],
   })
 
@@ -119,6 +119,13 @@ module.exports = {
     }
   },
 
+  importarForm(req, res) {
+    return res.render('admin/participantes/importar', {
+      layout: 'layouts/admin',
+      title: 'Importação em Massa',
+    })
+  },
+
   async importar(req, res) {
     try {
       const origem =
@@ -137,13 +144,14 @@ module.exports = {
           eventoIds: req.contextoAutorizacao?.eventoIds || null,
         })
 
-      return res.render(
-        'admin/participantes/index',
-        await montarContextoListagem(req, { resultadoImportacao }),
-      )
+      return res.render('admin/participantes/importar', {
+        layout: 'layouts/admin',
+        title: 'Importação em Massa',
+        resultadoImportacao,
+      })
     } catch (err) {
       req.flash('error', err.message)
-      return res.redirect('/admin/participantes')
+      return res.redirect('/admin/participantes/importar')
     }
   },
 

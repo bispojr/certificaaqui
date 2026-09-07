@@ -107,6 +107,7 @@ router.post(
 // Gestão de participantes (todos os perfis autenticados)
 router.get('/participantes', participanteSSRController.index)
 router.get('/participantes/novo', participanteSSRController.novo)
+router.get('/participantes/importar', participanteSSRController.importarForm)
 router.get('/participantes/:id/editar', participanteSSRController.editar)
 router.post(
   '/participantes/importar',

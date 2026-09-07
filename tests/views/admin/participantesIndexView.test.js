@@ -51,37 +51,11 @@ describe('admin/participantes/index.hbs', () => {
     expect(html).toMatch(/Restaurar/)
   })
 
-  it('renderiza a área de importação em massa com textarea, upload e feedback', () => {
-    const html = template({
-      participantes: [],
-      arquivados: [],
-      q: '',
-      resultadoImportacao: {
-        totalLinhas: 2,
-        linhasProcessadas: 2,
-        criados: 1,
-        vinculosCriados: 0,
-        falhas: 1,
-        errosPorLinha: [
-          {
-            numeroLinha: 2,
-            nomeCompleto: 'Linha Ruim',
-            email: 'nao-email',
-            instituicao: 'USP',
-            erros: ['email inválido'],
-          },
-        ],
-      },
-    })
-
-    expect(html).toMatch(/Importação em massa/)
-    expect(html).toMatch(/name='origem'/)
-    expect(html).toMatch(/name='conteudo'/)
-    expect(html).toMatch(/name='arquivoCsv'/)
-    expect(html).toMatch(/Importação concluída/)
-    expect(html).toMatch(/1 participantes criados/)
-    expect(html).toMatch(/1 falhas/)
-    expect(html).toMatch(/Linha 2/)
-    expect(html).toMatch(/email inválido/)
+  it('renderiza o botão "+ Em lote" ao lado de "+ Novo Participante"', () => {
+    const html = template({ participantes: [], arquivados: [], q: '' })
+    expect(html).toContain('+ Em lote')
+    expect(html).toContain('+ Novo')
+    expect(html).toMatch(/href='\/admin\/participantes\/importar'/)
+    expect(html).toMatch(/href='\/admin\/participantes\/novo'/)
   })
 })
