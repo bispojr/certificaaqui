@@ -34,6 +34,10 @@ const usuario_eventos = require('./usuario_eventos')(
   sequelize,
   Sequelize.DataTypes,
 )
+const participante_eventos = require('./participante_eventos')(
+  sequelize,
+  Sequelize.DataTypes,
+)
 
 db.Certificado = certificado
 db.Evento = evento
@@ -41,6 +45,7 @@ db.Participante = participante
 db.TiposCertificados = tipos_certificados
 db.Usuario = usuario
 db.UsuarioEvento = usuario_eventos
+db.ParticipanteEvento = participante_eventos
 
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
