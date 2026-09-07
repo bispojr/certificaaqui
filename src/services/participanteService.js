@@ -1,6 +1,33 @@
 // Service para lógica de negócio de Participante
-const { Participante } = require('../../src/models')
+const { Participante, ParticipanteEvento } = require('../../src/models')
 const { enforceTenantScope } = require('./auth/enforceTenantScope')
+
+async function ensureParticipanteEventoLink({ participanteId, eventoId }) {
+  if (!eventoId) return { linked: false, created: false }
+
+  const vinculo = await ParticipanteEvento.findOne({
+    where: {
+      participante_id: participanteId,
+      evento_id: eventoId,
+    },
+    paranoid: false,
+  })
+
+  if (!vinculo) {
+    await ParticipanteEvento.create({
+      participante_id: participanteId,
+      evento_id: eventoId,
+    })
+    return { linked: true, created: true }
+  }
+
+  if (vinculo.deleted_at) {
+    await vinculo.restore()
+    return { linked: true, created: true }
+  }
+
+  return { linked: true, created: false }
+}
 
 module.exports = {
   async findAll({
@@ -61,6 +88,45 @@ module.exports = {
       })
     }
     return Participante.create(data)
+  },
+  async createOrLinkByEmail(data, { principal = null, eventoIds = null } = {}) {
+    if (principal) {
+      enforceTenantScope({
+        principal,
+        eventoIds,
+        requestedEventId: data?.evento_id,
+        operationKey: 'participante.write',
+      })
+    }
+
+    const participanteExistente = await Participante.findOne({
+      where: { email: data?.email },
+      paranoid: false,
+    })
+
+    if (participanteExistente) {
+      const link = await ensureParticipanteEventoLink({
+        participanteId: participanteExistente.id,
+        eventoId: data?.evento_id,
+      })
+      return {
+        participante: participanteExistente,
+        createdParticipante: false,
+        createdLink: link.created,
+      }
+    }
+
+    const participante = await Participante.create(data)
+    const link = await ensureParticipanteEventoLink({
+      participanteId: participante.id,
+      eventoId: data?.evento_id,
+    })
+
+    return {
+      participante,
+      createdParticipante: true,
+      createdLink: link.created,
+    }
   },
   async update(id, data, { principal = null, eventoIds = null } = {}) {
     if (principal) {

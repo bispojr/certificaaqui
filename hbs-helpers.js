@@ -1,6 +1,7 @@
 const hbs = require('hbs')
 
 function registerHelpers(handlebarsInstance) {
+  if (!handlebarsInstance) return
   handlebarsInstance.registerHelper('json', function (context) {
     return JSON.stringify(context || {})
   })
@@ -19,6 +20,14 @@ function registerHelpers(handlebarsInstance) {
   handlebarsInstance.registerHelper('or', function (a, b) {
     return a || b
   })
+  handlebarsInstance.registerHelper('isSelected', function (a, b) {
+    return String(a) === String(b) ? 'selected' : ''
+  })
+  handlebarsInstance.registerHelper('getPerfilBadgeClass', function (perfil) {
+    if (perfil === 'admin') return 'bg-danger'
+    if (perfil === 'gestor') return 'bg-warning text-dark'
+    return 'bg-info text-dark'
+  })
 }
 
 // Registra helpers no hbs (usado pela aplicação)
@@ -32,13 +41,4 @@ try {
   // Handlebars puro não está disponível, ignora
 }
 
-hbs.registerHelper('isSelected', function (a, b) {
-  return String(a) === String(b) ? 'selected' : ''
-})
-
-// Adicione outros helpers aqui se necessário
-hbs.registerHelper('getPerfilBadgeClass', function (perfil) {
-  if (perfil === 'admin') return 'bg-danger'
-  if (perfil === 'gestor') return 'bg-warning text-dark'
-  return 'bg-info text-dark'
-})
+module.exports = registerHelpers

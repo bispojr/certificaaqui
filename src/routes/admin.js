@@ -3,6 +3,7 @@ const router = express.Router()
 const authSSR = require('../middlewares/authSSR')
 const rbac = require('../middlewares/rbac')
 const uploadTemplate = require('../middlewares/uploadTemplate')
+const multer = require('multer')
 const eventoSSRController = require('../controllers/eventoSSRController')
 const participanteSSRController = require('../controllers/participanteSSRController')
 const dashboardController = require('../controllers/dashboardController')
@@ -10,6 +11,10 @@ const tiposCertificadosSSRController = require('../controllers/tiposCertificados
 const usuarioSSRController = require('../controllers/usuarioSSRController')
 const certificadoSSRController = require('../controllers/certificadoSSRController')
 const perfilSSRController = require('../controllers/perfilSSRController')
+
+const uploadImportacaoParticipantes = multer({
+  storage: multer.memoryStorage(),
+})
 
 // Todas as rotas admin exigem sessão SSR válida
 router.use(authSSR)
@@ -102,7 +107,13 @@ router.post(
 // Gestão de participantes (todos os perfis autenticados)
 router.get('/participantes', participanteSSRController.index)
 router.get('/participantes/novo', participanteSSRController.novo)
+router.get('/participantes/importar', participanteSSRController.importarForm)
 router.get('/participantes/:id/editar', participanteSSRController.editar)
+router.post(
+  '/participantes/importar',
+  uploadImportacaoParticipantes.single('arquivoCsv'),
+  participanteSSRController.importar,
+)
 router.post('/participantes', participanteSSRController.criar)
 router.post('/participantes/:id', participanteSSRController.atualizar)
 router.post('/participantes/:id/deletar', participanteSSRController.deletar)

@@ -10,7 +10,7 @@ Este guia descreve como executar os testes (Jest e Playwright) e como subir o se
 
 | Ambiente           | Banco               | Porta |
 | ------------------ | ------------------- | ----- |
-| `development`      | `certificados_test` | 5432  |
+| `development`      | `certificados_db`   | 5432  |
 | `test` (Jest)      | `certificados_test` | 5433  |
 | `e2e` (Playwright) | `certificados_e2e`  | 5434  |
 
@@ -126,6 +126,12 @@ Use este fluxo quando quiser **ver a aplicação com os olhos** — navegar pela
 docker-compose up -d postgres
 ```
 
+**Terminal 1 — executar as migrações (necessário após subir o container pela primeira vez):**
+
+```bash
+npx sequelize-cli db:migrate
+```
+
 **Terminal 1 — subir o servidor:**
 
 ```bash
@@ -159,7 +165,7 @@ cleanE2E().then(() => seedE2E()).then(() => {
 | Gestor  | `gestor.e2e@test.com`  | `senha123` |
 | Monitor | `monitor.e2e@test.com` | `senha123` |
 
-Acesse **http://localhost:3001/auth/login** e entre com qualquer uma dessas credenciais.
+Acesse **http://localhost:3001/login** e entre com qualquer uma dessas credenciais.
 
 ### Limpar o banco após a inspeção
 
@@ -217,12 +223,12 @@ Não há conflito de banco (bancos separados), mas ambos podem tentar subir um s
 
 ## Resumo rápido
 
-| O que fazer                   | Comando                                               |
-| ----------------------------- | ----------------------------------------------------- |
-| Rodar Jest completo           | `npm run test:ci`                                     |
-| Rodar Playwright completo     | `npx playwright test`                                 |
-| Ver Playwright com browser    | `npx playwright test --headed`                        |
-| Depurar um spec passo a passo | `npx playwright test --debug tests/e2e/admin.spec.js` |
-| Subir servidor + seed visual  | `docker-compose up -d postgres` + `npm start` + seed  |
-| Parar servidor na porta 3001  | `kill $(lsof -t -i:3001)`                             |
-| Limpar banco E2E manualmente  | `cleanE2E()` via node (ver acima)                     |
+| O que fazer                   | Comando                                                                               |
+| ----------------------------- | ------------------------------------------------------------------------------------- |
+| Rodar Jest completo           | `npm run test:ci`                                                                     |
+| Rodar Playwright completo     | `npx playwright test`                                                                 |
+| Ver Playwright com browser    | `npx playwright test --headed`                                                        |
+| Depurar um spec passo a passo | `npx playwright test --debug tests/e2e/admin.spec.js`                                 |
+| Subir servidor + seed visual  | `docker-compose up -d postgres` + `npx sequelize-cli db:migrate` + `npm start` + seed |
+| Parar servidor na porta 3001  | `kill $(lsof -t -i:3001)`                                                             |
+| Limpar banco E2E manualmente  | `cleanE2E()` via node (ver acima)                                                     |

@@ -1,12 +1,16 @@
 const request = require('supertest')
 const app = require('../../app')
 const { Participante, Certificado, sequelize } = require('../../src/models')
+const {
+  payloadColadoValido,
+  autenticarAdminSSR,
+} = require('../helpers/participantesImportacao')
 
 // Utilitário para limpar e popular o banco de dados de teste
 async function setupDb() {
   // Limpa tabelas relacionadas para garantir ambiente limpo
   await sequelize.query(
-    'TRUNCATE TABLE usuario_eventos, certificados, participantes, usuarios, eventos, tipos_certificados RESTART IDENTITY CASCADE',
+    'TRUNCATE TABLE participante_eventos, usuario_eventos, certificados, participantes, usuarios, eventos, tipos_certificados RESTART IDENTITY CASCADE',
   )
   // Evento 1 (vinculado ao gestor/monitor)
   await sequelize.models.Evento.create({
@@ -88,6 +92,9 @@ async function setupDb() {
     email: 'carlos2@email.com',
     instituicao: 'UFRJ',
   })
+  await sequelize.query(
+    "SELECT setval(pg_get_serial_sequence('participantes', 'id'), COALESCE(MAX(id), 1)) FROM participantes",
+  )
 
   await Certificado.create({
     nome: 'Certificado de Participação',
@@ -218,5 +225,74 @@ describe('Admin SSR - Participante', () => {
     expect(mainTable).not.toContain('Maria Souza')
     // Arquivado na seção <details>
     expect(res.text).toMatch(/<details[\s\S]*Maria Souza[\s\S]*<\/details>/)
+  })
+
+  it('GET /admin/participantes/importar renderiza a página de importação em lote', async () => {
+    const agent = request.agent(app)
+    await autenticarAdminSSR(agent)
+
+    const res = await agent.get('/admin/participantes/importar')
+    expect(res.status).toBe(200)
+    expect(res.text).toContain('Importação em massa')
+    expect(res.text).toMatch(/name='evento_id'/)
+    expect(res.text).toMatch(/name='origem'/)
+    expect(res.text).toMatch(/name='conteudo'/)
+    expect(res.text).toMatch(/name='arquivoCsv'/)
+  })
+
+  it('POST /admin/participantes/importar processa colagem com sucesso parcial', async () => {
+    const agent = request.agent(app)
+    await autenticarAdminSSR(agent)
+
+    const payload = payloadColadoValido()
+    const conteudoParcial = [
+      payload.conteudo.trim(),
+      'Linha Ruim\tnao-email\tUSP',
+    ].join('\n')
+
+    const res = await agent
+      .post('/admin/participantes/importar')
+      .field('evento_id', payload.evento_id)
+      .field('origem', payload.origem)
+      .field('conteudo', conteudoParcial)
+
+    expect(res.status).toBe(200)
+    expect(res.text).toContain('Importação concluída')
+    expect(res.text).toContain('2 participantes criados')
+    expect(res.text).toContain('1 falhas')
+    expect(res.text).toContain('Linha 3')
+    expect(res.text).toContain('email inválido')
+  })
+
+  it('POST /admin/participantes/importar cria vínculo para participante já existente por email', async () => {
+    const agent = request.agent(app)
+    await agent
+      .post('/login')
+      .send({ email: 'admin@email.com', senha: '123456' })
+      .redirects(1)
+
+    const res = await agent
+      .post('/admin/participantes/importar')
+      .field('evento_id', '2')
+      .field('origem', 'colado')
+      .field(
+        'conteudo',
+        [
+          'nomeCompleto\temail\tinstituicao',
+          'João da Silva\tjoao@email.com\tUFSC',
+        ].join('\n'),
+      )
+
+    expect(res.status).toBe(200)
+    expect(res.text).toContain('0 participantes criados')
+    expect(res.text).toContain('1 vínculos reaproveitados')
+
+    const vinculo = await sequelize.models.ParticipanteEvento.findOne({
+      where: {
+        participante_id: 1,
+        evento_id: 2,
+      },
+    })
+    expect(vinculo).toBeTruthy()
   })
 })

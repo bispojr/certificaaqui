@@ -50,4 +50,12 @@ describe('admin/participantes/index.hbs', () => {
     )
     expect(html).toMatch(/Restaurar/)
   })
+
+  it('renderiza o botão "+ Em lote" ao lado de "+ Novo Participante"', () => {
+    const html = template({ participantes: [], arquivados: [], q: '' })
+    expect(html).toContain('+ Em lote')
+    expect(html).toContain('+ Novo')
+    expect(html).toMatch(/href='\/admin\/participantes\/importar'/)
+    expect(html).toMatch(/href='\/admin\/participantes\/novo'/)
+  })
 })

@@ -19,6 +19,12 @@ O sistema dispõe de dois modos de interação:
 - **API REST (JSON):** para integrações e acesso programático, autenticada via JWT Bearer token.
 - **Interface SSR (Server-Side Rendering):** interface web completa renderizada pelo servidor com Handlebars, autenticada via cookie JWT HTTP-only.
 
+## Clarifications
+
+### Session 2026-09-06
+
+- Q: Inserção em massa de participantes via CSV/colar de planilha já estava contemplada? → A: Não. O texto atual cobre criação individual de participantes, então a especificação foi estendida para incluir importação em massa como extensão compatível do escopo de Gestão de Participantes.
+
 ---
 
 # Objetivos
@@ -57,6 +63,7 @@ FR-58: Participantes são entidades globais no sistema. O vínculo entre um part
 FR-59: No momento de criação de participante por gestor ou monitor, o sistema deve executar lookup por `email`: se já existir participante com aquele e-mail, deve criar apenas o vínculo em `participante_eventos`; se não existir, deve criar o participante e o vínculo. O campo `evento_id` é obrigatório no request para gestores e monitores.  
 FR-60: A remoção de participante por gestor ou monitor deve realizar soft delete apenas do vínculo em `participante_eventos`, preservando o registro global do participante e seus certificados em outros eventos. Apenas administradores podem realizar soft delete global do participante.  
 FR-61: O sistema deve exigir aceite de Termo de Responsabilidade de Dados pelo gestor ou monitor antes da primeira inserção de participantes. O aceite deve ser registrado com data, versão do termo e identificação do usuário. O termo declara que os dados inseridos foram coletados de fontes de inscrição sob responsabilidade do gestor/organização e que a base legal de tratamento (LGPD) é de responsabilidade do controlador (gestor/organização), não do operador (CertificaAqui).
+FR-63: O sistema deve permitir inserção em massa de participantes pela interface SSR, para usuários autorizados a criar participantes, aceitando conteúdo tabular colado da área de transferência (por exemplo, colado de Google Sheets) ou arquivo CSV. Cada linha importada deve ser validada e processada como uma criação individual, aplicando FR-2, FR-3, FR-58, FR-59 e FR-61; linhas inválidas devem ser reportadas individualmente sem impedir o processamento das demais linhas válidas.
 
 ## Gestão de Eventos
 
