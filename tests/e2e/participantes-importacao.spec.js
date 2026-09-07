@@ -18,7 +18,7 @@ test.describe('Importacao em massa de participantes (SSR)', () => {
     await page.click('a:has-text("+ Em lote")')
     await expect(page).toHaveURL(/.*\/admin\/participantes\/importar/)
 
-    await page.fill('input[name="evento_id"]', '1')
+    await page.selectOption('select[name="evento_id"]', '1')
     await page.selectOption('select[name="origem"]', 'colado')
     await page.fill(
       'textarea[name="conteudo"]',

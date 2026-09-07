@@ -11,25 +11,41 @@
       enctype='multipart/form-data'
       class='row g-3'
     >
-      <div class='col-md-2'>
-        <label for='evento_id' class='form-label'>ID do evento</label>
-        <input
-          type='number'
-          min='1'
-          class='form-control'
-          name='evento_id'
-          id='evento_id'
-          required
-        />
+      <div class='col-md-4'>
+        <label for='evento_id' class='form-label'>Nome de Evento</label>
+        <select class='form-select' name='evento_id' id='evento_id' required>
+          <option value='' disabled {{#unless evento_id}}selected{{/unless}}>Selecione o evento</option>
+          {{#each eventos}}
+            <option value='{{id}}' {{#if (isSelected id ../evento_id)}}selected{{/if}}>{{nome}}</option>
+          {{/each}}
+        </select>
       </div>
       <div class='col-md-2'>
         <label for='origem' class='form-label'>Origem</label>
         <select class='form-select' name='origem' id='origem'>
-          <option value='colado' selected>Colagem</option>
-          <option value='csv'>CSV</option>
+          <option value='csv' {{#unless (eq origem 'colado')}}selected{{/unless}}>CSV</option>
+          <option value='colado' {{#if (eq origem 'colado')}}selected{{/if}}>Colagem</option>
         </select>
       </div>
-      <div class='col-md-8'>
+      <div class='col-md-6' id='containerCsv' {{#if (eq origem 'colado')}}style='display: none;'{{/if}}>
+        <label for='arquivoCsv' class='form-label'>Arquivo CSV</label>
+        <div class='input-group'>
+          <input
+            type='file'
+            class='d-none'
+            name='arquivoCsv'
+            id='arquivoCsv'
+            accept='.csv,text/csv'
+          />
+          <label for='arquivoCsv' class='btn btn-outline-secondary mb-0 me-2 rounded-start'>
+            Escolha o arquivo
+          </label>
+          <span class='form-control bg-light text-muted rounded-end' id='arquivoCsvNome'>
+            Nenhum arquivo escolhido
+          </span>
+        </div>
+      </div>
+      <div class='col-md-8' id='containerColado' {{#unless (eq origem 'colado')}}style='display: none;'{{/unless}}>
         <label for='conteudo' class='form-label'>Colar planilha</label>
         <textarea
           class='form-control'
@@ -38,16 +54,6 @@
           rows='4'
           placeholder='nomeCompleto&#9;email&#9;instituicao'
         ></textarea>
-      </div>
-      <div class='col-md-6'>
-        <label for='arquivoCsv' class='form-label'>Arquivo CSV</label>
-        <input
-          type='file'
-          class='form-control'
-          name='arquivoCsv'
-          id='arquivoCsv'
-          accept='.csv,text/csv'
-        />
       </div>
       <div class='col-12'>
         <button type='submit' class='btn btn-success'>Importar</button>
@@ -80,3 +86,39 @@
   </div>
 </section>
 
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const selectOrigem = document.getElementById('origem');
+    const containerCsv = document.getElementById('containerCsv');
+    const containerColado = document.getElementById('containerColado');
+    const inputCsv = document.getElementById('arquivoCsv');
+    const spanNome = document.getElementById('arquivoCsvNome');
+
+    function atualizarVisibilidade() {
+      if (selectOrigem.value === 'colado') {
+        containerCsv.style.display = 'none';
+        containerColado.style.display = 'block';
+      } else {
+        containerCsv.style.display = 'block';
+        containerColado.style.display = 'none';
+      }
+    }
+
+    if (selectOrigem && containerCsv && containerColado) {
+      selectOrigem.addEventListener('change', atualizarVisibilidade);
+      atualizarVisibilidade();
+    }
+
+    if (inputCsv && spanNome) {
+      inputCsv.addEventListener('change', function () {
+        if (inputCsv.files && inputCsv.files.length > 0) {
+          spanNome.textContent = inputCsv.files[0].name;
+          spanNome.classList.remove('text-muted');
+        } else {
+          spanNome.textContent = 'Nenhum arquivo escolhido';
+          spanNome.classList.add('text-muted');
+        }
+      });
+    }
+  });
+</script>

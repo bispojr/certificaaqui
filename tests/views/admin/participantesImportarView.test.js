@@ -1,6 +1,7 @@
 const path = require('path')
 const fs = require('fs')
 const Handlebars = require('handlebars')
+require('../../../hbs-helpers')
 
 describe('admin/participantes/importar.hbs', () => {
   let template
@@ -14,12 +15,24 @@ describe('admin/participantes/importar.hbs', () => {
     template = Handlebars.compile(source)
   })
 
-  it('renderiza o formulário de importação com os campos obrigatórios', () => {
-    const html = template({})
+  it('renderiza o formulário de importação com o select de Nome de Evento e customizações de arquivo', () => {
+    const eventos = [
+      { id: 1, nome: 'Evento Alfa' },
+      { id: 2, nome: 'Evento Beta' },
+    ]
+    const html = template({ eventos })
     expect(html).toMatch(/Importação em massa/)
-    expect(html).toMatch(/<form[^>]+method='POST'[^>]+action='\/admin\/participantes\/importar'/i)
-    expect(html).toMatch(/name='evento_id'/)
+    expect(html).toMatch(
+      /<form[^>]+method='POST'[^>]+action='\/admin\/participantes\/importar'/i,
+    )
+    expect(html).toMatch(/Nome de Evento/)
+    expect(html).toMatch(/select[^>]+name='evento_id'/)
+    expect(html).toMatch(/Evento Alfa/)
+    expect(html).toMatch(/Evento Beta/)
     expect(html).toMatch(/name='origem'/)
+    expect(html).toMatch(/option value='csv' selected/)
+    expect(html).toMatch(/Escolha o arquivo/)
+    expect(html).toMatch(/Nenhum arquivo escolhido/)
     expect(html).toMatch(/name='conteudo'/)
     expect(html).toMatch(/name='arquivoCsv'/)
     expect(html).toMatch(/href='\/admin\/participantes'/)
@@ -53,4 +66,3 @@ describe('admin/participantes/importar.hbs', () => {
     expect(html).toMatch(/email inválido/)
   })
 })
-

@@ -1,7 +1,25 @@
 const participanteService = require('../services/participanteService')
 const participanteImportService = require('../services/participanteImportService')
-const { Participante, Certificado, Usuario } = require('../models')
+const { Participante, Certificado, Usuario, Evento } = require('../models')
 const { Op } = require('sequelize')
+
+async function buscarEventos(req) {
+  let eventoIds = null
+  if (req.usuario && req.usuario.perfil !== 'admin') {
+    const usuarioComEventos = await Usuario.findByPk(req.usuario.id, {
+      include: 'eventos',
+    })
+    eventoIds = (usuarioComEventos?.eventos || []).map((e) => e.id)
+  }
+
+  const where = eventoIds ? { id: { [Op.in]: eventoIds } } : {}
+  const eventos = await Evento.findAll({
+    where,
+    attributes: ['id', 'nome'],
+    order: [['nome', 'ASC']],
+  })
+  return eventos.map((e) => (e.toJSON ? e.toJSON() : e))
+}
 
 async function montarContextoListagem(req, extras = {}) {
   const { q } = req.query
@@ -119,18 +137,25 @@ module.exports = {
     }
   },
 
-  importarForm(req, res) {
-    return res.render('admin/participantes/importar', {
-      layout: 'layouts/admin',
-      title: 'Importação em Massa',
-    })
+  async importarForm(req, res) {
+    try {
+      const eventos = await buscarEventos(req)
+      return res.render('admin/participantes/importar', {
+        layout: 'layouts/admin',
+        title: 'Importação em Massa',
+        eventos,
+      })
+    } catch (err) {
+      req.flash('error', err.message)
+      return res.redirect('/admin/participantes')
+    }
   },
 
   async importar(req, res) {
     try {
       const origem =
         req.body.origem ||
-        (req.file ? 'csv' : req.body.conteudo ? 'colado' : null)
+        (req.file ? 'csv' : req.body.conteudo ? 'colado' : 'csv')
 
       const resultadoImportacao =
         await participanteImportService.importarParticipantes({
@@ -144,9 +169,14 @@ module.exports = {
           eventoIds: req.contextoAutorizacao?.eventoIds || null,
         })
 
+      const eventos = await buscarEventos(req)
+
       return res.render('admin/participantes/importar', {
         layout: 'layouts/admin',
         title: 'Importação em Massa',
+        eventos,
+        evento_id: req.body.evento_id,
+        origem,
         resultadoImportacao,
       })
     } catch (err) {
