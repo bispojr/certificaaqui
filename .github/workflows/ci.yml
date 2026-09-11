@@ -5,12 +5,12 @@ on:
     branches:
       - main
       - dev
-      - fix-incluir-execucao-migrations
+      - fix-corrigir-verificacao-migration
   pull_request:
     branches:
       - main
       - dev
-      - fix-incluir-execucao-migrations
+      - fix-corrigir-verificacao-migration
   workflow_dispatch:
 
 jobs:
