@@ -4,4 +4,4 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 EXPOSE 3000
-CMD ["npm", "start"]
+CMD npx sequelize-cli db:migrate && npm start
