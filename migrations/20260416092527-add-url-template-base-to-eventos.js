@@ -3,10 +3,6 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.addColumn('eventos', 'url_template_base', {
-      type: Sequelize.STRING,
-      allowNull: true,
-    })
     const tableDesc = await queryInterface.describeTable('eventos')
     if (!tableDesc.url_template_base) {
       await queryInterface.addColumn('eventos', 'url_template_base', {
@@ -17,7 +13,6 @@ module.exports = {
   },
 
   async down(queryInterface) {
-    await queryInterface.removeColumn('eventos', 'url_template_base')
     const tableDesc = await queryInterface.describeTable('eventos')
     if (tableDesc.url_template_base) {
       await queryInterface.removeColumn('eventos', 'url_template_base')
