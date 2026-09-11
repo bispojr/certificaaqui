@@ -5,12 +5,12 @@ on:
     branches:
       - main
       - dev
-      - 002-insercao-massa-participantes
+      - fix-incluir-execucao-migrations
   pull_request:
     branches:
       - main
       - dev
-      - 002-insercao-massa-participantes
+      - fix-incluir-execucao-migrations
   workflow_dispatch:
 
 jobs:

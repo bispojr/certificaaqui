@@ -42,6 +42,7 @@ services:
       - JWT_SECRET=sua_chave_jwt_super_secreta
       - NODE_ENV=test
       - SESSION_SECRET=sessao-teste-supersegura
+      - RUN_MIGRATIONS=false
     volumes:
       - .:/app
 
