@@ -4,6 +4,8 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const { Usuario } = require('../models')
 const authSSR = require('../middlewares/authSSR')
+const onboardingSSRController = require('../controllers/onboardingSSRController')
+const onboardingService = require('../services/adminOnboardingService')
 
 const JWT_SECRET = process.env.JWT_SECRET
 
@@ -39,7 +41,9 @@ const JWT_SECRET = process.env.JWT_SECRET
  *         description: Redirect para /admin/dashboard (sucesso) ou /login (falha)
  */
 // GET /auth/login
-router.get('/login', authSSR, (req, res) => {
+router.get('/login', authSSR, async (req, res) => {
+  const hasAdmin = await onboardingService.existsAdmin()
+  if (!hasAdmin) return res.redirect('/onboarding')
   if (req.usuario) return res.redirect('/admin/dashboard')
   res.render('auth/login', { title: 'Login', layout: 'layout' })
 })
@@ -47,6 +51,9 @@ router.get('/login', authSSR, (req, res) => {
 // POST /auth/login
 router.post('/login', async (req, res) => {
   try {
+    const hasAdmin = await onboardingService.existsAdmin()
+    if (!hasAdmin) return res.redirect('/onboarding')
+
     const { email, senha } = req.body
     const usuario = await Usuario.findOne({ where: { email } })
     if (!usuario) {
@@ -88,5 +95,8 @@ router.post('/logout', (req, res) => {
   res.clearCookie('token')
   return res.redirect('/login')
 })
+
+router.get('/onboarding', onboardingSSRController.formulario)
+router.post('/onboarding', onboardingSSRController.criarPrimeiroAdmin)
 
 module.exports = router
