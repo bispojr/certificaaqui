@@ -34,10 +34,13 @@ module.exports = {
   async down(queryInterface) {
     const tableDesc = await queryInterface.describeTable('eventos')
 
-    if (tableDesc.texto_x) await queryInterface.removeColumn('eventos', 'texto_x')
-    if (tableDesc.texto_y) await queryInterface.removeColumn('eventos', 'texto_y')
-    if (tableDesc.validacao_x) await queryInterface.removeColumn('eventos', 'validacao_x')
-    if (tableDesc.validacao_y) await queryInterface.removeColumn('eventos', 'validacao_y')
+    if (tableDesc.texto_x)
+      await queryInterface.removeColumn('eventos', 'texto_x')
+    if (tableDesc.texto_y)
+      await queryInterface.removeColumn('eventos', 'texto_y')
+    if (tableDesc.validacao_x)
+      await queryInterface.removeColumn('eventos', 'validacao_x')
+    if (tableDesc.validacao_y)
+      await queryInterface.removeColumn('eventos', 'validacao_y')
   },
 }
-

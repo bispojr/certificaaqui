@@ -49,4 +49,3 @@ Como usuário autorizado (administrador ou gestor/monitor no escopo do seu event
 - **SC-001**: 100% das linhas válidas de um lote são processadas e persistem no banco de dados com vínculo correto ao evento.
 - **SC-002**: 100% das linhas com erro recebem diagnóstico específico com número da linha e motivo da falha.
 - **SC-003**: 0 regressão na funcionalidade pré-existente de cadastro, edição, listagem e exclusão individual de participantes.
-

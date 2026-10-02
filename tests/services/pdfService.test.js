@@ -263,3 +263,89 @@ describe('pdfService - coordenadas configuráveis por evento', () => {
     templateService.interpolate.mockRestore()
   }, 15000)
 })
+
+describe('pdfService - rotação da caixa de validação (validacao_rotacao)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    r2Service.getFile.mockResolvedValue(null)
+  })
+
+  it('deve chamar save(), rotate() e restore() com a rotação e origem configuradas', async () => {
+    const saveSpy = jest.spyOn(PDFDocument.prototype, 'save')
+    const rotateSpy = jest.spyOn(PDFDocument.prototype, 'rotate')
+    const restoreSpy = jest.spyOn(PDFDocument.prototype, 'restore')
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
+
+    const cert = {
+      codigo: 'ROT90',
+      nome: 'Participante Rotação',
+      valores_dinamicos: {},
+      Evento: {
+        nome: 'Evento 90 graus',
+        validacao_x: 150,
+        validacao_y: 550,
+        validacao_rotacao: 90,
+      },
+      Participante: { nomeCompleto: 'Participante Rotação' },
+      TiposCertificados: { texto_base: 'Certificamos que ${nome}.' },
+    }
+
+    const buffer = await pdfService.generateCertificadoPdf(cert)
+    expect(Buffer.isBuffer(buffer)).toBe(true)
+    expect(saveSpy).toHaveBeenCalled()
+    expect(rotateSpy).toHaveBeenCalledWith(90, { origin: [150, 550] })
+    expect(restoreSpy).toHaveBeenCalled()
+
+    templateService.interpolate.mockRestore()
+    saveSpy.mockRestore()
+    rotateSpy.mockRestore()
+    restoreSpy.mockRestore()
+  }, 15000)
+
+  it.each([0, 90, 180, 270])(
+    'deve gerar PDF válido para a rotação de %i graus',
+    async (angulo) => {
+      jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
+      const cert = {
+        codigo: `ROT_${angulo}`,
+        nome: 'Participante',
+        valores_dinamicos: {},
+        Evento: {
+          nome: `Evento ${angulo} graus`,
+          validacao_rotacao: angulo,
+        },
+        Participante: { nomeCompleto: 'Participante' },
+        TiposCertificados: { texto_base: 'Certificamos que ${nome}.' },
+      }
+      const buffer = await pdfService.generateCertificadoPdf(cert)
+      expect(Buffer.isBuffer(buffer)).toBe(true)
+      expect(buffer.slice(0, 4).toString()).toBe('%PDF')
+      templateService.interpolate.mockRestore()
+    },
+    15000,
+  )
+
+  it('deve usar rotação 0 como padrão quando validacao_rotacao for nula ou indefinda', async () => {
+    const rotateSpy = jest.spyOn(PDFDocument.prototype, 'rotate')
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
+
+    const cert = {
+      codigo: 'ROT_DEF',
+      nome: 'Participante',
+      valores_dinamicos: {},
+      Evento: {
+        nome: 'Evento Sem Rotação',
+        validacao_rotacao: null,
+      },
+      Participante: { nomeCompleto: 'Participante' },
+      TiposCertificados: { texto_base: 'Certificamos que ${nome}.' },
+    }
+
+    const buffer = await pdfService.generateCertificadoPdf(cert)
+    expect(Buffer.isBuffer(buffer)).toBe(true)
+    expect(rotateSpy).toHaveBeenCalledWith(0, { origin: [145, 545] })
+
+    templateService.interpolate.mockRestore()
+    rotateSpy.mockRestore()
+  }, 15000)
+})

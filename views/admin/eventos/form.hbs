@@ -100,7 +100,7 @@
 
       <h5 class='mt-2'>Posição da validação no certificado</h5>
       <div class='row mb-3'>
-        <div class='col-md-6'>
+        <div class='col-md-4'>
           <label for='validacao_x' class='form-label'>X (horizontal)</label>
           <input
             type='number'
@@ -112,7 +112,7 @@
             placeholder='Ex.: 145'
           />
         </div>
-        <div class='col-md-6'>
+        <div class='col-md-4'>
           <label for='validacao_y' class='form-label'>Y (vertical)</label>
           <input
             type='number'
@@ -123,6 +123,19 @@
             min='0'
             placeholder='Ex.: 545'
           />
+        </div>
+        <div class='col-md-4'>
+          <label for='validacao_rotacao' class='form-label'>Rotação</label>
+          <select
+            class='form-select'
+            name='validacao_rotacao'
+            id='validacao_rotacao'
+          >
+            <option value='0' {{isSelected evento.validacao_rotacao 0}}>0° (Sem rotação)</option>
+            <option value='90' {{isSelected evento.validacao_rotacao 90}}>90°</option>
+            <option value='180' {{isSelected evento.validacao_rotacao 180}}>180°</option>
+            <option value='270' {{isSelected evento.validacao_rotacao 270}}>270°</option>
+          </select>
         </div>
       </div>
 
