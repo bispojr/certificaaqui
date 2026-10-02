@@ -4,18 +4,21 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     const tableDesc = await queryInterface.describeTable('eventos')
-    if (!tableDesc.url_template_base) {
-      await queryInterface.addColumn('eventos', 'url_template_base', {
-        type: Sequelize.STRING,
+
+    if (!tableDesc.validacao_rotacao) {
+      await queryInterface.addColumn('eventos', 'validacao_rotacao', {
+        type: Sequelize.INTEGER,
         allowNull: true,
+        defaultValue: 0,
       })
     }
   },
 
   async down(queryInterface) {
     const tableDesc = await queryInterface.describeTable('eventos')
-    if (tableDesc.url_template_base) {
-      await queryInterface.removeColumn('eventos', 'url_template_base')
+
+    if (tableDesc.validacao_rotacao) {
+      await queryInterface.removeColumn('eventos', 'validacao_rotacao')
     }
   },
 }

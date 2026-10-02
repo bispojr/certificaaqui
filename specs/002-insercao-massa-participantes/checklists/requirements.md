@@ -33,4 +33,3 @@
 
 - Feature concluída, validada via testes de unidade, integração SSR e Playwright E2E.
 - Sem pendências. Spec devidamente fechada e documentada.
-

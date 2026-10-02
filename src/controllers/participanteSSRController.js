@@ -25,11 +25,11 @@ async function montarContextoListagem(req, extras = {}) {
   const { q } = req.query
   const textWhere = q
     ? {
-      [Op.or]: [
-        { nomeCompleto: { [Op.iLike]: `%${q}%` } },
-        { email: { [Op.iLike]: `%${q}%` } },
-      ],
-    }
+        [Op.or]: [
+          { nomeCompleto: { [Op.iLike]: `%${q}%` } },
+          { email: { [Op.iLike]: `%${q}%` } },
+        ],
+      }
     : {}
 
   let eventoIds = null
@@ -58,13 +58,13 @@ async function montarContextoListagem(req, extras = {}) {
     where: { deleted_at: { [Op.ne]: null } },
     include: eventoIds
       ? [
-        {
-          model: Certificado,
-          as: 'certificados',
-          where: certWhere,
-          required: true,
-        },
-      ]
+          {
+            model: Certificado,
+            as: 'certificados',
+            where: certWhere,
+            required: true,
+          },
+        ]
       : [],
   })
 

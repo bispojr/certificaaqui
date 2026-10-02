@@ -5,6 +5,7 @@ const eventoSchema = z.object({
   ano: z.number().int().gte(2000),
   codigo_base: z.string().regex(/^[A-Za-z]{3}$/),
   url_template_base: z.string().url().optional().nullable(),
+  validacao_rotacao: z.number().int().optional().default(0),
 })
 
 module.exports = eventoSchema
