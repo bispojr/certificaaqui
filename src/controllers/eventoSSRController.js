@@ -118,6 +118,16 @@ module.exports = {
         if (data[field] === '' || data[field] === undefined) data[field] = null
         else data[field] = parseInt(data[field], 10) || null
       }
+      if (
+        data.validacao_rotacao === '' ||
+        data.validacao_rotacao === undefined ||
+        data.validacao_rotacao === null
+      ) {
+        data.validacao_rotacao = 0
+      } else {
+        const rot = parseInt(data.validacao_rotacao, 10)
+        data.validacao_rotacao = isNaN(rot) ? 0 : rot
+      }
       await eventoService.create(data)
       req.flash('success', 'Evento criado com sucesso.')
       return res.redirect('/admin/eventos')
@@ -149,6 +159,16 @@ module.exports = {
       ]) {
         if (data[field] === '' || data[field] === undefined) data[field] = null
         else data[field] = parseInt(data[field], 10) || null
+      }
+      if (
+        data.validacao_rotacao === '' ||
+        data.validacao_rotacao === undefined ||
+        data.validacao_rotacao === null
+      ) {
+        data.validacao_rotacao = 0
+      } else {
+        const rot = parseInt(data.validacao_rotacao, 10)
+        data.validacao_rotacao = isNaN(rot) ? 0 : rot
       }
       await eventoService.update(req.params.id, data)
       req.flash('success', 'Evento atualizado com sucesso.')

@@ -121,6 +121,7 @@ describe('eventoSSRController', () => {
       texto_y: null,
       validacao_x: null,
       validacao_y: null,
+      validacao_rotacao: 0,
     })
     expect(r2Service.uploadFile).not.toHaveBeenCalled()
   })

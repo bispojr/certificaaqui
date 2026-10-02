@@ -56,4 +56,33 @@ describe('Validação Zod - Evento', () => {
     }
     expect(() => eventoSchema.parse(data)).toThrow()
   })
+
+  it('valida validacao_rotacao com valor numérico e define default 0 quando omitido', () => {
+    const data = {
+      nome: 'Congresso Nacional',
+      ano: 2026,
+      codigo_base: 'ABC',
+    }
+    const parsed = eventoSchema.parse(data)
+    expect(parsed.validacao_rotacao).toBe(0)
+
+    const dataWithRotation = {
+      nome: 'Congresso Nacional',
+      ano: 2026,
+      codigo_base: 'ABC',
+      validacao_rotacao: 90,
+    }
+    const parsedRotation = eventoSchema.parse(dataWithRotation)
+    expect(parsedRotation.validacao_rotacao).toBe(90)
+  })
+
+  it('rejeita validacao_rotacao que não é número inteiro', () => {
+    const data = {
+      nome: 'Congresso Nacional',
+      ano: 2026,
+      codigo_base: 'ABC',
+      validacao_rotacao: 45.5,
+    }
+    expect(() => eventoSchema.parse(data)).toThrow()
+  })
 })

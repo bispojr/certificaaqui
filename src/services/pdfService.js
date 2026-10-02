@@ -109,9 +109,13 @@ module.exports = {
         setFont()
         doc.text(texto, textoX, textoY, { width: 480, align: 'justify' })
 
-        // Coordenadas da validação (configuráveis por evento)
+        // Coordenadas e rotação da validação (configuráveis por evento)
         const validacaoX = evento?.validacao_x ?? 145
         const validacaoY = evento?.validacao_y ?? 545
+        const validacaoRotacao = evento?.validacao_rotacao ?? 0
+
+        doc.save()
+        doc.rotate(validacaoRotacao, { origin: [validacaoX, validacaoY] })
 
         // Código de validação e link
         const endereco_validacao =
@@ -132,6 +136,8 @@ module.exports = {
           continued: false,
         })
         doc.fillColor('black')
+
+        doc.restore()
 
         doc.end()
       } catch (err) {

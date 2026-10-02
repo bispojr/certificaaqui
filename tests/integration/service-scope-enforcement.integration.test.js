@@ -1,19 +1,53 @@
 const certificadoService = require('../../src/services/certificadoService')
+const {
+  Evento,
+  Participante,
+  TiposCertificados,
+  sequelize,
+} = require('../../src/models')
 
 describe('service-scope-enforcement integration', () => {
+  let evento, participante, tipoCertificado
+
+  beforeEach(async () => {
+    await sequelize.query(
+      'TRUNCATE TABLE certificados, tipos_certificados, participantes, eventos RESTART IDENTITY CASCADE',
+    )
+
+    evento = await Evento.create({
+      nome: 'Evento Escopo Teste',
+      codigo_base: 'ESC',
+      ano: 2026,
+    })
+
+    participante = await Participante.create({
+      nomeCompleto: 'Participante Teste',
+      email: 'participante.escopo@teste.com',
+    })
+
+    tipoCertificado = await TiposCertificados.create({
+      evento_id: evento.id,
+      codigo: 'PT',
+      descricao: 'Tipo de teste para escopo',
+      campo_destaque: 'nome',
+      texto_base: 'Certificamos ${nome_completo}.',
+      dados_dinamicos: {},
+    })
+  })
+
   it('nega criação fora do escopo do gestor antes de persistir', async () => {
     await expect(
       certificadoService.create(
         {
           evento_id: 999,
-          tipo_certificado_id: 1,
-          participante_id: 1,
+          tipo_certificado_id: tipoCertificado.id,
+          participante_id: participante.id,
           nome: 'Teste',
           valores_dinamicos: {},
         },
         {
           principal: { role: 'gestor' },
-          eventoIds: [1, 2],
+          eventoIds: [evento.id],
         },
       ),
     ).rejects.toThrow('fora do escopo autorizado')
@@ -23,17 +57,23 @@ describe('service-scope-enforcement integration', () => {
     await expect(
       certificadoService.create(
         {
-          evento_id: 2,
-          tipo_certificado_id: 1,
-          participante_id: 1,
+          evento_id: evento.id,
+          tipo_certificado_id: tipoCertificado.id,
+          participante_id: participante.id,
           nome: 'Teste válido',
           valores_dinamicos: {},
         },
         {
           principal: { role: 'gestor' },
-          eventoIds: [1, 2],
+          eventoIds: [evento.id],
         },
       ),
-    ).rejects.not.toThrow('fora do escopo autorizado')
+    ).resolves.toMatchObject({
+      evento_id: evento.id,
+      nome: 'Teste válido',
+      participante_id: participante.id,
+      tipo_certificado_id: tipoCertificado.id,
+      status: 'emitido',
+    })
   })
 })

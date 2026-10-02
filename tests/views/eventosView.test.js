@@ -52,6 +52,9 @@ describe('views/admin/eventos', () => {
     it('campo validacao_y existe no formulário', () => {
       expect(html).toMatch(/name='validacao_y'/)
     })
+    it('campo validacao_rotacao existe no formulário', () => {
+      expect(html).toMatch(/name='validacao_rotacao'/)
+    })
     it('seção de posição do texto-base existe', () => {
       expect(html).toMatch(/Posição do texto-base no certificado/)
     })
