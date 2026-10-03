@@ -72,7 +72,7 @@
 
       <h5 class='mt-4'>Posição do texto-base no certificado</h5>
       <div class='row mb-3'>
-        <div class='col-md-6'>
+        <div class='col-md-4'>
           <label for='texto_x' class='form-label'>X (horizontal)</label>
           <input
             type='number'
@@ -84,7 +84,7 @@
             placeholder='Ex.: 270'
           />
         </div>
-        <div class='col-md-6'>
+        <div class='col-md-4'>
           <label for='texto_y' class='form-label'>Y (vertical)</label>
           <input
             type='number'
@@ -94,6 +94,19 @@
             value='{{evento.texto_y}}'
             min='0'
             placeholder='Ex.: 200'
+          />
+        </div>
+        <div class='col-md-4'>
+          <label for='texto_tamanho_fonte' class='form-label'>Tamanho da fonte (pt)</label>
+          <input
+            type='number'
+            class='form-control'
+            name='texto_tamanho_fonte'
+            id='texto_tamanho_fonte'
+            value='{{evento.texto_tamanho_fonte}}'
+            min='6'
+            max='72'
+            placeholder='Ex.: 14'
           />
         </div>
       </div>

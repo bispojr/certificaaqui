@@ -23,7 +23,7 @@
 
 ## Phase 3: Interface Web (SSR View)
 
-- [ ] T006 Atualizar a view `views/admin/eventos/form.hbs` adicionando o campo de formulário para tamanho da fonte (`texto_tamanho_fonte`) na seção "Posição do texto-base no certificado".
+- [x] T006 Atualizar a view `views/admin/eventos/form.hbs` adicionando o campo de formulário para tamanho da fonte (`texto_tamanho_fonte`) na seção "Posição do texto-base no certificado".
 
 ---
 
