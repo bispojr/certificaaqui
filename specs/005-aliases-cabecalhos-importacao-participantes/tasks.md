@@ -8,7 +8,7 @@
 
 ## Phase 1: Engine de Normalização e Aliases Declarativos
 
-- [ ] T001 Criar o módulo declarativo de aliases e normalização de cabeçalhos (`src/utils/cabecalhosParticipante.js` ou helper equivalente) contendo:
+- [x] T001 Criar o módulo declarativo de aliases e normalização de cabeçalhos (`src/utils/cabecalhosParticipante.js` ou helper equivalente) contendo:
   - Configuração declarativa `CAMPOS_PARTICIPANTE` para `nomeCompleto`, `email` e `instituicao`.
   - Função `normalizarCabecalho(valor)` (NFD, remoção de diacríticos, lowercase, trim, múltiplos espaços).
   - Função `validarAliases(config)` contra ambiguidades entre campos.
