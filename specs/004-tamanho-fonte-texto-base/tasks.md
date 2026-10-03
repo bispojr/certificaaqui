@@ -29,8 +29,8 @@
 
 ## Phase 4: Serviço de PDF (PDFKit Rendering)
 
-- [ ] T007 Atualizar `src/services/pdfService.js` para extrair `texto_tamanho_fonte` de `certificado.Evento`.
-- [ ] T008 Implementar o uso de `doc.fontSize(tamanhoFonte)` em `src/services/pdfService.js`, aplicando fallback para `texto.length > 400 ? 10 : 14` quando `texto_tamanho_fonte` for nulo ou indefinido.
+- [x] T007 Atualizar `src/services/pdfService.js` para extrair `texto_tamanho_fonte` de `certificado.Evento`.
+- [x] T008 Implementar o uso de `doc.fontSize(tamanhoFonte)` em `src/services/pdfService.js`, aplicando fallback para `texto.length > 400 ? 10 : 14` quando `texto_tamanho_fonte` for nulo ou indefinido.
 
 ---
 

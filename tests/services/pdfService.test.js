@@ -349,3 +349,83 @@ describe('pdfService - rotação da caixa de validação (validacao_rotacao)', (
     rotateSpy.mockRestore()
   }, 15000)
 })
+
+describe('pdfService - tamanho da fonte do texto-base (texto_tamanho_fonte)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    r2Service.getFile.mockResolvedValue(null)
+  })
+
+  it('deve aplicar o tamanho da fonte configurado em evento.texto_tamanho_fonte', async () => {
+    const fontSizeSpy = jest.spyOn(PDFDocument.prototype, 'fontSize')
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
+
+    const cert = {
+      codigo: 'FONT16',
+      nome: 'Participante',
+      valores_dinamicos: {},
+      Evento: {
+        nome: 'Evento Fonte 16',
+        texto_tamanho_fonte: 16,
+      },
+      Participante: { nomeCompleto: 'Participante' },
+      TiposCertificados: { texto_base: 'Certificamos que ${nome}.' },
+    }
+
+    const buffer = await pdfService.generateCertificadoPdf(cert)
+    expect(Buffer.isBuffer(buffer)).toBe(true)
+    expect(fontSizeSpy).toHaveBeenCalledWith(16)
+
+    templateService.interpolate.mockRestore()
+    fontSizeSpy.mockRestore()
+  }, 15000)
+
+  it('deve aplicar o fallback dinâmico (14pt para texto curto <= 400) quando texto_tamanho_fonte for nulo ou indefinido', async () => {
+    const fontSizeSpy = jest.spyOn(PDFDocument.prototype, 'fontSize')
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto curto')
+
+    const cert = {
+      codigo: 'FONT_DEF_SHORT',
+      nome: 'Participante',
+      valores_dinamicos: {},
+      Evento: {
+        nome: 'Evento Fonte Nula',
+        texto_tamanho_fonte: null,
+      },
+      Participante: { nomeCompleto: 'Participante' },
+      TiposCertificados: { texto_base: 'Certificamos que ${nome}.' },
+    }
+
+    const buffer = await pdfService.generateCertificadoPdf(cert)
+    expect(Buffer.isBuffer(buffer)).toBe(true)
+    expect(fontSizeSpy).toHaveBeenCalledWith(14)
+
+    templateService.interpolate.mockRestore()
+    fontSizeSpy.mockRestore()
+  }, 15000)
+
+  it('deve aplicar o fallback dinâmico (10pt para texto longo > 400) quando texto_tamanho_fonte for nulo ou indefinido', async () => {
+    const fontSizeSpy = jest.spyOn(PDFDocument.prototype, 'fontSize')
+    const textoLongo = 'A'.repeat(401)
+    jest.spyOn(templateService, 'interpolate').mockReturnValue(textoLongo)
+
+    const cert = {
+      codigo: 'FONT_DEF_LONG',
+      nome: 'Participante',
+      valores_dinamicos: {},
+      Evento: {
+        nome: 'Evento Fonte Nula',
+        texto_tamanho_fonte: null,
+      },
+      Participante: { nomeCompleto: 'Participante' },
+      TiposCertificados: { texto_base: 'Certificamos que ${nome}.' },
+    }
+
+    const buffer = await pdfService.generateCertificadoPdf(cert)
+    expect(Buffer.isBuffer(buffer)).toBe(true)
+    expect(fontSizeSpy).toHaveBeenCalledWith(10)
+
+    templateService.interpolate.mockRestore()
+    fontSizeSpy.mockRestore()
+  }, 15000)
+})
