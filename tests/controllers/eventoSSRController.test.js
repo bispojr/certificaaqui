@@ -119,11 +119,28 @@ describe('eventoSSRController', () => {
       ano: '2026',
       texto_x: null,
       texto_y: null,
+      texto_tamanho_fonte: null,
       validacao_x: null,
       validacao_y: null,
       validacao_rotacao: 0,
     })
     expect(r2Service.uploadFile).not.toHaveBeenCalled()
+  })
+
+  it('criar converte texto_tamanho_fonte em inteiro ou null', async () => {
+    const req = {
+      body: { nome: 'Novo', ano: '2026', texto_tamanho_fonte: '16' },
+      file: null,
+      flash: jest.fn(),
+    }
+    const res = { render: jest.fn(), redirect: jest.fn() }
+    eventoService.create.mockResolvedValue({})
+    await eventoSSRController.criar(req, res)
+    expect(eventoService.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        texto_tamanho_fonte: 16,
+      }),
+    )
   })
 
   it('criar com arquivo faz upload e passa url_template_base', async () => {
@@ -197,6 +214,24 @@ describe('eventoSSRController', () => {
       'Evento atualizado com sucesso.',
     )
     expect(res.redirect).toHaveBeenCalledWith('/admin/eventos')
+  })
+
+  it('atualizar converte texto_tamanho_fonte para inteiro ou null', async () => {
+    const req = {
+      params: { id: 1 },
+      body: { nome: 'Edit', ano: '2026', texto_tamanho_fonte: '18' },
+      file: null,
+      flash: jest.fn(),
+    }
+    const res = { render: jest.fn(), redirect: jest.fn() }
+    eventoService.update.mockResolvedValue({})
+    await eventoSSRController.atualizar(req, res)
+    expect(eventoService.update).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({
+        texto_tamanho_fonte: 18,
+      }),
+    )
   })
 
   it('atualizar com arquivo atualiza url_template_base', async () => {

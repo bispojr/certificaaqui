@@ -16,8 +16,8 @@
 
 ## Phase 2: Backend & Controllers (SSR & API)
 
-- [ ] T004 Atualizar `src/controllers/eventoSSRController.js` para capturar `texto_tamanho_fonte` no tratamento dos campos de layout do body e sanitizá-lo para inteiro ou `null`.
-- [ ] T005 Atualizar `src/controllers/eventoController.js` para garantir suporte e persistência do campo na API REST se aplicável.
+- [x] T004 Atualizar `src/controllers/eventoSSRController.js` para capturar `texto_tamanho_fonte` no tratamento dos campos de layout do body e sanitizá-lo para inteiro ou `null`.
+- [x] T005 Atualizar `src/controllers/eventoController.js` para garantir suporte e persistência do campo na API REST se aplicável.
 
 ---
 
