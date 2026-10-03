@@ -36,5 +36,5 @@
 
 ## Phase 5: Testes & Validação
 
-- [ ] T009 Criar/atualizar testes em `tests/validators/evento.test.js`, `tests/controllers/eventoSSRController.test.js`, `tests/services/pdfService.test.js` e `tests/views/eventosView.test.js`.
-- [ ] T010 Validar manualmente no ambiente de desenvolvimento a alteração do campo em `/admin/eventos/:id/editar` e a geração do PDF correspondente.
+- [x] T009 Criar/atualizar testes em `tests/validators/evento.test.js`, `tests/controllers/eventoSSRController.test.js`, `tests/services/pdfService.test.js` e `tests/views/eventosView.test.js`.
+- [x] T010 Validar manualmente no ambiente de desenvolvimento a alteração do campo em `/admin/eventos/:id/editar` e a geração do PDF correspondente.
