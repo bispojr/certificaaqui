@@ -49,6 +49,33 @@ describe('EventoController', () => {
     })
   })
 
+  it('deve criar um evento com texto_tamanho_fonte via API REST', async () => {
+    eventoService.create.mockResolvedValue({
+      id: 2,
+      nome: 'Evento Com Fonte',
+      codigo_base: 'FNT',
+      ano: 2026,
+      texto_tamanho_fonte: 16,
+    })
+    const res = await request(app)
+      .post('/eventos')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        nome: 'Evento Com Fonte',
+        codigo_base: 'FNT',
+        ano: 2026,
+        texto_tamanho_fonte: 16,
+      })
+    expect(res.statusCode).toBe(201)
+    expect(res.body).toEqual({
+      id: 2,
+      nome: 'Evento Com Fonte',
+      codigo_base: 'FNT',
+      ano: 2026,
+      texto_tamanho_fonte: 16,
+    })
+  })
+
   it('deve retornar todos os eventos', async () => {
     eventoService.findAll.mockResolvedValue([{ id: 1, nome: 'Evento Teste' }])
     const res = await request(app)

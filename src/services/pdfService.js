@@ -104,8 +104,16 @@ module.exports = {
         const textoX = evento?.texto_x ?? 270
         const textoY = evento?.texto_y ?? 200
 
+        // Tamanho da fonte configurável por evento com fallback dinâmico
+        const tamanhoFonte =
+          evento?.texto_tamanho_fonte && evento.texto_tamanho_fonte > 0
+            ? evento.texto_tamanho_fonte
+            : texto.length > 400
+              ? 10
+              : 14
+
         // Texto base interpolado
-        doc.fontSize(texto.length > 400 ? 10 : 14)
+        doc.fontSize(tamanhoFonte)
         setFont()
         doc.text(texto, textoX, textoY, { width: 480, align: 'justify' })
 

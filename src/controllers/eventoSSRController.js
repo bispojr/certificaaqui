@@ -112,6 +112,7 @@ module.exports = {
       for (const field of [
         'texto_x',
         'texto_y',
+        'texto_tamanho_fonte',
         'validacao_x',
         'validacao_y',
       ]) {
@@ -154,6 +155,7 @@ module.exports = {
       for (const field of [
         'texto_x',
         'texto_y',
+        'texto_tamanho_fonte',
         'validacao_x',
         'validacao_y',
       ]) {

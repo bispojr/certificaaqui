@@ -85,4 +85,39 @@ describe('Validação Zod - Evento', () => {
     }
     expect(() => eventoSchema.parse(data)).toThrow()
   })
+
+  it('valida texto_tamanho_fonte com inteiro, nulo ou omitido', () => {
+    const dataWithFont = {
+      nome: 'Congresso Nacional',
+      ano: 2026,
+      codigo_base: 'ABC',
+      texto_tamanho_fonte: 16,
+    }
+    expect(eventoSchema.parse(dataWithFont).texto_tamanho_fonte).toBe(16)
+
+    const dataWithNull = {
+      nome: 'Congresso Nacional',
+      ano: 2026,
+      codigo_base: 'ABC',
+      texto_tamanho_fonte: null,
+    }
+    expect(eventoSchema.parse(dataWithNull).texto_tamanho_fonte).toBeNull()
+
+    const dataOmitted = {
+      nome: 'Congresso Nacional',
+      ano: 2026,
+      codigo_base: 'ABC',
+    }
+    expect(eventoSchema.parse(dataOmitted).texto_tamanho_fonte).toBeUndefined()
+  })
+
+  it('rejeita texto_tamanho_fonte que não é número inteiro', () => {
+    const data = {
+      nome: 'Congresso Nacional',
+      ano: 2026,
+      codigo_base: 'ABC',
+      texto_tamanho_fonte: 14.5,
+    }
+    expect(() => eventoSchema.parse(data)).toThrow()
+  })
 })

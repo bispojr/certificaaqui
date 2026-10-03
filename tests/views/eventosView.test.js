@@ -46,6 +46,12 @@ describe('views/admin/eventos', () => {
     it('campo texto_y existe no formulário', () => {
       expect(html).toMatch(/name='texto_y'/)
     })
+    it('campo texto_tamanho_fonte existe no formulário com id, min e max', () => {
+      expect(html).toMatch(/name='texto_tamanho_fonte'/)
+      expect(html).toMatch(/id='texto_tamanho_fonte'/)
+      expect(html).toMatch(/min='6'/)
+      expect(html).toMatch(/max='72'/)
+    })
     it('campo validacao_x existe no formulário', () => {
       expect(html).toMatch(/name='validacao_x'/)
     })
