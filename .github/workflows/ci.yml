@@ -5,12 +5,12 @@ on:
     branches:
       - main
       - dev
-      - feat-incluir-rotacao-caixa-validacao
+      - feat-tamanho-texto-base
   pull_request:
     branches:
       - main
       - dev
-      - feat-incluir-rotacao-caixa-validacao
+      - feat-tamanho-texto-base
   workflow_dispatch:
 
 jobs:
