@@ -25,6 +25,11 @@ O sistema dispõe de dois modos de interação:
 
 - Q: Inserção em massa de participantes via CSV/colar de planilha já estava contemplada? → A: Não. O texto atual cobre criação individual de participantes, então a especificação foi estendida para incluir importação em massa como extensão compatível do escopo de Gestão de Participantes.
 
+### Session 2026-10-03 (Spec 005)
+
+- Q: Como tratar variações de cabeçalhos (caixa, acentuação, espaços extras e sinônimos semânticos como "Nome", "E-mail", "Instituição de Ensino") na importação em massa de participantes? → A: A especificação foi estendida para incorporar uma engine declarativa de aliases e normalização de cabeçalhos (`CAMPOS_PARTICIPANTE`, `normalizarCabecalho`), com validação de ambiguidade e paridade estrita entre os fluxos de CSV e texto colado (TSV).
+
+
 ---
 
 # Objetivos
@@ -64,6 +69,8 @@ FR-59: No momento de criação de participante por gestor ou monitor, o sistema 
 FR-60: A remoção de participante por gestor ou monitor deve realizar soft delete apenas do vínculo em `participante_eventos`, preservando o registro global do participante e seus certificados em outros eventos. Apenas administradores podem realizar soft delete global do participante.  
 FR-61: O sistema deve exigir aceite de Termo de Responsabilidade de Dados pelo gestor ou monitor antes da primeira inserção de participantes. O aceite deve ser registrado com data, versão do termo e identificação do usuário. O termo declara que os dados inseridos foram coletados de fontes de inscrição sob responsabilidade do gestor/organização e que a base legal de tratamento (LGPD) é de responsabilidade do controlador (gestor/organização), não do operador (CertificaAqui).
 FR-63: O sistema deve permitir inserção em massa de participantes pela interface SSR, para usuários autorizados a criar participantes, aceitando conteúdo tabular colado da área de transferência (por exemplo, colado de Google Sheets) ou arquivo CSV. Cada linha importada deve ser validada e processada como uma criação individual, aplicando FR-2, FR-3, FR-58, FR-59 e FR-61; linhas inválidas devem ser reportadas individualmente sem impedir o processamento das demais linhas válidas.
+FR-64: Na inserção em massa de participantes (CSV e texto colado/TSV), o sistema deve oferecer reconhecimento flexível de cabeçalhos através de uma especificação declarativa de campos e aliases semânticos (`CAMPOS_PARTICIPANTE`). Os cabeçalhos das colunas devem ser normalizados automaticamente, ignorando diacríticos, variação de caixa (maiúsculas/minúsculas) e múltiplos espaços (`normalizarCabecalho`). O sistema deve utilizar um resolvedor único de cabeçalhos compartilhado por ambos os fluxos, validando a ausência de aliases ambíguos na inicialização. Cabeçalhos não reconhecidos devem ser ignorados sem afetar o mapeamento das colunas válidas.
+
 
 ## Gestão de Eventos
 
@@ -170,6 +177,8 @@ NFR-9: **Portabilidade:** Executável via Docker com `docker-compose.yml` (produ
 NFR-10: **Rastreabilidade:** Todos os registros devem ter `created_at`, `updated_at` e `deleted_at`.  
 NFR-11: **Segurança — Upload:** Uploads de template restritos a PNG/JPEG, máx. 2 MB (validado por `multer`).  
 NFR-12: **Conformidade LGPD — Responsabilidade do Controlador:** O sistema opera como operador de dados (LGPD Art. 5º, VII). Gestores e monitores são os controladores dos dados de participantes que inserem. O aceite do Termo de Responsabilidade (FR-61) é o mecanismo de registro dessa responsabilidade. Nenhum dado de participante deve ser coletado sem aceite prévio do Termo pelo gestor/monitor responsável.
+NFR-13: **Manutenibilidade — Paridade de Resolução e Normalização de Aliases:** A especificação de aliases e a engine de normalização de cabeçalhos de importação devem ser isoladas em módulo desacoplado e reutilizável (`src/utils/cabecalhosParticipante.js` ou auxiliar do serviço), garantindo que os fluxos de CSV e texto colado (TSV) utilizem rigorosamente a mesma lógica de resolução de campos e que ambiguidades de aliases sejam validadas e rejeitadas na inicialização.
+
 
 ---
 
@@ -303,8 +312,9 @@ POST /admin/perfil/alterar-senha (form: senhaAtual + novaSenha + confirmarSenha)
 
 ## Gestão de Participantes
 
-CRUD completo via API REST e Interface SSR. Participante identificado por e-mail único. Associado a múltiplos certificados.  
-**Requisitos:** FR-1, FR-2, FR-3, FR-4
+CRUD completo via API REST e Interface SSR. Participante identificado por e-mail único. Associado a múltiplos certificados. Suporta inserção em massa via CSV e colagem (TSV) com reconhecimento flexível e normalização declarativa de cabeçalhos e aliases.  
+**Requisitos:** FR-1, FR-2, FR-3, FR-4, FR-58, FR-59, FR-60, FR-61, FR-63, FR-64
+
 
 ---
 
@@ -626,6 +636,9 @@ RN-9: Todos os campos de `dados_dinamicos` devem ser fornecidos em `valores_dina
 RN-10: Gestores só modificam tipos de certificados cujo `evento_id` pertence a seus eventos (`tiposCertificadosOwnership`).
 
 RN-11: A nova senha informada no formulário de alteração deve atender à política de senha forte: comprimento mínimo de 8 caracteres, contendo ao menos uma letra maiúscula, uma letra minúscula, um dígito e um caractere especial (`!@#$%^&*`). A validação é realizada por schema Zod (`senhaForteSchema`) antes de qualquer alteração no banco.
+
+RN-12: Na importação em massa de participantes (CSV e texto colado), a identificação dos cabeçalhos das colunas é realizada via normalização de strings (remoção de acentos/diacríticos NFD, conversão para minúsculas, remoção de espaços nas extremidades e consolidação de múltiplos espaços) e consulta a um mapa invertido gerado dinamicamente a partir dos aliases declarados (`CAMPOS_PARTICIPANTE`). Caso a configuração de aliases apresente ambiguidades (um mesmo alias mapeando para campos diferentes), o serviço lança exceção imediata na inicialização.
+
 
 ---
 
