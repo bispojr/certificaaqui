@@ -34,7 +34,7 @@ function validarAliases(config) {
     for (const alias of lista) {
       const normalizado = normalizarCabecalho(alias)
 
-      if (aliases.has(normalizado)) {
+      if (aliases.has(normalizado) && aliases.get(normalizado) !== campo) {
         throw new Error(
           `Alias "${alias}" está associado a mais de um campo: ${aliases.get(normalizado)} e ${campo}`,
         )

@@ -18,8 +18,8 @@
 
 ## Phase 2: Integração com o Serviço de Importação
 
-- [ ] T002 Atualizar `src/services/participanteImportService.js` para utilizar a função `identificarCampo(cabecalho)` no processamento das colunas.
-- [ ] T003 Mapear dinamicamente os cabeçalhos brutos da primeira linha (CSV e texto colado) para os nomes internos dos campos (`nomeCompleto`, `email`, `instituicao`) de forma transparente antes da validação do schema Zod.
+- [x] T002 Atualizar `src/services/participanteImportService.js` para utilizar a função `identificarCampo(cabecalho)` no processamento das colunas.
+- [x] T003 Mapear dinamicamente os cabeçalhos brutos da primeira linha (CSV e texto colado) para os nomes internos dos campos (`nomeCompleto`, `email`, `instituicao`) de forma transparente antes da validação do schema Zod.
 
 ---
 
