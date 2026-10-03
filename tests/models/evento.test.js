@@ -152,4 +152,23 @@ describe('Evento Model', () => {
     })
     expect(evento.url_template_base).toBeNull()
   })
+
+  test('deve criar evento com texto_tamanho_fonte', async () => {
+    const evento = await Evento.create({
+      nome: 'Congresso com Fonte Customizada',
+      codigo_base: 'FNT',
+      ano: 2026,
+      texto_tamanho_fonte: 16,
+    })
+    expect(evento.texto_tamanho_fonte).toBe(16)
+  })
+
+  test('deve criar evento sem texto_tamanho_fonte (campo opcional nulo)', async () => {
+    const evento = await Evento.create({
+      nome: 'Congresso com Fonte Padrão',
+      codigo_base: 'FNP',
+      ano: 2026,
+    })
+    expect(evento.texto_tamanho_fonte).toBeNull()
+  })
 })

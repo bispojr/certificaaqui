@@ -6,6 +6,7 @@ const eventoSchema = z.object({
   codigo_base: z.string().regex(/^[A-Za-z]{3}$/),
   url_template_base: z.string().url().optional().nullable(),
   validacao_rotacao: z.number().int().optional().default(0),
+  texto_tamanho_fonte: z.number().int().optional().nullable(),
 })
 
 module.exports = eventoSchema
