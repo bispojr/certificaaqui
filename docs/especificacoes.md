@@ -74,7 +74,7 @@ FR-7: O campo `ano` do evento é obrigatório e deve ser um inteiro maior ou igu
 FR-8: O campo `codigo_base` do evento é obrigatório, deve ser único e conter exatamente três letras alfabéticas (ex.: `EDU`, `CMP`, `OFC`).  
 FR-9: A remoção de eventos deve ser lógica (soft delete); os registros devem poder ser restaurados.  
 FR-44: O campo `url_template_base` do evento é opcional e, quando informado, deve conter uma URL válida (ou ser `null`). Esse campo armazena a **key** (caminho) do arquivo de template-base no Cloudflare R2.  
-FR-48: O evento pode configurar coordenadas inteiras opcionais para posicionamento do conteúdo no PDF gerado: `texto_x`, `texto_y` (posição do bloco de texto), `validacao_x`, `validacao_y` (posição do código de validação) e `validacao_rotacao` (ângulo de rotação da caixa de validação em graus, ex.: 0, 90, 180, 270; default: 0). Se ausentes, são usados valores padrão hardcoded (`texto_x`=270, `texto_y`=200, `validacao_x`=145, `validacao_y`=545, `validacao_rotacao`=0).
+FR-48: O evento pode configurar coordenadas inteiras opcionais para posicionamento e escala do conteúdo no PDF gerado: `texto_x`, `texto_y` (posição do bloco de texto), `texto_tamanho_fonte` (tamanho da fonte do texto-base em pontos; opcional, fallback dinâmico: `texto.length > 400 ? 10 : 14`), `validacao_x`, `validacao_y` (posição do código de validação) e `validacao_rotacao` (ângulo de rotação da caixa de validação em graus, ex.: 0, 90, 180, 270; default: 0). Se ausentes, são usados valores padrão hardcoded (`texto_x`=270, `texto_y`=200, `validacao_x`=145, `validacao_y`=545, `validacao_rotacao`=0).
 
 ## Gestão de Tipos de Certificados
 
@@ -112,7 +112,7 @@ FR-53: O sistema deve disponibilizar uma rota pública `GET /api/certificados?em
 FR-42: O sistema deve gerar o PDF do certificado sob demanda via `GET /api/certificados/:id/pdf`, sem exigir autenticação.  
 FR-47: A imagem de fundo do PDF é obtida do Cloudflare R2 usando a key em `evento.url_template_base`. Se não definido, usa `"template/padrao.jpg"` como key padrão.  
 FR-47b: A fonte tipográfica (`Lato-Medium.ttf`) é obtida do R2 (key `"fontes/Lato-Medium.ttf"`). Se indisponível, usa `Helvetica` como fallback.  
-FR-47c: O PDF é gerado em formato A4 landscape. As coordenadas de posicionamento dos blocos de texto e do código de validação, bem como o ângulo de rotação da caixa de validação, são configuráveis por evento via campos `texto_x/y`, `validacao_x/y` e `validacao_rotacao`.  
+FR-47c: O PDF é gerado em formato A4 landscape. As coordenadas de posicionamento dos blocos de texto e do código de validação, o tamanho da fonte do texto-base, bem como o ângulo de rotação da caixa de validação, são configuráveis por evento via campos `texto_x/y`, `texto_tamanho_fonte`, `validacao_x/y` e `validacao_rotacao`.  
 FR-47d: O texto de validação no PDF inclui o código do certificado e um link de validação composto pela variável de ambiente `ENDERECO_VALIDACAO` (default: `https://certificaaqui.com/validar`).
 
 ## Upload de Template de Evento
@@ -310,7 +310,7 @@ CRUD completo via API REST e Interface SSR. Participante identificado por e-mail
 
 ## Gestão de Eventos
 
-CRUD completo. Cada evento possui `codigo_base` (3 letras), template de fundo no R2 (`url_template_base`) e coordenadas de layout do PDF (`texto_x/y`, `validacao_x/y`). Upload de template via SSR com multer.  
+CRUD completo. Cada evento possui `codigo_base` (3 letras), template de fundo no R2 (`url_template_base`) e coordenadas/escala de layout do PDF (`texto_x/y`, `texto_tamanho_fonte`, `validacao_x/y`, `validacao_rotacao`). Upload de template via SSR com multer.  
 **Requisitos:** FR-5, FR-6, FR-7, FR-8, FR-9, FR-44, FR-48, FR-51
 
 ---
@@ -433,10 +433,12 @@ Interface web completa Handlebars em `/admin/*`. Autenticação via cookie. Mens
 | `ano`               | Integer   | Obrigatório, ≥ 2000                                             |
 | `codigo_base`       | String(3) | Obrigatório, único, exatamente 3 letras alfabéticas             |
 | `url_template_base` | String    | Opcional (null); key R2 do arquivo de imagem de fundo do PDF    |
-| `texto_x`           | Integer   | Opcional; coord. X do bloco de texto no PDF (default: 270)      |
-| `texto_y`           | Integer   | Opcional; coord. Y do bloco de texto no PDF (default: 200)      |
-| `validacao_x`       | Integer   | Opcional; coord. X do código de validação no PDF (default: 145) |
-| `validacao_y`       | Integer   | Opcional; coord. Y do código de validação no PDF (default: 545) |
+| `texto_x`              | Integer   | Opcional; coord. X do bloco de texto no PDF (default: 270)                     |
+| `texto_y`              | Integer   | Opcional; coord. Y do bloco de texto no PDF (default: 200)                     |
+| `texto_tamanho_fonte`  | Integer   | Opcional; tamanho da fonte em pontos do texto-base (fallback dinâmico)         |
+| `validacao_x`          | Integer   | Opcional; coord. X do código de validação no PDF (default: 145)                |
+| `validacao_y`          | Integer   | Opcional; coord. Y do código de validação no PDF (default: 545)                |
+| `validacao_rotacao`    | Integer   | Opcional; ângulo de rotação da caixa de validação em graus (default: 0)        |
 | `created_at`        | Timestamp | Automático                                                      |
 | `updated_at`        | Timestamp | Automático                                                      |
 | `deleted_at`        | Timestamp | Soft delete (paranoid)                                          |
