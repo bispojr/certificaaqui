@@ -8,9 +8,9 @@
 
 ## Phase 1: Database & Model (Migração e Schema)
 
-- [ ] T001 Criar migration Sequelize para adicionar a coluna `texto_tamanho_fonte` (INTEGER, null) na tabela `eventos`.
-- [ ] T002 Atualizar o model `Evento` (`src/models/evento.js`) com a definição do campo `texto_tamanho_fonte`.
-- [ ] T003 Atualizar a validação Zod (`src/validators/evento.js`) para incluir `texto_tamanho_fonte` (inteiro, opcional, nulo).
+- [x] T001 Criar migration Sequelize para adicionar a coluna `texto_tamanho_fonte` (INTEGER, null) na tabela `eventos`.
+- [x] T002 Atualizar o model `Evento` (`src/models/evento.js`) com a definição do campo `texto_tamanho_fonte`.
+- [x] T003 Atualizar a validação Zod (`src/validators/evento.js`) para incluir `texto_tamanho_fonte` (inteiro, opcional, nulo).
 
 ---
 
