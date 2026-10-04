@@ -5,12 +5,12 @@ on:
     branches:
       - main
       - dev
-      - feat-tamanho-texto-base
+      - feat-garantir-cabecalhos-semelhantes-ins-lote-part
   pull_request:
     branches:
       - main
       - dev
-      - feat-tamanho-texto-base
+      - feat-garantir-cabecalhos-semelhantes-ins-lote-part
   workflow_dispatch:
 
 jobs:
