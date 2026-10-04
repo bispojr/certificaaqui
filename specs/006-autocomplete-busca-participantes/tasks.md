@@ -37,12 +37,12 @@
 
 ## Phase 3: Testes Unitários e de Integração
 
-- [ ] **T005**: Criar testes para o endpoint `GET /admin/participantes/busca`:
+- [x] **T005**: Criar testes para o endpoint `GET /admin/participantes/busca`:
   - Testar busca por termo presente em `nomeCompleto`.
   - Testar busca por termo presente em `email`.
   - Testar ordenação alfabética e limite de 5 resultados com a flag `hasMore`.
   - Testar permissão de busca global por gestores, monitores e admins (lookup).
-- [ ] **T006**: Testar formulários de criação/edição de certificado garantindo que a submissão continua recebendo e salvando o `participante_id` com sucesso.
+- [x] **T006**: Testar formulários de criação/edição de certificado garantindo que a submissão continua recebendo e salvando o `participante_id` com sucesso.
 
 ---
 
