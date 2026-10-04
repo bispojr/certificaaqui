@@ -56,6 +56,11 @@ module.exports = {
       testEnvironment: 'node',
       testMatch: ['<rootDir>/tests/views/**/*.test.js'],
     },
+    {
+      displayName: 'utils',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/tests/utils/**/*.test.js'],
+    },
   ],
   collectCoverageFrom: ['src/**/*.js', '!src/models/index.js'],
   coverageDirectory: 'coverage',

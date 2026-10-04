@@ -1,5 +1,6 @@
 const participanteService = require('./participanteService')
 const participanteSchema = require('../validators/participante')
+const { identificarCampo } = require('../utils/cabecalhosParticipante')
 
 function splitDelimitedLine(line, delimiter) {
   const values = []
@@ -61,7 +62,12 @@ function parseLines(rawContent, origem) {
     const row = {}
 
     headers.forEach((header, index) => {
-      row[header] = values[index] ?? ''
+      const val = values[index] ?? ''
+      row[header] = val
+      const campoInterno = identificarCampo(header)
+      if (campoInterno) {
+        row[campoInterno] = val
+      }
     })
 
     return row

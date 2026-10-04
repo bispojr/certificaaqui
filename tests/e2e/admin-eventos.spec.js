@@ -90,7 +90,10 @@ test.describe('Admin - Cadastro de Evento', () => {
     await expect(page).toHaveURL(/\/admin\/eventos/)
 
     // Reabre e confirma que o valor 18 foi persistido
-    await page.locator('tr', { hasText: 'Evento Fonte E2E' }).locator('a', { hasText: 'Editar' }).click()
+    await page
+      .locator('tr', { hasText: 'Evento Fonte E2E' })
+      .locator('a', { hasText: 'Editar' })
+      .click()
     await expect(page.locator('input[name="texto_tamanho_fonte"]')).toHaveValue(
       '18',
     )
@@ -115,9 +118,9 @@ test.describe('Admin - Cadastro de Evento', () => {
     const row = page.locator('tr', { hasText: 'Evento Rotação E2E' })
     await row.locator('a', { hasText: 'Editar' }).click()
 
-    await expect(
-      page.locator('select[name="validacao_rotacao"]'),
-    ).toHaveValue('90')
+    await expect(page.locator('select[name="validacao_rotacao"]')).toHaveValue(
+      '90',
+    )
 
     // Atualiza a rotação para 180° e salva
     await page.selectOption('select[name="validacao_rotacao"]', '180')
@@ -130,8 +133,8 @@ test.describe('Admin - Cadastro de Evento', () => {
       .locator('tr', { hasText: 'Evento Rotação E2E' })
       .locator('a', { hasText: 'Editar' })
       .click()
-    await expect(
-      page.locator('select[name="validacao_rotacao"]'),
-    ).toHaveValue('180')
+    await expect(page.locator('select[name="validacao_rotacao"]')).toHaveValue(
+      '180',
+    )
   })
 })
