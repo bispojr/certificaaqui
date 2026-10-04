@@ -91,4 +91,61 @@ describe('participanteImportService', () => {
     expect(resultado.vinculosCriados).toBe(1)
     expect(resultado.falhas).toBe(0)
   })
+
+
+  it('processa importação CSV utilizando variações e aliases de cabeçalhos', async () => {
+    participanteService.createOrLinkByEmail.mockResolvedValueOnce({
+      createdParticipante: true,
+      createdLink: false,
+    })
+
+    const resultado = await participanteImportService.importarParticipantes({
+      eventoId: 10,
+      origem: 'csv',
+      arquivoCsv: [
+        'NOME COMPLETO,E-Mail,INSTITUIÇÃO DE ENSINO',
+        'Ana Clara,ana@exemplo.com,Unicamp',
+      ].join('\n'),
+      principal: { role: 'admin' },
+    })
+
+    expect(participanteService.createOrLinkByEmail).toHaveBeenCalledWith(
+      {
+        nomeCompleto: 'Ana Clara',
+        email: 'ana@exemplo.com',
+        instituicao: 'Unicamp',
+        evento_id: 10,
+      },
+      expect.anything(),
+    )
+    expect(resultado.criados).toBe(1)
+  })
+
+  it('processa importação por colagem (TSV) utilizando aliases "Nome", "e mail" e "instituição/empresa"', async () => {
+    participanteService.createOrLinkByEmail.mockResolvedValueOnce({
+      createdParticipante: true,
+      createdLink: false,
+    })
+
+    const resultado = await participanteImportService.importarParticipantes({
+      eventoId: 10,
+      origem: 'colado',
+      conteudo: [
+        'Nome\te mail\tinstituição/empresa',
+        'Carlos Lima\tcarlos@exemplo.com\tEmpresa X',
+      ].join('\n'),
+      principal: { role: 'admin' },
+    })
+
+    expect(participanteService.createOrLinkByEmail).toHaveBeenCalledWith(
+      {
+        nomeCompleto: 'Carlos Lima',
+        email: 'carlos@exemplo.com',
+        instituicao: 'Empresa X',
+        evento_id: 10,
+      },
+      expect.anything(),
+    )
+    expect(resultado.criados).toBe(1)
+  })
 })

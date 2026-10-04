@@ -25,11 +25,11 @@
 
 ## Phase 3: Testes Unitários e de Integração
 
-- [ ] T004 Criar suíte de testes unitários para a especificação de aliases e a normalização de cabeçalhos (ex.: `tests/utils/cabecalhosParticipante.test.js` ou `tests/services/participanteImportService.test.js`):
+- [x] T004 Criar suíte de testes unitários para a especificação de aliases e a normalização de cabeçalhos (ex.: `tests/utils/cabecalhosParticipante.test.js` ou `tests/services/participanteImportService.test.js`):
   - Testes parametrizados para `normalizarCabecalho` (verificando caixa, acentos, hífens, espaços extras).
   - Testes parametrizados para `identificarCampo` (garantindo que todos os aliases mapeiam para os campos corretos).
   - Teste de exceção para `validarAliases` com configurações ambíguas.
-- [ ] T005 Atualizar/ampliar os testes de integração em `tests/services/participanteImportService.test.js` e `tests/e2e/participantes-importacao.spec.js` para submeter CSV e textos colados utilizando variações de cabeçalhos (ex.: `Nome`, `E-mail`, `INSTITUIÇÃO DE ENSINO`).
+- [x] T005 Atualizar/ampliar os testes de integração em `tests/services/participanteImportService.test.js` e `tests/e2e/participantes-importacao.spec.js` para submeter CSV e textos colados utilizando variações de cabeçalhos (ex.: `Nome`, `E-mail`, `INSTITUIÇÃO DE ENSINO`).
 
 ---
 
