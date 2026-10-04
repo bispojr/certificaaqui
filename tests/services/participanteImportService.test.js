@@ -92,7 +92,6 @@ describe('participanteImportService', () => {
     expect(resultado.falhas).toBe(0)
   })
 
-
   it('processa importação CSV utilizando variações e aliases de cabeçalhos', async () => {
     participanteService.createOrLinkByEmail.mockResolvedValueOnce({
       createdParticipante: true,
@@ -162,10 +161,15 @@ describe('participanteImportService', () => {
       ].join('\n')
 
       const csvParsed = participanteImportService.parseLines(csvContent, 'csv')
-      const tsvParsed = participanteImportService.parseLines(tsvContent, 'colado')
+      const tsvParsed = participanteImportService.parseLines(
+        tsvContent,
+        'colado',
+      )
 
       expect(csvParsed.rows.length).toBe(tsvParsed.rows.length)
-      expect(csvParsed.rows[0].nomeCompleto).toBe(tsvParsed.rows[0].nomeCompleto)
+      expect(csvParsed.rows[0].nomeCompleto).toBe(
+        tsvParsed.rows[0].nomeCompleto,
+      )
       expect(csvParsed.rows[0].email).toBe(tsvParsed.rows[0].email)
       expect(csvParsed.rows[0].instituicao).toBe(tsvParsed.rows[0].instituicao)
     })
@@ -188,22 +192,24 @@ describe('participanteImportService', () => {
         createdLink: false,
       })
 
-      const resultadoCsv = await participanteImportService.importarParticipantes({
-        eventoId: 10,
-        origem: 'csv',
-        arquivoCsv: csvContent,
-        principal: { role: 'admin' },
-      })
+      const resultadoCsv =
+        await participanteImportService.importarParticipantes({
+          eventoId: 10,
+          origem: 'csv',
+          arquivoCsv: csvContent,
+          principal: { role: 'admin' },
+        })
 
       const chamadaCsv = participanteService.createOrLinkByEmail.mock.calls[0]
       participanteService.createOrLinkByEmail.mockClear()
 
-      const resultadoTsv = await participanteImportService.importarParticipantes({
-        eventoId: 10,
-        origem: 'colado',
-        conteudo: tsvContent,
-        principal: { role: 'admin' },
-      })
+      const resultadoTsv =
+        await participanteImportService.importarParticipantes({
+          eventoId: 10,
+          origem: 'colado',
+          conteudo: tsvContent,
+          principal: { role: 'admin' },
+        })
 
       const chamadaTsv = participanteService.createOrLinkByEmail.mock.calls[0]
 

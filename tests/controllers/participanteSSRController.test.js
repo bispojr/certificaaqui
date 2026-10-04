@@ -377,4 +377,3 @@ describe('GET /admin/participantes/busca (Autocomplete API)', () => {
     ])
   })
 })
-

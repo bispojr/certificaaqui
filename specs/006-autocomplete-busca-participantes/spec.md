@@ -95,7 +95,7 @@ Como usuário realizando buscas genéricas ou navegando primariamente pelo tecla
 - **FR-005**: O endpoint MUST realizar busca global na tabela de participantes (`Participante`), permitindo que qualquer usuário autenticado com permissão (admin, gestor ou monitor) localize qualquer participante previamente cadastrado no sistema (conforme FR-58 e FR-59), possibilitando a seleção e o vínculo sem duplicação de cadastros.
 - **FR-006**: As visões SSR Handlebars com seleção de participante (ex.: `views/admin/certificados/form.hbs`) MUST substituir o elemento `<select name="participante_id">` por um componente de Autocomplete de busca em tempo real.
 - **FR-007**: O componente no frontend MUST exigir um mínimo de 2 caracteres digitados no campo antes de disparar qualquer requisição AJAX.
-- **FR-008**: O componente no frontend MUST implementar um *debounce* configurado entre 250ms e 300ms na captura da digitação do usuário.
+- **FR-008**: O componente no frontend MUST implementar um _debounce_ configurado entre 250ms e 300ms na captura da digitação do usuário.
 - **FR-009**: O componente MUST manter sincronizado o campo `<input type="hidden" name="participante_id">`, de forma que a submissão do formulário continue enviando o ID do participante selecionado (`req.body.participante_id`).
 - **FR-010**: O componente MUST exibir no dropdown no máximo 5 itens com o formato `Nome — e-mail` e, quando `hasMore` for verdadeiro, exibir no rodapé a mensagem: `Mais de 5 resultados. Continue digitando para refinar.`.
 - **FR-011**: O componente MUST oferecer suporte completo a atalhos de teclado: `ArrowDown` e `ArrowUp` para navegação, `Enter` para seleção, `Esc` para fechar o dropdown, e um botão visual para limpar a seleção atual.
@@ -147,17 +147,36 @@ Substituição do antigo `<select>` no arquivo `views/admin/certificados/form.hb
 ```html
 <div class="mb-3 position-relative autocomplete-participante">
   <label class="form-label">Participante</label>
-  <input type="hidden" name="participante_id" id="participante_id" value="{{certificado.participante_id}}" required>
+  <input
+    type="hidden"
+    name="participante_id"
+    id="participante_id"
+    value="{{certificado.participante_id}}"
+    required
+  />
   <div class="input-group">
-    <input type="text" 
-           id="participante_busca" 
-           class="form-control" 
-           placeholder="Digite nome ou e-mail..." 
-           value="{{#if certificado.participante}}{{certificado.participante.nomeCompleto}} — {{certificado.participante.email}}{{/if}}"
-           autocomplete="off">
-    <button type="button" class="btn btn-outline-secondary" id="btn_limpar_participante" style="display:none;">&times;</button>
+    <input
+      type="text"
+      id="participante_busca"
+      class="form-control"
+      placeholder="Digite nome ou e-mail..."
+      value="{{#if certificado.participante}}{{certificado.participante.nomeCompleto}} — {{certificado.participante.email}}{{/if}}"
+      autocomplete="off"
+    />
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      id="btn_limpar_participante"
+      style="display:none;"
+    >
+      &times;
+    </button>
   </div>
-  <div id="participante_dropdown" class="dropdown-menu w-100 shadow-sm mt-1" style="display:none;"></div>
+  <div
+    id="participante_dropdown"
+    class="dropdown-menu w-100 shadow-sm mt-1"
+    style="display:none;"
+  ></div>
 </div>
 ```
 

@@ -21,14 +21,14 @@
 
 ## Phase 2: Componente Frontend (JS) e Integração com Handlebars
 
-- [ ] **T003**: Criar o script vanilla JS `public/js/autocomplete-participante.js`:
+- [x] **T003**: Criar o script vanilla JS `public/js/autocomplete-participante.js`:
   - Capturar evento `input` no campo de busca com tempo de debounce (~250-300ms).
   - Validar mínimo de 2 caracteres antes do `fetch('/admin/participantes/busca?q=...')`.
   - Renderizar o dropdown com até 5 itens (`Nome — e-mail`) e exibir rodapé `"Mais de 5 resultados..."` quando `hasMore === true`.
   - Atualizar o valor do `<input type="hidden" name="participante_id">` ao selecionar um participante.
   - Exibir botão de limpar (`×`) e permitir redefinir o campo.
   - Implementar suporte a teclado (`ArrowDown`, `ArrowUp`, `Enter`, `Esc`).
-- [ ] **T004**: Atualizar as visões Handlebars (como `views/admin/certificados/form.hbs` e edições correspondentes):
+- [x] **T004**: Atualizar as visões Handlebars (como `views/admin/certificados/form.hbs` e edições correspondentes):
   - Substituir o `<select name="participante_id">` pela estrutura HTML do autocomplete.
   - Incluir o script `autocomplete-participante.js` na página.
   - Garantir pré-preenchimento correto em formulários de edição.
