@@ -48,5 +48,5 @@
 
 ## Phase 4: Validação Final e E2E
 
-- [ ] **T007**: Testar comportamento do autocomplete via Playwright E2E (digitação, debounce, seleção via clique e navegação por teclado).
-- [ ] **T008**: Executar toda a suíte de testes (`npm test`) garantindo zero regressão.
+- [x] **T007**: Testar comportamento do autocomplete via Playwright E2E (digitação, debounce, seleção via clique e navegação por teclado).
+- [x] **T008**: Executar toda a suíte de testes (`npm test`) garantindo zero regressão.
