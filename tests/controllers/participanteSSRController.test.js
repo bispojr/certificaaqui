@@ -296,3 +296,85 @@ describe('Admin SSR - Participante', () => {
     expect(vinculo).toBeTruthy()
   })
 })
+
+describe('GET /admin/participantes/busca (Autocomplete API)', () => {
+  beforeAll(async () => {
+    await sequelize.sync()
+  })
+  beforeEach(async () => {
+    await setupDb()
+  })
+
+  it('redireciona para /login se não autenticado', async () => {
+    const res = await request(app).get('/admin/participantes/busca?q=joao')
+    expect(res.status).toBe(302)
+    expect(res.headers.location).toBe('/login')
+  })
+
+  it('retorna array vazio e hasMore=false se termo tiver menos de 2 caracteres', async () => {
+    const agent = request.agent(app)
+    await agent
+      .post('/login')
+      .send({ email: 'gestor@email.com', senha: '123456' })
+      .redirects(1)
+
+    const res1 = await agent.get('/admin/participantes/busca?q=a')
+    expect(res1.status).toBe(200)
+    expect(res1.body).toEqual({ results: [], hasMore: false })
+
+    const res2 = await agent.get('/admin/participantes/busca')
+    expect(res2.status).toBe(200)
+    expect(res2.body).toEqual({ results: [], hasMore: false })
+  })
+
+  it('busca globalmente por nomeCompleto ou email (insensível a maiúsculas/minúsculas) para gestores e monitores', async () => {
+    const agent = request.agent(app)
+    await agent
+      .post('/login')
+      .send({ email: 'monitor@email.com', senha: '123456' })
+      .redirects(1)
+
+    // 'carlos' pertence ao evento 2 (não vinculado ao monitor), mas a busca é de escopo global (lookup)
+    const res = await agent.get('/admin/participantes/busca?q=CARLOS')
+    expect(res.status).toBe(200)
+    expect(res.body.results).toHaveLength(1)
+    expect(res.body.results[0]).toEqual({
+      id: 3,
+      nomeCompleto: 'Carlos Evento2',
+      email: 'carlos2@email.com',
+    })
+    expect(res.body.hasMore).toBe(false)
+  })
+
+  it('ordena resultados alfabeticamente por nomeCompleto ASC e limita em 5 com flag hasMore', async () => {
+    // Cria 6 participantes com o termo 'Ana'
+    for (let i = 6; i >= 1; i--) {
+      await Participante.create({
+        nomeCompleto: `Ana Teste ${i}`,
+        email: `ana${i}@email.com`,
+      })
+    }
+
+    const agent = request.agent(app)
+    await agent
+      .post('/login')
+      .send({ email: 'admin@email.com', senha: '123456' })
+      .redirects(1)
+
+    const res = await agent.get('/admin/participantes/busca?q=Ana')
+    expect(res.status).toBe(200)
+    expect(res.body.results).toHaveLength(5)
+    expect(res.body.hasMore).toBe(true)
+
+    // Verifica ordenação ascendente (Ana Teste 1 a Ana Teste 5)
+    const nomes = res.body.results.map((r) => r.nomeCompleto)
+    expect(nomes).toEqual([
+      'Ana Teste 1',
+      'Ana Teste 2',
+      'Ana Teste 3',
+      'Ana Teste 4',
+      'Ana Teste 5',
+    ])
+  })
+})
+

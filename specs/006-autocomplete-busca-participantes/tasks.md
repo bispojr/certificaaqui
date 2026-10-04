@@ -8,14 +8,14 @@
 
 ## Phase 1: Endpoint de Busca e Lógica no Backend
 
-- [ ] **T001**: Criar o método de busca no controller SSR `participanteSSRController.buscar` ou service equivalente:
+- [x] **T001**: Criar o método de busca no controller SSR `participanteSSRController.buscar` ou service equivalente:
   - Receber query param `q`.
   - Aplicar filtro de 2+ caracteres minimum (retornar array vazio se < 2).
   - Executar consulta via Sequelize utilizando `Op.or` com `Op.iLike` (ou equivalência insensível a maiúsculas) para `nomeCompleto` e `email`.
   - Ordenar alfabeticamente por `nomeCompleto ASC`.
   - Buscar até 6 registros (`limit: 6`), derivando `results` (primeiros 5 registros) e `hasMore = total > 5`.
   - Realizar busca de escopo global na tabela de participantes (`Participante`), permitindo o lookup de qualquer participante cadastrado na base (FR-58).
-- [ ] **T002**: Registrar a rota `GET /admin/participantes/busca` em `src/routes/admin.js` protegida por autenticação SSR.
+- [x] **T002**: Registrar a rota `GET /admin/participantes/busca` em `src/routes/admin.js` protegida por autenticação SSR.
 
 ---
 

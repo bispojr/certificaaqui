@@ -106,6 +106,27 @@ router.post(
 
 // Gestão de participantes (todos os perfis autenticados)
 router.get('/participantes', participanteSSRController.index)
+/**
+ * @swagger
+ * /admin/participantes/busca:
+ *   get:
+ *     summary: Busca participantes para autocomplete em tempo real
+ *     tags: [SSR - Admin]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         description: Termo de busca (mínimo de 2 caracteres)
+ *     responses:
+ *       200:
+ *         description: Lista de resultados (máximo 5) e flag hasMore
+ *       302:
+ *         description: Redirect para /auth/login se não autenticado
+ */
+router.get('/participantes/busca', participanteSSRController.buscar)
 router.get('/participantes/novo', participanteSSRController.novo)
 router.get('/participantes/importar', participanteSSRController.importarForm)
 router.get('/participantes/:id/editar', participanteSSRController.editar)
