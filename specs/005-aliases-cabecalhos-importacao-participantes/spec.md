@@ -16,6 +16,7 @@ Como usuário autorizado (administrador ou gestor/monitor de evento), eu preciso
 **Why this priority**: Aumenta a usabilidade e reduz erros de importação causados por divergências de formatação nos cabeçalhos gerados por softwares de planilha ou colados pelos usuários.
 
 **Independent Test**:
+
 1. Preparar um arquivo CSV ou texto colado com cabeçalhos variados como: `NOME COMPLETO`, `E-Mail`, `INSTITUIÇÃO DE ENSINO` ou `nome`, `e mail`, `instituição`.
 2. Acessar a interface de importação em massa (`/admin/participantes/importar`).
 3. Submeter os dados tanto via formulário colado (TSV) quanto via arquivo CSV.
@@ -67,18 +68,10 @@ Como usuário autorizado (administrador ou gestor/monitor de evento), eu preciso
 ```js
 const CAMPOS_PARTICIPANTE = {
   nomeCompleto: {
-    aliases: [
-      'nomeCompleto',
-      'nome completo',
-      'nome',
-    ],
+    aliases: ['nomeCompleto', 'nome completo', 'nome'],
   },
   email: {
-    aliases: [
-      'email',
-      'e-mail',
-      'e mail',
-    ],
+    aliases: ['email', 'e-mail', 'e mail'],
   },
   instituicao: {
     aliases: [
@@ -96,6 +89,7 @@ const CAMPOS_PARTICIPANTE = {
 ### Pipeline de Normalização e Resolução
 
 1. **Normalização**:
+
    ```js
    function normalizarCabecalho(valor) {
      if (typeof valor !== 'string') return ''
@@ -109,6 +103,7 @@ const CAMPOS_PARTICIPANTE = {
    ```
 
 2. **Validação de Ambiguidades**:
+
    ```js
    function validarAliases(config) {
      const aliases = new Map()
@@ -119,7 +114,7 @@ const CAMPOS_PARTICIPANTE = {
 
          if (aliases.has(normalizado)) {
            throw new Error(
-             `Alias "${alias}" está associado a mais de um campo: ${aliases.get(normalizado)} e ${campo}`
+             `Alias "${alias}" está associado a mais de um campo: ${aliases.get(normalizado)} e ${campo}`,
            )
          }
 
@@ -130,12 +125,13 @@ const CAMPOS_PARTICIPANTE = {
    ```
 
 3. **Construção Dinâmica do Mapa Invertido**:
+
    ```js
    validarAliases(CAMPOS_PARTICIPANTE)
 
    const ALIAS_PARA_CAMPO = Object.entries(CAMPOS_PARTICIPANTE)
      .flatMap(([campo, config]) =>
-       config.aliases.map((alias) => [normalizarCabecalho(alias), campo])
+       config.aliases.map((alias) => [normalizarCabecalho(alias), campo]),
      )
      .reduce((mapa, [alias, campo]) => {
        mapa[alias] = campo

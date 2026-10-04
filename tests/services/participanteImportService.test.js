@@ -148,4 +148,67 @@ describe('participanteImportService', () => {
     )
     expect(resultado.criados).toBe(1)
   })
+
+  describe('paridade total de processamento entre CSV e dados colados (TSV)', () => {
+    it('extrai exatamente o mesmo mapeamento de campos internos via parseLines para CSV e TSV', () => {
+      const csvContent = [
+        'NOME COMPLETO,E-Mail,INSTITUIÇÃO DE ENSINO',
+        'Ana Clara,ana@exemplo.com,Unicamp',
+      ].join('\n')
+
+      const tsvContent = [
+        'NOME COMPLETO\tE-Mail\tINSTITUIÇÃO DE ENSINO',
+        'Ana Clara\tana@exemplo.com\tUnicamp',
+      ].join('\n')
+
+      const csvParsed = participanteImportService.parseLines(csvContent, 'csv')
+      const tsvParsed = participanteImportService.parseLines(tsvContent, 'colado')
+
+      expect(csvParsed.rows.length).toBe(tsvParsed.rows.length)
+      expect(csvParsed.rows[0].nomeCompleto).toBe(tsvParsed.rows[0].nomeCompleto)
+      expect(csvParsed.rows[0].email).toBe(tsvParsed.rows[0].email)
+      expect(csvParsed.rows[0].instituicao).toBe(tsvParsed.rows[0].instituicao)
+    })
+
+    it('gera resultados idênticos em importarParticipantes para o mesmo conjunto de dados via CSV e colagem', async () => {
+      const csvContent = [
+        'Nome,e mail,instituição',
+        'Carlos Lima,carlos@exemplo.com,Empresa X',
+        'Linha Invalida,email-ruim,Empresa Y',
+      ].join('\n')
+
+      const tsvContent = [
+        'Nome\te mail\tinstituição',
+        'Carlos Lima\tcarlos@exemplo.com\tEmpresa X',
+        'Linha Invalida\temail-ruim\tEmpresa Y',
+      ].join('\n')
+
+      participanteService.createOrLinkByEmail.mockResolvedValue({
+        createdParticipante: true,
+        createdLink: false,
+      })
+
+      const resultadoCsv = await participanteImportService.importarParticipantes({
+        eventoId: 10,
+        origem: 'csv',
+        arquivoCsv: csvContent,
+        principal: { role: 'admin' },
+      })
+
+      const chamadaCsv = participanteService.createOrLinkByEmail.mock.calls[0]
+      participanteService.createOrLinkByEmail.mockClear()
+
+      const resultadoTsv = await participanteImportService.importarParticipantes({
+        eventoId: 10,
+        origem: 'colado',
+        conteudo: tsvContent,
+        principal: { role: 'admin' },
+      })
+
+      const chamadaTsv = participanteService.createOrLinkByEmail.mock.calls[0]
+
+      expect(resultadoCsv).toEqual(resultadoTsv)
+      expect(chamadaCsv).toEqual(chamadaTsv)
+    })
+  })
 })

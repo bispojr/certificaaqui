@@ -35,6 +35,6 @@
 
 ## Phase 4: Validação Final e Paridade
 
-- [ ] T006 Garantir paridade total no processamento entre arquivos CSV e dados colados (TSV).
-- [ ] T007 Executar a suíte de testes do Jest e Playwright para verificar 0 regressão na importação em massa de participantes.
+- [x] T006 Garantir paridade total no processamento entre arquivos CSV e dados colados (TSV).
+- [x] T007 Executar a suíte de testes do Jest e Playwright para verificar 0 regressão na importação em massa de participantes.
 

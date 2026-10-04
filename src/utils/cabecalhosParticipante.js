@@ -67,4 +67,3 @@ module.exports = {
   identificarCampo,
   ALIAS_PARA_CAMPO,
 }
-

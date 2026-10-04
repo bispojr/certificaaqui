@@ -46,9 +46,12 @@ describe('cabecalhosParticipante', () => {
       ['instituicao de ensino', 'instituicao'],
       ['Instituição/Empresa', 'instituicao'],
       ['INSTITUICAO/EMPRESA', 'instituicao'],
-    ])('mapeia o cabeçalho "%s" para o campo interno "%s"', (cabecalho, campoEsperado) => {
-      expect(identificarCampo(cabecalho)).toBe(campoEsperado)
-    })
+    ])(
+      'mapeia o cabeçalho "%s" para o campo interno "%s"',
+      (cabecalho, campoEsperado) => {
+        expect(identificarCampo(cabecalho)).toBe(campoEsperado)
+      },
+    )
 
     test.each(['cargo', 'telefone', 'cpf', 'rua', '', '  '])(
       'retorna null para cabeçalho não reconhecido "%s"',

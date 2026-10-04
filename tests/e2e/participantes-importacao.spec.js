@@ -41,7 +41,6 @@ test.describe('Importacao em massa de participantes (SSR)', () => {
     await expect(page.locator('table tbody')).toContainText('Novo E2E')
   })
 
-
   test('admin importa por colagem com variações de cabeçalhos (aliases semânticos)', async ({
     page,
   }) => {
@@ -68,6 +67,38 @@ test.describe('Importacao em massa de participantes (SSR)', () => {
     await page.goto('/admin/participantes')
     await expect(page.locator('table tbody')).toContainText(
       'Participante Alias E2E',
+    )
+  })
+
+  test('admin importa por arquivo CSV com variações de cabeçalhos (aliases semânticos)', async ({
+    page,
+  }) => {
+    await loginAs(page, 'admin.e2e@test.com', 'senha123')
+    await page.goto('/admin/participantes')
+    await page.click('a:has-text("+ Em lote")')
+    await expect(page).toHaveURL(/.*\/admin\/participantes\/importar/)
+
+    await page.selectOption('select[name="evento_id"]', '1')
+    await page.selectOption('select[name="origem"]', 'csv')
+    await page.setInputFiles('input[name="arquivoCsv"]', {
+      name: 'participantes-alias.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from(
+        [
+          'NOME COMPLETO,E-Mail,INSTITUIÇÃO DE ENSINO',
+          'Participante CSV Alias E2E,csv.alias.e2e@test.com,UFSCAR',
+        ].join('\n'),
+      ),
+    })
+
+    await page.click('button:has-text("Importar")')
+
+    await expect(page.locator('text=Importação concluída')).toBeVisible()
+    await expect(page.locator('text=1 participantes criados')).toBeVisible()
+
+    await page.goto('/admin/participantes')
+    await expect(page.locator('table tbody')).toContainText(
+      'Participante CSV Alias E2E',
     )
   })
 })
