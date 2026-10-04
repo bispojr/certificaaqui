@@ -5,17 +5,32 @@
         action="{{#if certificado}}/admin/certificados/{{certificado.id}}{{else}}/admin/certificados{{/if}}">
 
 
-    <div class="mb-3">
+    <div class="mb-3 position-relative autocomplete-participante">
       <label class="form-label">Participante</label>
-      <select name="participante_id" class="form-select" required>
-        <option value="">Selecione...</option>
-        {{#each participantes}}
-          <option value="{{id}}"
-            {{#if (eq (toString id) (toString ../certificado.participante_id))}}selected{{/if}}>
-            {{nomeCompleto}} — {{email}}
-          </option>
-        {{/each}}
-      </select>
+      <input type="hidden" name="participante_id" id="participante_id" value="{{certificado.participante_id}}" required>
+      <div class="input-group">
+        <input
+          type="text"
+          id="participante_busca"
+          class="form-control"
+          placeholder="Digite nome ou e-mail..."
+          value="{{#if certificado.participante}}{{certificado.participante.nomeCompleto}} — {{certificado.participante.email}}{{/if}}"
+          autocomplete="off"
+          aria-autocomplete="list"
+          aria-expanded="false"
+          aria-controls="participante_dropdown"
+        >
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          id="btn_limpar_participante"
+          aria-label="Limpar participante"
+          {{#unless certificado.participante_id}}style="display:none;"{{/unless}}>
+        >
+          &times;
+        </button>
+      </div>
+      <div id="participante_dropdown" class="dropdown-menu w-100 shadow-sm mt-1" style="display:none;" role="listbox" aria-label="Resultados de participantes"></div>
     </div>
 
     <div class="mb-3">
@@ -114,4 +129,6 @@
     const tipoInicial = document.getElementById('tipoSelect').value;
     if (tipoInicial) carregarCampos(tipoInicial);
   </script>
+
+  <script src="/js/autocomplete-participante.js" defer></script>
 {{/layouts/admin}}

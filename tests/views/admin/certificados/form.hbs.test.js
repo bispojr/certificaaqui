@@ -21,7 +21,7 @@ describe('admin/certificados/form.hbs', () => {
     return template(context)
   }
 
-  it('renderiza selects de participante, evento e tipo', () => {
+  it('renderiza o campo autocomplete de participante e mantém os selects de evento e tipo', () => {
     const html = render({
       participantes: [{ id: 1, nomeCompleto: 'Fulano', email: 'f@a.com' }],
       eventos: [{ id: 2, nome: 'Evento X' }],
@@ -30,7 +30,9 @@ describe('admin/certificados/form.hbs', () => {
       flash: {},
     })
     const $ = cheerio.load(html)
-    expect($('select[name="participante_id"] option').length).toBe(2)
+    expect($('input[type="hidden"][name="participante_id"]').length).toBe(1)
+    expect($('#participante_busca').length).toBe(1)
+    expect($('#participante_dropdown').length).toBe(1)
     expect($('select[name="evento_id"] option').length).toBe(2)
     expect($('select[name="tipo_certificado_id"] option').length).toBe(2)
   })
@@ -46,11 +48,13 @@ describe('admin/certificados/form.hbs', () => {
         tipo_certificado_id: 3,
         status: 'emitido',
         valores_dinamicos: { campo1: 'abc' },
+        participante: { id: 1, nomeCompleto: 'Fulano', email: 'f@a.com' },
       },
       flash: {},
     })
     const $ = cheerio.load(html)
-    expect($('select[name="participante_id"] option[selected]').val()).toBe('1')
+    expect($('input[type="hidden"][name="participante_id"]').val()).toBe('1')
+    expect($('#participante_busca').val()).toBe('Fulano — f@a.com')
     expect($('select[name="evento_id"] option[selected]').val()).toBe('2')
     expect($('select[name="tipo_certificado_id"] option[selected]').val()).toBe(
       '3',
