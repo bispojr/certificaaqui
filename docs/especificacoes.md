@@ -29,6 +29,10 @@ O sistema dispõe de dois modos de interação:
 
 - Q: Como tratar variações de cabeçalhos (caixa, acentuação, espaços extras e sinônimos semânticos como "Nome", "E-mail", "Instituição de Ensino") na importação em massa de participantes? → A: A especificação foi estendida para incorporar uma engine declarativa de aliases e normalização de cabeçalhos (`CAMPOS_PARTICIPANTE`, `normalizarCabecalho`), com validação de ambiguidade e paridade estrita entre os fluxos de CSV e texto colado (TSV).
 
+### Session 2026-10-03 (Spec 006)
+
+- Q: Como otimizar a seleção de participantes em formulários SSR com mais de 100 opções? → A: O elemento `<select>` tradicional de participante foi substituído por um componente de busca autocomplete em tempo real (`GET /admin/participantes/busca`), com debounce (250–300ms), filtro insensível a maiúsculas/minúsculas por nome ou e-mail, busca global na base de dados (FR-58), limitação a 5 resultados com aviso de refinamento e sincronização com `<input type="hidden" name="participante_id">`.
+
 ---
 
 # Objetivos
@@ -68,7 +72,8 @@ FR-59: No momento de criação de participante por gestor ou monitor, o sistema 
 FR-60: A remoção de participante por gestor ou monitor deve realizar soft delete apenas do vínculo em `participante_eventos`, preservando o registro global do participante e seus certificados em outros eventos. Apenas administradores podem realizar soft delete global do participante.  
 FR-61: O sistema deve exigir aceite de Termo de Responsabilidade de Dados pelo gestor ou monitor antes da primeira inserção de participantes. O aceite deve ser registrado com data, versão do termo e identificação do usuário. O termo declara que os dados inseridos foram coletados de fontes de inscrição sob responsabilidade do gestor/organização e que a base legal de tratamento (LGPD) é de responsabilidade do controlador (gestor/organização), não do operador (CertificaAqui).
 FR-63: O sistema deve permitir inserção em massa de participantes pela interface SSR, para usuários autorizados a criar participantes, aceitando conteúdo tabular colado da área de transferência (por exemplo, colado de Google Sheets) ou arquivo CSV. Cada linha importada deve ser validada e processada como uma criação individual, aplicando FR-2, FR-3, FR-58, FR-59 e FR-61; linhas inválidas devem ser reportadas individualmente sem impedir o processamento das demais linhas válidas.
-FR-64: Na inserção em massa de participantes (CSV e texto colado/TSV), o sistema deve oferecer reconhecimento flexível de cabeçalhos através de uma especificação declarativa de campos e aliases semânticos (`CAMPOS_PARTICIPANTE`). Os cabeçalhos das colunas devem ser normalizados automaticamente, ignorando diacríticos, variação de caixa (maiúsculas/minúsculas) e múltiplos espaços (`normalizarCabecalho`). O sistema deve utilizar um resolvedor único de cabeçalhos compartilhado por ambos os fluxos, validando a ausência de aliases ambíguos na inicialização. Cabeçalhos não reconhecidos devem ser ignorados sem afetar o mapeamento das colunas válidas.
+FR-64: Na inserção em massa de participantes (CSV e texto colado/TSV), o sistema deve oferecer reconhecimento flexível de cabeçalhos através de uma especificação declarativa de campos e aliases semânticos (`CAMPOS_PARTICIPANTE`). Os cabeçalhos das colunas devem ser normalizados automaticamente, ignorando diacríticos, variação de caixa (maiúsculas/minúsculas) e múltiplos espaços (`normalizarCabecalho`). O sistema deve utilizar um resolvedor único de cabeçalhos compartilhado por ambos os fluxos, validando a ausência de aliases ambíguos na inicialização. Cabeçalhos não reconhecidos devem ser ignorados sem afetar o mapeamento das colunas válidas.  
+FR-65: A seleção de participante nos formulários da interface SSR (como a criação e edição de certificados) deve utilizar um componente de busca por autocomplete com consulta em tempo real no servidor (`GET /admin/participantes/busca?q={termo}`). A busca deve exigir no mínimo 2 caracteres, aplicar debounce de 250-300ms, pesquisar globalmente em `nomeCompleto` ou `email` (`ILIKE`), ordenar alfabeticamente por `nomeCompleto` e limitar a resposta em 5 resultados (exibindo aviso de refinamento caso existam mais de 5 correspondências). O componente deve manter preenchido o campo oculto `participante_id` para preservar a compatibilidade do formulário.
 
 ## Gestão de Eventos
 
@@ -309,8 +314,8 @@ POST /admin/perfil/alterar-senha (form: senhaAtual + novaSenha + confirmarSenha)
 
 ## Gestão de Participantes
 
-CRUD completo via API REST e Interface SSR. Participante identificado por e-mail único. Associado a múltiplos certificados. Suporta inserção em massa via CSV e colagem (TSV) com reconhecimento flexível e normalização declarativa de cabeçalhos e aliases.  
-**Requisitos:** FR-1, FR-2, FR-3, FR-4, FR-58, FR-59, FR-60, FR-61, FR-63, FR-64
+CRUD completo via API REST e Interface SSR. Participante identificado por e-mail único. Associado a múltiplos certificados. Suporta inserção em massa via CSV e colagem (TSV) com reconhecimento flexível e normalização declarativa de cabeçalhos e aliases. Campo de busca por autocomplete com filtro em tempo real, debounce e limite de 5 resultados.  
+**Requisitos:** FR-1, FR-2, FR-3, FR-4, FR-58, FR-59, FR-60, FR-61, FR-63, FR-64, FR-65
 
 ---
 

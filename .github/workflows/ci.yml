@@ -5,12 +5,12 @@ on:
     branches:
       - main
       - dev
-      - bug-detalhando-exibicao-erro-cert-criacao
+      - feat-autocomplete-participantes
   pull_request:
     branches:
       - main
       - dev
-      - bug-detalhando-exibicao-erro-cert-criacao
+      - feat-autocomplete-participantes
   workflow_dispatch:
 
 jobs:

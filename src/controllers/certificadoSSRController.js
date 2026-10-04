@@ -139,9 +139,14 @@ async function editar(req, res) {
     const tipos = await TiposCertificados.findAll({
       attributes: ['id', 'descricao', 'dados_dinamicos'],
     })
+    const certificadoJson = certificado.toJSON()
+    if (certificadoJson.Participante) {
+      certificadoJson.participante = certificadoJson.Participante
+    }
+
     return res.render('admin/certificados/form', {
       layout: 'layouts/admin',
-      certificado: certificado.toJSON(),
+      certificado: certificadoJson,
       participantes,
       eventos,
       tipos,

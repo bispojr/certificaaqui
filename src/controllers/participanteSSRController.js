@@ -217,4 +217,39 @@ module.exports = {
       return res.redirect('/admin/participantes')
     }
   },
+
+  async buscar(req, res) {
+    try {
+      const { q } = req.query
+      const termo = typeof q === 'string' ? q.trim() : ''
+
+      if (termo.length < 2) {
+        return res.json({ results: [], hasMore: false })
+      }
+
+      const participantes = await Participante.findAll({
+        where: {
+          [Op.or]: [
+            { nomeCompleto: { [Op.iLike]: `%${termo}%` } },
+            { email: { [Op.iLike]: `%${termo}%` } },
+          ],
+        },
+        attributes: ['id', 'nomeCompleto', 'email'],
+        order: [['nomeCompleto', 'ASC']],
+        limit: 6,
+      })
+
+      const hasMore = participantes.length > 5
+      const items = hasMore ? participantes.slice(0, 5) : participantes
+      const results = items.map((p) => ({
+        id: p.id,
+        nomeCompleto: p.nomeCompleto,
+        email: p.email,
+      }))
+
+      return res.json({ results, hasMore })
+    } catch (err) {
+      return res.status(500).json({ error: err.message })
+    }
+  },
 }
