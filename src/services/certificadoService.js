@@ -99,15 +99,31 @@ module.exports = {
     const eventCode = evento.codigo_base // Ex: 'EDC'
     const year = evento.ano.toString().slice(-2) // Ex: '25'
     const tipoCode = tipo.codigo // Ex: 'PT'
-    // Buscar o número incremental
+    const prefix = `${eventCode}-${year}-${tipoCode}-`
+
+    // Buscar o número incremental (incluindo registros deletados via soft-delete)
     const count = await Certificado.count({
       where: {
         evento_id: data.evento_id,
         tipo_certificado_id: data.tipo_certificado_id,
       },
+      paranoid: false,
     })
-    const incremental = count + 1
-    const validationCode = `${eventCode}-${year}-${tipoCode}-${incremental}`
+
+    let incremental = count + 1
+    let validationCode = `${prefix}${incremental}`
+
+    // Garante que o código é único se houver lacunas ou certificados soft-deleted
+    while (
+      await Certificado.findOne({
+        where: { codigo: validationCode },
+        paranoid: false,
+      })
+    ) {
+      incremental += 1
+      validationCode = `${prefix}${incremental}`
+    }
+
     data.codigo = validationCode
 
     return Certificado.create(data)

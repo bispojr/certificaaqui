@@ -47,4 +47,30 @@ describe('certificadoSSRController.criar', () => {
     )
     expect(res.redirect).toHaveBeenCalledWith('/admin/certificados')
   })
+
+  it('deve formatar erro do Sequelize e redirecionar para /admin/certificados/novo em caso de erro de unicidade', async () => {
+    const error = new Error('Validation error')
+    error.name = 'SequelizeUniqueConstraintError'
+    error.errors = [{ path: 'codigo', message: 'codigo must be unique' }]
+    certificadoService.create.mockRejectedValue(error)
+
+    const req = httpMocks.createRequest({
+      body: {
+        nome: 'Teste',
+        participante_id: 1,
+        evento_id: 2,
+        tipo_certificado_id: 3,
+      },
+      flash: jest.fn(),
+    })
+    const res = mockRes()
+
+    await certificadoSSRController.criar(req, res)
+
+    expect(req.flash).toHaveBeenCalledWith(
+      'error',
+      'codigo: codigo must be unique',
+    )
+    expect(res.redirect).toHaveBeenCalledWith('/admin/certificados/novo')
+  })
 })

@@ -6,8 +6,16 @@ class CertificadoController {
       const certificado = await certificadoService.create(req.body)
       return res.status(201).json(certificado)
     } catch (error) {
+      let mensagem = error.message
+      if (
+        (error.name === 'SequelizeValidationError' ||
+          error.name === 'SequelizeUniqueConstraintError') &&
+        Array.isArray(error.errors)
+      ) {
+        mensagem = error.errors.map((e) => `${e.path}: ${e.message}`).join(', ')
+      }
       const status = error.statusCode || 400
-      const body = { error: error.message }
+      const body = { error: mensagem }
       if (error.camposFaltantes) body.camposFaltantes = error.camposFaltantes
       return res.status(status).json(body)
     }
