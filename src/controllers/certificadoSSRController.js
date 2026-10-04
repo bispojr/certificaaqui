@@ -178,7 +178,18 @@ async function criar(req, res) {
     req.flash('success', 'Certificado criado com sucesso.')
     return res.redirect('/admin/certificados')
   } catch (error) {
-    req.flash('error', error.message)
+    console.error('Erro ao criar certificado:', error)
+
+    let mensagem = error.message
+    if (
+      (error.name === 'SequelizeValidationError' ||
+        error.name === 'SequelizeUniqueConstraintError') &&
+      Array.isArray(error.errors)
+    ) {
+      mensagem = error.errors.map((e) => `${e.path}: ${e.message}`).join(', ')
+    }
+
+    req.flash('error', mensagem)
     return res.redirect('/admin/certificados/novo')
   }
 }
@@ -214,7 +225,18 @@ async function atualizar(req, res) {
     req.flash('success', 'Certificado atualizado.')
     return res.redirect('/admin/certificados')
   } catch (error) {
-    req.flash('error', error.message)
+    console.error('Erro ao atualizar certificado:', error)
+
+    let mensagem = error.message
+    if (
+      (error.name === 'SequelizeValidationError' ||
+        error.name === 'SequelizeUniqueConstraintError') &&
+      Array.isArray(error.errors)
+    ) {
+      mensagem = error.errors.map((e) => `${e.path}: ${e.message}`).join(', ')
+    }
+
+    req.flash('error', mensagem)
     return res.redirect(`/admin/certificados/${req.params.id}/editar`)
   }
 }

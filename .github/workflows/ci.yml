@@ -5,12 +5,12 @@ on:
     branches:
       - main
       - dev
-      - feat-garantir-cabecalhos-semelhantes-ins-lote-part
+      - bug-detalhando-exibicao-erro-cert-criacao
   pull_request:
     branches:
       - main
       - dev
-      - feat-garantir-cabecalhos-semelhantes-ins-lote-part
+      - bug-detalhando-exibicao-erro-cert-criacao
   workflow_dispatch:
 
 jobs:
