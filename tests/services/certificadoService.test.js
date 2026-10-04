@@ -10,6 +10,7 @@ it('incrementa corretamente o número no código de validação', async () => {
   // Simula 3 inserções, count retorna 0, 1, 2
   Certificado.count = jest.fn()
   Certificado.create = jest.fn()
+  Certificado.findOne = jest.fn().mockResolvedValue(null)
   Certificado.count
     .mockResolvedValueOnce(0)
     .mockResolvedValueOnce(1)
@@ -66,6 +67,7 @@ describe('create', () => {
     Certificado.create.mockReset()
     TiposCertificados.findByPk.mockReset()
     Evento.findByPk.mockReset()
+    Certificado.findOne = jest.fn().mockResolvedValue(null)
     Certificado.count &&
       Certificado.count.mockReset &&
       Certificado.count.mockReset()
@@ -91,6 +93,89 @@ describe('create', () => {
       expect.objectContaining({ codigo: 'EDC-25-PT-1' }),
     )
     expect(result).toEqual({ id: 10, codigo: 'EDC-25-PT-1' })
+  })
+
+  it('pula códigos já existentes (inclusive soft-deleted) e consulta com paranoid: false', async () => {
+    TiposCertificados.findByPk.mockResolvedValue({
+      dados_dinamicos: {},
+      codigo: 'OR',
+    })
+    Evento.findByPk.mockResolvedValue({
+      codigo_base: 'CIE',
+      ano: 2026,
+    })
+    Certificado.count = jest.fn().mockResolvedValue(2)
+    // Simula que CIE-26-OR-3 já existe (ex: soft deleted), mas CIE-26-OR-4 está vago
+    Certificado.findOne = jest
+      .fn()
+      .mockResolvedValueOnce({ id: 99, codigo: 'CIE-26-OR-3' })
+      .mockResolvedValueOnce(null)
+
+    Certificado.create.mockImplementation((data) =>
+      Promise.resolve({ id: 100, ...data }),
+    )
+
+    const data = {
+      tipo_certificado_id: 3,
+      evento_id: 2,
+      valores_dinamicos: {},
+    }
+
+    const result = await certificadoService.create(data)
+
+    expect(Certificado.count).toHaveBeenCalledWith(
+      expect.objectContaining({ paranoid: false }),
+    )
+    expect(Certificado.findOne).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        where: { codigo: 'CIE-26-OR-3' },
+        paranoid: false,
+      }),
+    )
+    expect(Certificado.findOne).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        where: { codigo: 'CIE-26-OR-4' },
+        paranoid: false,
+      }),
+    )
+    expect(Certificado.create).toHaveBeenCalledWith(
+      expect.objectContaining({ codigo: 'CIE-26-OR-4' }),
+    )
+    expect(result.codigo).toBe('CIE-26-OR-4')
+  })
+
+  it('pula múltiplas colisões consecutivas até encontrar o próximo código vago', async () => {
+    TiposCertificados.findByPk.mockResolvedValue({
+      dados_dinamicos: {},
+      codigo: 'OR',
+    })
+    Evento.findByPk.mockResolvedValue({
+      codigo_base: 'CIE',
+      ano: 2026,
+    })
+    Certificado.count = jest.fn().mockResolvedValue(0)
+    // Simula que 1, 2 e 3 já existem no banco
+    Certificado.findOne = jest
+      .fn()
+      .mockResolvedValueOnce({ id: 1, codigo: 'CIE-26-OR-1' })
+      .mockResolvedValueOnce({ id: 2, codigo: 'CIE-26-OR-2' })
+      .mockResolvedValueOnce({ id: 3, codigo: 'CIE-26-OR-3' })
+      .mockResolvedValueOnce(null)
+
+    Certificado.create.mockImplementation((data) =>
+      Promise.resolve({ id: 101, ...data }),
+    )
+
+    const result = await certificadoService.create({
+      tipo_certificado_id: 3,
+      evento_id: 2,
+      valores_dinamicos: {},
+    })
+
+    expect(Certificado.findOne).toHaveBeenCalledTimes(4)
+    expect(result.codigo).toBe('CIE-26-OR-4')
   })
 
   it('lança erro 404 se tipo não encontrado', async () => {
