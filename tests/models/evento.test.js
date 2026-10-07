@@ -153,6 +153,35 @@ describe('Evento Model', () => {
     expect(evento.url_template_base).toBeNull()
   })
 
+  test('deve criar evento com template_certificado padrao ou destaque', async () => {
+    const eventoPadrao = await Evento.create({
+      nome: 'Congresso com Template Padrão',
+      codigo_base: 'TPD',
+      ano: 2026,
+      template_certificado: 'padrao',
+    })
+    expect(eventoPadrao.template_certificado).toBe('padrao')
+
+    const eventoDestaque = await Evento.create({
+      nome: 'Congresso com Nome em Destaque',
+      codigo_base: 'TND',
+      ano: 2026,
+      template_certificado: 'nome-destaque',
+    })
+    expect(eventoDestaque.template_certificado).toBe('nome-destaque')
+  })
+
+  test('não deve criar evento com template_certificado inválido', async () => {
+    await expect(
+      Evento.create({
+        nome: 'Congresso com Template Inválido',
+        codigo_base: 'TIV',
+        ano: 2026,
+        template_certificado: 'invalido',
+      }),
+    ).rejects.toThrow()
+  })
+
   test('deve criar evento com texto_tamanho_fonte', async () => {
     const evento = await Evento.create({
       nome: 'Congresso com Fonte Customizada',

@@ -77,6 +77,17 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
+      template_certificado: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'padrao',
+        validate: {
+          isIn: {
+            args: [['padrao', 'nome-destaque']],
+            msg: 'template_certificado deve ser "padrao" ou "nome-destaque".',
+          },
+        },
+      },
     },
     {
       sequelize,

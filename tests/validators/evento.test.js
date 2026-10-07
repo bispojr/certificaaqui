@@ -57,6 +57,43 @@ describe('Validação Zod - Evento', () => {
     expect(() => eventoSchema.parse(data)).toThrow()
   })
 
+  it('valida template_certificado com valores permitidos e default padrao', () => {
+    const dataDefault = {
+      nome: 'Congresso Nacional',
+      ano: 2026,
+      codigo_base: 'ABC',
+    }
+    expect(eventoSchema.parse(dataDefault).template_certificado).toBe('padrao')
+
+    const dataPadrao = {
+      nome: 'Congresso Nacional',
+      ano: 2026,
+      codigo_base: 'ABC',
+      template_certificado: 'padrao',
+    }
+    expect(eventoSchema.parse(dataPadrao).template_certificado).toBe('padrao')
+
+    const dataDestaque = {
+      nome: 'Congresso Nacional',
+      ano: 2026,
+      codigo_base: 'ABC',
+      template_certificado: 'nome-destaque',
+    }
+    expect(eventoSchema.parse(dataDestaque).template_certificado).toBe(
+      'nome-destaque',
+    )
+  })
+
+  it('rejeita template_certificado inválido', () => {
+    const data = {
+      nome: 'Congresso Nacional',
+      ano: 2026,
+      codigo_base: 'ABC',
+      template_certificado: 'customizado',
+    }
+    expect(() => eventoSchema.parse(data)).toThrow()
+  })
+
   it('valida validacao_rotacao com valor numérico e define default 0 quando omitido', () => {
     const data = {
       nome: 'Congresso Nacional',

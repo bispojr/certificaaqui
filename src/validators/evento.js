@@ -7,6 +7,10 @@ const eventoSchema = z.object({
   url_template_base: z.string().url().optional().nullable(),
   validacao_rotacao: z.number().int().optional().default(0),
   texto_tamanho_fonte: z.number().int().optional().nullable(),
+  template_certificado: z
+    .enum(['padrao', 'nome-destaque'])
+    .optional()
+    .default('padrao'),
 })
 
 module.exports = eventoSchema
