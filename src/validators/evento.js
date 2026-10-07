@@ -11,6 +11,15 @@ const eventoSchema = z.object({
     .enum(['padrao', 'nome-destaque'])
     .optional()
     .default('padrao'),
+  template_config: z
+    .object({
+      nome: z.object({}).passthrough().optional(),
+      texto_base: z.object({}).passthrough().optional(),
+      validacao: z.object({}).passthrough().optional(),
+    })
+    .passthrough()
+    .optional()
+    .nullable(),
 })
 
 module.exports = eventoSchema

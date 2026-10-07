@@ -9,15 +9,15 @@ Implementar suporte a templates de certificados por evento, preservando o layout
 ## Tarefas
 
 ### T1. Preparar a base do modelo
-- [ ] Adicionar/validar o campo `template_certificado` no modelo de evento.
-- [ ] Definir valores permitidos: `padrao` e `nome-destaque`.
-- [ ] Preservar os campos atuais de posicionamento e tipo de fonte.
-- [ ] Garantir fallback para `padrao` quando o valor não existir.
+- [x] Adicionar/validar o campo `template_certificado` no modelo de evento.
+- [x] Definir valores permitidos: `padrao` e `nome-destaque`.
+- [x] Preservar os campos atuais de posicionamento e tipo de fonte.
+- [x] Garantir fallback para `padrao` quando o valor não existir.
 
 ### T2. Definir configuração por bloco
-- [ ] Criar helper de resolução de template e configuração de layout.
-- [ ] Definir estrutura JSON de blocos para nome, texto-base e validação.
-- [ ] Implementar leitura de configuração do evento com fallback para os valores legados.
+- [x] Criar helper de resolução de template e configuração de layout.
+- [x] Definir estrutura JSON de blocos para nome, texto-base e validação.
+- [x] Implementar leitura de configuração do evento com fallback para os valores legados.
 
 ### T3. Implementar render do template padrão
 - [ ] Ajustar `pdfService` para resolver o template `padrao`.

@@ -88,6 +88,11 @@ module.exports = (sequelize, DataTypes) => {
           },
         },
       },
+      template_config: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        defaultValue: {},
+      },
     },
     {
       sequelize,

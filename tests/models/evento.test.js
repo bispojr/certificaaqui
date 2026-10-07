@@ -182,6 +182,25 @@ describe('Evento Model', () => {
     ).rejects.toThrow()
   })
 
+  test('deve criar evento com template_config em JSON', async () => {
+    const evento = await Evento.create({
+      nome: 'Congresso com Layout Customizado',
+      codigo_base: 'CFG',
+      ano: 2026,
+      template_certificado: 'nome-destaque',
+      template_config: {
+        nome: {
+          x: 0,
+          y: 240,
+          align: 'center',
+        },
+      },
+    })
+
+    expect(evento.template_certificado).toBe('nome-destaque')
+    expect(evento.template_config.nome.align).toBe('center')
+  })
+
   test('deve criar evento com texto_tamanho_fonte', async () => {
     const evento = await Evento.create({
       nome: 'Congresso com Fonte Customizada',
