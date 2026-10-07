@@ -85,6 +85,9 @@ FR-8: O campo `codigo_base` do evento é obrigatório, deve ser único e conter 
 FR-9: A remoção de eventos deve ser lógica (soft delete); os registros devem poder ser restaurados.  
 FR-44: O campo `url_template_base` do evento é opcional e, quando informado, deve conter uma URL válida (ou ser `null`). Esse campo armazena a **key** (caminho) do arquivo de template-base no Cloudflare R2.  
 FR-48: O evento pode configurar coordenadas inteiras opcionais para posicionamento e escala do conteúdo no PDF gerado: `texto_x`, `texto_y` (posição do bloco de texto), `texto_tamanho_fonte` (tamanho da fonte do texto-base em pontos; opcional, fallback dinâmico: `texto.length > 400 ? 10 : 14`), `validacao_x`, `validacao_y` (posição do código de validação) e `validacao_rotacao` (ângulo de rotação da caixa de validação em graus, ex.: 0, 90, 180, 270; default: 0). Se ausentes, são usados valores padrão hardcoded (`texto_x`=270, `texto_y`=200, `validacao_x`=145, `validacao_y`=545, `validacao_rotacao`=0).
+FR-48a: O evento deve permitir seleção de um template de certificado, com opções equivalentes ao layout atual e ao template com nome em destaque. O valor padrão deve ser o template atual (`padrao`), preservando compatibilidade retroativa com certificados já emitidos.
+FR-48b: O template do evento deve ser aplicado ao certificado em nível de layout, permitindo configuração granular por bloco (`x`, `y`, `width`, `align`, `fontFamily`, `fontSize`, `fontWeight`, `color`, `rotation`), sem perder o suporte atual ao posicionamento do texto-base e da validação.
+FR-48c: O template `nome-destaque` deve centralizar visualmente o nome do participante, dando prioridade ao bloco de nome em relação ao texto-base, enquanto o template padrão deve preservar a composição textual histórica do sistema.
 
 ## Gestão de Tipos de Certificados
 
@@ -124,6 +127,7 @@ FR-47: A imagem de fundo do PDF é obtida do Cloudflare R2 usando a key em `even
 FR-47b: A fonte tipográfica (`Lato-Medium.ttf`) é obtida do R2 (key `"fontes/Lato-Medium.ttf"`). Se indisponível, usa `Helvetica` como fallback.  
 FR-47c: O PDF é gerado em formato A4 landscape. As coordenadas de posicionamento dos blocos de texto e do código de validação, o tamanho da fonte do texto-base, bem como o ângulo de rotação da caixa de validação, são configuráveis por evento via campos `texto_x/y`, `texto_tamanho_fonte`, `validacao_x/y` e `validacao_rotacao`.  
 FR-47d: O texto de validação no PDF inclui o código do certificado e um link de validação composto pela variável de ambiente `ENDERECO_VALIDACAO` (default: `https://certificaaqui.com/validar`).
+FR-47e: A renderização do PDF deve respeitar o template do evento selecionado, interpretando a estrutura atual como o template padrão e a opção com nome em destaque como um layout alternativo que centraliza o nome do participante e ajusta o posicionamento e a tipografia dos blocos do certificado.
 
 ## Upload de Template de Evento
 
