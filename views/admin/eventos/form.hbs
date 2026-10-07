@@ -50,6 +50,25 @@
         />
       </div>
       <div class='mb-3'>
+        <label for='template_certificado' class='form-label'>
+          Template do certificado
+        </label>
+        <select
+          class='form-select'
+          name='template_certificado'
+          id='template_certificado'
+        >
+          <option value='padrao' {{isSelected evento.template_certificado 'padrao'}}>
+            Padrão
+          </option>
+          <option value='nome-destaque' {{isSelected evento.template_certificado 'nome-destaque'}}>
+            Nome em destaque
+          </option>
+        </select>
+        <div class='form-text'>Eventos sem seleção explícita usam o layout padrão.</div>
+      </div>
+
+      <div class='mb-3'>
         <label for='template_base' class='form-label'>
           Template base do certificado
           <small class='text-muted'>(PNG ou JPG, máx. 2 MB)</small>

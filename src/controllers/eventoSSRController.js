@@ -82,6 +82,7 @@ module.exports = {
       layout: 'layouts/admin',
       title: 'Novo Evento',
       action: '/admin/eventos',
+      evento: { template_certificado: 'padrao' },
     })
   },
 
@@ -109,6 +110,13 @@ module.exports = {
       const urlTemplateBase = await handleTemplateUpload(req)
       const data = { ...req.body }
       if (urlTemplateBase) data.url_template_base = urlTemplateBase
+      if (
+        data.template_certificado === '' ||
+        data.template_certificado === undefined ||
+        data.template_certificado === null
+      ) {
+        data.template_certificado = 'padrao'
+      }
       for (const field of [
         'texto_x',
         'texto_y',
@@ -152,6 +160,13 @@ module.exports = {
       const urlTemplateBase = await handleTemplateUpload(req)
       const data = { ...req.body }
       if (urlTemplateBase) data.url_template_base = urlTemplateBase
+      if (
+        data.template_certificado === '' ||
+        data.template_certificado === undefined ||
+        data.template_certificado === null
+      ) {
+        data.template_certificado = 'padrao'
+      }
       for (const field of [
         'texto_x',
         'texto_y',

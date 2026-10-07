@@ -36,9 +36,9 @@ Implementar suporte a templates de certificados por evento, preservando o layout
 
 ### T5. Integrar ao fluxo de evento
 
-- [ ] Atualizar a view de evento para expor o template selecionado.
-- [ ] Ajustar o formulário para manter compatibilidade com campos legados.
-- [ ] Garantir que eventos sem escolha explícita usem `padrao`.
+- [x] Atualizar a view de evento para expor o template selecionado.
+- [x] Ajustar o formulário para manter compatibilidade com campos legados.
+- [x] Garantir que eventos sem escolha explícita usem `padrao`.
 
 ### T6. Validar regressão e compatibilidade
 

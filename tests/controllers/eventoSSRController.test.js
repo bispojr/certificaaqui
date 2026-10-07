@@ -123,8 +123,25 @@ describe('eventoSSRController', () => {
       validacao_x: null,
       validacao_y: null,
       validacao_rotacao: 0,
+      template_certificado: 'padrao',
     })
     expect(r2Service.uploadFile).not.toHaveBeenCalled()
+  })
+
+  it('criar usa template padrao quando o campo vier vazio', async () => {
+    const req = {
+      body: { nome: 'Novo', ano: '2026', template_certificado: '' },
+      file: null,
+      flash: jest.fn(),
+    }
+    const res = { render: jest.fn(), redirect: jest.fn() }
+    eventoService.create.mockResolvedValue({})
+    await eventoSSRController.criar(req, res)
+    expect(eventoService.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        template_certificado: 'padrao',
+      }),
+    )
   })
 
   it('criar converte texto_tamanho_fonte em inteiro ou null', async () => {
