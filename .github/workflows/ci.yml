@@ -5,12 +5,12 @@ on:
     branches:
       - main
       - dev
-      - feat-autocomplete-participantes
+      - feat-template-certificado
   pull_request:
     branches:
       - main
       - dev
-      - feat-autocomplete-participantes
+      - feat-template-certificado
   workflow_dispatch:
 
 jobs:
