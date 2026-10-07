@@ -32,7 +32,9 @@ describe('templateLayoutService', () => {
   })
 
   it('resolveTemplateConfig para nome-destaque centraliza o nome do participante', () => {
-    const config = resolveTemplateConfig({ template_certificado: 'nome-destaque' })
+    const config = resolveTemplateConfig({
+      template_certificado: 'nome-destaque',
+    })
 
     expect(config.template).toBe('nome-destaque')
     expect(config.blocks.nome.align).toBe('center')

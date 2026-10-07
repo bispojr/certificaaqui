@@ -10,8 +10,20 @@ describe('service-scope-enforcement integration', () => {
   let evento, participante, tipoCertificado
 
   beforeEach(async () => {
+    const tables = [
+      'certificados',
+      'tipos_certificados',
+      'participante_eventos',
+      'usuario_eventos',
+      'participantes',
+      'usuarios',
+      'eventos',
+    ]
+
     await sequelize.query(
-      'TRUNCATE TABLE certificados, tipos_certificados, participantes, eventos RESTART IDENTITY CASCADE',
+      `TRUNCATE TABLE ${tables
+        .map((table) => `"${table}"`)
+        .join(', ')} RESTART IDENTITY CASCADE`,
     )
 
     evento = await Evento.create({

@@ -81,22 +81,44 @@ function getTemplateName(evento = {}) {
 }
 
 function mergeBlockConfig(baseBlock, userOverride = {}) {
+  const sanitizedOverride = Object.fromEntries(
+    Object.entries(userOverride).filter(([, value]) => value != null),
+  )
+
   return {
     ...baseBlock,
-    ...userOverride,
+    ...sanitizedOverride,
   }
 }
 
 function resolveTemplateConfig(evento = {}) {
   const template = getTemplateName(evento)
   const templateConfig = evento.template_config || {}
-  const baseTemplate = TEMPLATE_DEFINITIONS[template] || TEMPLATE_DEFINITIONS[DEFAULT_TEMPLATE]
+  const baseTemplate =
+    TEMPLATE_DEFINITIONS[template] || TEMPLATE_DEFINITIONS[DEFAULT_TEMPLATE]
+
+  const legacyOverrides = {
+    texto_base: {
+      x: evento.texto_x,
+      y: evento.texto_y,
+      fontSize: evento.texto_tamanho_fonte,
+    },
+    validacao: {
+      x: evento.validacao_x,
+      y: evento.validacao_y,
+      rotation: evento.validacao_rotacao,
+    },
+  }
 
   const blocks = {}
   Object.keys(baseTemplate).forEach((blockKey) => {
     const baseBlock = baseTemplate[blockKey]
+    const eventOverride = legacyOverrides[blockKey] || {}
     const override = templateConfig[blockKey] || {}
-    blocks[blockKey] = mergeBlockConfig(baseBlock, override)
+    blocks[blockKey] = mergeBlockConfig(baseBlock, {
+      ...eventOverride,
+      ...override,
+    })
   })
 
   return {

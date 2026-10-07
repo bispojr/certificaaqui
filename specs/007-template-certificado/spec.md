@@ -173,6 +173,7 @@ A feature deve evoluir o atual mecanismo de renderização do certificado para u
 5. Manter o background e os campos de posicionamento atuais como componentes suportados no template padrão, preservando compatibilidade com a base já existente.
 
 Essa direção permite simultaneamente:
+
 - preservar a estrutura atual como template válido;
 - oferecer uma visão mais moderna com destaque central do nome;
 - tornar a configuração do certificado extensível para novos layouts sem refatoração completa do código.

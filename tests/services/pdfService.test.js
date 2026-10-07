@@ -185,6 +185,83 @@ describe('pdfService - seleção de template de fundo (R2)', () => {
     expect(r2Service.getFile).toHaveBeenCalledWith('template/padrao.jpg')
     templateService.interpolate.mockRestore()
   }, 15000)
+
+  it('deve respeitar a configuração de blocos do evento quando o template padrão é usado', async () => {
+    const textSpy = jest.spyOn(PDFDocument.prototype, 'text')
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
+
+    const cert = {
+      ...baseCertificado(null),
+      Evento: {
+        nome: 'Evento com layout customizado',
+        url_template_base: null,
+        template_certificado: 'padrao',
+        template_config: {
+          texto_base: { x: 100, y: 150, width: 300, fontSize: 18 },
+          validacao: { x: 55, y: 600, fontSize: 10 },
+        },
+      },
+    }
+
+    await pdfService.generateCertificadoPdf(cert)
+
+    expect(textSpy).toHaveBeenCalledWith(
+      'Texto ok',
+      100,
+      150,
+      expect.objectContaining({ width: 300, align: 'justify' }),
+    )
+    expect(textSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Use o código'),
+      55,
+      600,
+      expect.objectContaining({ continued: true, align: 'left' }),
+    )
+
+    textSpy.mockRestore()
+    templateService.interpolate.mockRestore()
+  }, 15000)
+})
+
+describe('pdfService - template nome-destaque', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    r2Service.getFile.mockResolvedValue(null)
+  })
+
+  it('deve renderizar o nome do participante em destaque centralizado quando o template é nome-destaque', async () => {
+    const textSpy = jest.spyOn(PDFDocument.prototype, 'text')
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
+
+    const cert = {
+      codigo: 'DEST001',
+      nome: 'João da Silva',
+      valores_dinamicos: {},
+      Evento: {
+        nome: 'Evento Destaque',
+        url_template_base: null,
+        template_certificado: 'nome-destaque',
+      },
+      Participante: { nomeCompleto: 'João da Silva' },
+      TiposCertificados: { texto_base: 'Certificamos que ${nome} participou.' },
+    }
+
+    await pdfService.generateCertificadoPdf(cert)
+
+    expect(
+      textSpy.mock.calls.some(
+        ([text, x, y, options]) =>
+          text === 'João da Silva' &&
+          Number(x) === 0 &&
+          Number(y) === 240 &&
+          options?.width === 595 &&
+          options?.align === 'center',
+      ),
+    ).toBe(true)
+
+    textSpy.mockRestore()
+    templateService.interpolate.mockRestore()
+  }, 15000)
 })
 
 describe('pdfService - fonte Lato-Medium do R2', () => {

@@ -1,5 +1,6 @@
 const PDFDocument = require('pdfkit')
 const templateService = require('./templateService')
+const { resolveTemplateConfig } = require('./templateLayoutService')
 
 module.exports = {
   /**
@@ -99,15 +100,41 @@ module.exports = {
         }
 
         // Layout detalhado inspirado no obterArquivo
+        const templateConfig = resolveTemplateConfig(evento || {})
+        const nomeBlock = templateConfig.blocks.nome
+        const textoBlock = templateConfig.blocks.texto_base
+        const validacaoBlock = templateConfig.blocks.validacao
 
-        // Coordenadas do texto-base (configuráveis por evento)
-        const textoX = evento?.texto_x ?? 270
-        const textoY = evento?.texto_y ?? 200
+        if (templateConfig.template === 'nome-destaque') {
+          const nomeParticipante =
+            participante?.nomeCompleto || certificado?.nome || 'Participante'
+          const nomeX = Number(nomeBlock.x ?? 0)
+          const nomeY = Number(nomeBlock.y ?? 240)
+          const nomeFontSize = Number(nomeBlock.fontSize ?? 28)
 
-        // Tamanho da fonte configurável por evento com fallback dinâmico
+          doc.fontSize(nomeFontSize)
+          setFont()
+          doc.text(nomeParticipante, nomeX, nomeY, {
+            width: Number(nomeBlock.width ?? 595),
+            align: nomeBlock.align || 'center',
+          })
+        }
+
+        // Coordenadas do texto-base configuráveis por evento/template
+        const textoX = Number(textoBlock.x ?? 270)
+        const textoY = Number(textoBlock.y ?? 200)
+
+        // Tamanho da fonte configurável por evento/template com fallback dinâmico
+        const explicitTextoFontSize =
+          Number(evento?.texto_tamanho_fonte) > 0
+            ? Number(evento.texto_tamanho_fonte)
+            : Number(evento?.template_config?.texto_base?.fontSize) > 0
+              ? Number(evento.template_config.texto_base.fontSize)
+              : null
+
         const tamanhoFonte =
-          evento?.texto_tamanho_fonte && evento.texto_tamanho_fonte > 0
-            ? evento.texto_tamanho_fonte
+          explicitTextoFontSize !== null
+            ? explicitTextoFontSize
             : texto.length > 400
               ? 10
               : 14
@@ -115,12 +142,15 @@ module.exports = {
         // Texto base interpolado
         doc.fontSize(tamanhoFonte)
         setFont()
-        doc.text(texto, textoX, textoY, { width: 480, align: 'justify' })
+        doc.text(texto, textoX, textoY, {
+          width: textoBlock.width || 480,
+          align: textoBlock.align || 'justify',
+        })
 
         // Coordenadas e rotação da validação (configuráveis por evento)
-        const validacaoX = evento?.validacao_x ?? 145
-        const validacaoY = evento?.validacao_y ?? 545
-        const validacaoRotacao = evento?.validacao_rotacao ?? 0
+        const validacaoX = Number(validacaoBlock.x ?? 145)
+        const validacaoY = Number(validacaoBlock.y ?? 545)
+        const validacaoRotacao = Number(validacaoBlock.rotation ?? 0)
 
         doc.save()
         doc.rotate(validacaoRotacao, { origin: [validacaoX, validacaoY] })
@@ -128,7 +158,7 @@ module.exports = {
         // Código de validação e link
         const endereco_validacao =
           process.env.ENDERECO_VALIDACAO || 'https://certificaaqui.com/validar'
-        doc.fontSize(9.5)
+        doc.fontSize(validacaoBlock.fontSize || 9.5)
         setFont()
         doc
           .fillColor('black')
@@ -136,7 +166,7 @@ module.exports = {
             `Use o código ${certificado.codigo} para validar o certificado em: `,
             validacaoX,
             validacaoY,
-            { continued: true, align: 'left' },
+            { continued: true, align: validacaoBlock.align || 'left' },
           )
         doc.fillColor('blue').text(`${endereco_validacao}`, {
           link: endereco_validacao,
