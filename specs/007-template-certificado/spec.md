@@ -34,8 +34,10 @@ Como organizador de evento, eu quero selecionar um segundo template de certifica
 **Acceptance Scenarios**:
 
 1. **Given** um evento configurado para usar o template com nome em destaque, **When** o certificado for renderizado, **Then** o nome do participante deve aparecer centralizado e em destaque, com priorização visual acima do texto-base, mantendo sua posição relativa no texto-base e provocando uma quebra visual entre o texto que o antecede e o texto que o sucede.
-2. **Given** um evento configurado para usar o template padrão, **When** o certificado for renderizado, **Then** o comportamento atual deve ser preservado e o nome não precisa ser centralizado.
-3. **Given** a mesma certidão com dados equivalentes, **When** o usuário alternar entre templates, **Then** o sistema deve permitir que a mudança seja percebida apenas no layout, sem alterar a lógica de emissão ou validação.
+2. **Given** o template `nome-destaque` ativo, **When** o layout for resolvido para renderização, **Then** o texto-base deve ser decomposto em três blocos lógicos do próprio conteúdo: `texto_inicial`, `nome_participante` e `texto_final`.
+3. **Given** o template `nome-destaque` ativo, **When** o usuário ajustar o layout no evento, **Then** deve ser possível configurar `x`, `y`, `width`, `align`, `fontFamily`, `fontSize`, `fontWeight`, `color` e `rotation` para cada um dos três blocos (`texto_inicial`, `nome_participante`, `texto_final`).
+4. **Given** um evento configurado para usar o template padrão, **When** o certificado for renderizado, **Then** o comportamento atual deve ser preservado e o nome não precisa ser centralizado.
+5. **Given** a mesma certidão com dados equivalentes, **When** o usuário alternar entre templates, **Then** o sistema deve permitir que a mudança seja percebida apenas no layout, sem alterar a lógica de emissão ou validação.
 
 ---
 
@@ -83,7 +85,7 @@ Como usuário do sistema, eu quero que a escolha do template apareça na tela de
 
 1. **Given** a edição de um evento, **When** o formulário for carregado, **Then** deve aparecer a opção de selecionar o template do certificado vinculada ao evento.
 2. **Given** a configuração atual já existe em campos como `texto_x` e `validacao_y`, **When** o template padrão estiver ativo, **Then** esses campos devem ser exibidos e reaproveitados em vez de serem ignorados.
-3. **Given** o template com nome em destaque for selecionado, **When** o usuário abrir a tela de configuração, **Then** os campos do bloco de destaque devem ser exibidos como variações em relação ao template padrão, sem perder a compatibilidade com a base atual.
+3. **Given** o template com nome em destaque for selecionado, **When** o usuário abrir a tela de configuração, **Then** os campos dos três blocos (`texto_inicial`, `nome_participante`, `texto_final`) devem ser exibidos como variações em relação ao template padrão, sem perder a compatibilidade com a base atual.
 
 ### Edge Cases
 
@@ -91,6 +93,7 @@ Como usuário do sistema, eu quero que a escolha do template apareça na tela de
 - Template com nome em destaque deve aceitar posicionamento central sem impedir ajustes manuais de x/y.
 - Configuração de fonte ausente deve usar a família padrão do sistema (`Lato-Medium` ou `Helvetica` como fallback).
 - Texto-base e bloco de validação não devem conflitar entre si quando houver variantes de template.
+- No template `nome-destaque`, os três blocos (`texto_inicial`, `nome_participante`, `texto_final`) não devem se sobrepor no layout padrão e devem aceitar ajustes independentes no evento.
 - Dados de eventos antigos devem continuar renderizando corretamente sem migração forçada.
 
 ## Requirements _(mandatory)_
@@ -112,6 +115,8 @@ Como usuário do sistema, eu quero que a escolha do template apareça na tela de
 - **FR-013**: O sistema MUST preservar o campo `url_template_base` como background do evento e combinar esse recurso com o template de blocos, sem conflito entre imagem de fundo e composição textual.
 - **FR-014**: O sistema MUST suportar, em nível de configuração, que cada template possa ser renderizado com diferentes tamanhos de fonte, alinhamentos e disposições sem exigência de nova implementação por evento manual.
 - **FR-015**: O sistema MUST tratar a estrutura atual de dados como uma representação válida do template padrão e a modelagem proposta como evolutiva e extensível para futuros templates.
+- **FR-016**: O sistema MUST decompor o texto-base, no template `nome-destaque`, em três blocos lógicos (`texto_inicial`, `nome_participante`, `texto_final`) derivados do mesmo conteúdo interpolado, evitando redundância e duplicação do nome.
+- **FR-017**: O sistema MUST permitir configuração em nível de evento para posição e tipografia dos três blocos do template `nome-destaque`, com os mesmos atributos de bloco já suportados (`x`, `y`, `width`, `align`, `fontFamily`, `fontSize`, `fontWeight`, `color`, `rotation`).
 
 ### Critical Non-Functional Requirements
 
@@ -139,6 +144,8 @@ Como usuário do sistema, eu quero que a escolha do template apareça na tela de
 - **SC-004**: 100% dos templates suportam ajuste de bloco de texto por atributos de posicionamento, alinhamento e tipografia.
 - **SC-005**: O formulário de evento passa a expor a seleção do template de certificado em interface administrativa sem quebrar o fluxo atual.
 - **SC-006**: 0 regressão de compatibilidade na geração do PDF para certificados já existentes nos cenários de fallback e template padrão.
+- **SC-007**: 100% dos eventos com template `nome-destaque` permitem configurar, no evento, posição e fonte dos três blocos (`texto_inicial`, `nome_participante`, `texto_final`).
+- **SC-008**: 0 renderizações com duplicação do nome entre bloco de destaque e texto-base no template `nome-destaque`.
 
 ## Assumptions
 

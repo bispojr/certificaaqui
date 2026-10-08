@@ -56,3 +56,37 @@ Implementar suporte a templates de certificados por evento, preservando o layout
 - o template `nome-destaque` centraliza o nome do participante;
 - a interface de evento reflete a opção de template;
 - os testes relevantes passam sem regressão.
+
+---
+
+## Correção Pós-Entrega — Nome em Destaque com 3 blocos configuráveis
+
+### T7. Decompor texto-base em três blocos lógicos no template nome-destaque
+
+- [ ] Implementar função de segmentação do texto interpolado em `texto_inicial`, `nome_participante` e `texto_final`.
+- [ ] Garantir que o nome seja renderizado exclusivamente no bloco `nome_participante`.
+- [ ] Garantir que `texto_inicial` e `texto_final` não repitam o nome.
+
+### T8. Evoluir template_config para suportar 3 blocos no Evento
+
+- [ ] Adicionar suporte no `template_config` para `texto_inicial`, `nome_participante` e `texto_final` no template `nome-destaque`.
+- [ ] Definir defaults de `x`, `y`, `width`, `align`, `fontFamily`, `fontSize`, `fontWeight`, `color` e `rotation` para os três blocos.
+- [ ] Preservar fallback e compatibilidade para eventos já existentes.
+
+### T9. Atualizar renderização de PDF no nome-destaque
+
+- [ ] Substituir renderização atual (nome + texto-base integral) pela renderização em três blocos.
+- [ ] Aplicar configurações de posição e tipografia de cada bloco vindas do Evento.
+- [ ] Garantir ausência de sobreposição no layout padrão.
+
+### T10. Atualizar formulário de Evento para configuração dos 3 blocos
+
+- [ ] Expor no formulário de Evento os campos de configuração para `texto_inicial`, `nome_participante` e `texto_final` quando `template_certificado = nome-destaque`.
+- [ ] Persistir os campos no payload de `template_config`.
+- [ ] Manter compatibilidade visual e funcional do fluxo atual para template `padrao`.
+
+### T11. Cobertura de testes da correção
+
+- [ ] Criar/ajustar testes unitários para segmentação do texto em três blocos.
+- [ ] Ajustar testes do `pdfService` para validar renderização sem duplicação do nome.
+- [ ] Ajustar testes de view/controller de Evento para validar persistência e exibição dos três blocos configuráveis.

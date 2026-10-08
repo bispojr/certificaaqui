@@ -47,10 +47,10 @@ Esse formato deve continuar sendo usado quando:
 O template `nome-destaque` deve:
 
 - manter o background do evento;
-- criar um bloco específico para o nome do participante;
+- decompor o texto-base em três blocos (`texto_inicial`, `nome_participante`, `texto_final`);
 - centralizar o nome no eixo horizontal;
 - aumentar visualmente a prioridade do nome;
-- manter o texto-base em bloco secundário;
+- manter os blocos de texto inicial e texto final como conteúdo secundário;
 - preservar a validação em bloco separado;
 - permitir ajuste fino por bloco de layout.
 
@@ -73,7 +73,18 @@ Exemplo de estrutura:
 {
   "template_certificado": "nome-destaque",
   "template_config": {
-    "nome": {
+    "texto_inicial": {
+      "x": 150,
+      "y": 300,
+      "width": 300,
+      "align": "center",
+      "fontFamily": "Lato-Medium",
+      "fontSize": 14,
+      "fontWeight": "normal",
+      "color": "#111827",
+      "rotation": 0
+    },
+    "nome_participante": {
       "x": 0,
       "y": 240,
       "width": 595,
@@ -84,13 +95,14 @@ Exemplo de estrutura:
       "color": "#111827",
       "rotation": 0
     },
-    "texto_base": {
-      "x": 170,
-      "y": 330,
-      "width": 260,
-      "align": "justify",
+    "texto_final": {
+      "x": 150,
+      "y": 360,
+      "width": 300,
+      "align": "center",
       "fontFamily": "Lato-Medium",
       "fontSize": 14,
+      "fontWeight": "normal",
       "color": "#111827",
       "rotation": 0
     },
@@ -132,8 +144,10 @@ renderCertificado(doc, evento, certificado) {
 
 ### Blocos esperados
 
-- `nome`
-- `texto_base`
+- `texto_base` (template padrão)
+- `texto_inicial` (template `nome-destaque`)
+- `nome_participante` (template `nome-destaque`)
+- `texto_final` (template `nome-destaque`)
 - `validacao`
 - `titulo_evento` (opcional)
 - `assinatura` (futuro)
@@ -142,8 +156,15 @@ renderCertificado(doc, evento, certificado) {
 
 - cada bloco recebe `x`, `y`, `width`, `align`, `fontFamily`, `fontSize`, `fontWeight`, `color`, `rotation`;
 - o template padrão usa o comportamento atual;
-- o template `nome-destaque` usa o bloco `nome` com destaque central em tamanho maior;
+- o template `nome-destaque` usa três blocos de conteúdo (`texto_inicial`, `nome_participante`, `texto_final`), com destaque central no nome;
 - se `template_config` estiver ausente, o serviço usa valores herdados do evento e fallback.
+
+### Regras de composição do conteúdo no template nome-destaque
+
+- o texto interpolado deve ser segmentado em três partes lógicas: antes do nome, nome e depois do nome;
+- o nome deve aparecer exclusivamente no bloco `nome_participante`;
+- os blocos `texto_inicial` e `texto_final` não podem repetir o nome;
+- os três blocos devem aceitar configuração independente no evento para posição e tipografia.
 
 ---
 
@@ -196,8 +217,9 @@ A view de evento deve expor:
   - Padrão
   - Nome em destaque
 - “Ajustes de bloco”
-  - Texto-base: x, y, fonte, tamanho, alinhamento
-  - Nome do participante: x, y, centralização, tamanho e destaque
+  - Texto inicial: x, y, largura, fonte, tamanho, alinhamento
+  - Nome do participante: x, y, largura, centralização, tamanho e destaque
+  - Texto final: x, y, largura, fonte, tamanho, alinhamento
   - Validação: x, y, rotação
 
 ---
@@ -214,7 +236,8 @@ A view de evento deve expor:
 ### Fase 2 — suporte ao template com nome em destaque
 
 - criar `resolveTemplate(evento)` retornando o layout correto
-- renderizar bloco de nome centralizado
+- implementar decomposição do texto-base em `texto_inicial`, `nome_participante` e `texto_final`
+- renderizar três blocos de conteúdo com configuração independente no evento
 - atualizar `pdfService` para trabalhar por blocos
 
 ### Fase 3 — refinamento de UX
@@ -230,6 +253,8 @@ A view de evento deve expor:
 - certificados antigos continuam funcionando
 - eventos sem template selecionado usam `padrao`
 - `nome-destaque` centraliza o nome do participante
+- `nome-destaque` permite configurar no evento posição e fonte dos três blocos de conteúdo
+- `nome-destaque` não duplica o nome entre bloco de destaque e texto-base
 - ambos os templates suportam ajuste de coordenadas e tipografia
 - a estrutura atual de posicionamento continua sendo válida
 - a nova estrutura é extensível para novos layouts
@@ -242,5 +267,5 @@ A view de evento deve expor:
 2. helper de resolução de template e configuração por bloco;
 3. renderização do template padrão preservando a lógica atual;
 4. renderização do template com nome em destaque;
-5. ajustes na interface de evento para seleção e configuração;
+5. ajustes na interface de evento para seleção e configuração dos três blocos no `nome-destaque`;
 6. testes cobrindo regressão do layout atual e do novo layout.
