@@ -2,7 +2,7 @@
 
 **Feature Branch**: `[007-template-certificado]`<br>
 **Created**: 2026-10-07<br>
-**Status**: Draft<br>
+**Status**: Finalizado<br>
 **Input**: User description: "Template de certificado: permitir dois modelos de layout (padrão e com nome em destaque), associando a escolha ao evento e mantendo a estrutura atual como um template válido."
 
 ## User Scenarios & Testing _(mandatory)_

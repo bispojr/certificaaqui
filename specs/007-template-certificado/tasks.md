@@ -42,10 +42,10 @@ Implementar suporte a templates de certificados por evento, preservando o layout
 
 ### T6. Validar regressão e compatibilidade
 
-- [ ] Criar testes para o template padrão.
-- [ ] Criar testes para o template com nome em destaque.
-- [ ] Validar que certificados antigos continuam renderizando sem regressão.
-- [ ] Executar a suíte relevante de testes do PDF e do evento.
+- [x] Criar testes para o template padrão.
+- [x] Criar testes para o template com nome em destaque.
+- [x] Validar que certificados antigos continuam renderizando sem regressão.
+- [x] Executar a suíte relevante de testes do PDF e do evento.
 
 ---
 

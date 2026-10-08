@@ -4,6 +4,8 @@
 
 Esta feature evolui a geração atual de PDF para suportar dois layouts de certificado vinculados ao evento: o template padrão, que preserva o comportamento atual do sistema, e o template com nome em destaque, que centraliza o nome do participante e reforça o bloco principal do certificado.
 
+**Status da feature**: Finalizado
+
 O objetivo é manter compatibilidade total com a solução existente e permitir que o administrador escolha o layout visual no evento sem quebrar os certificados já emitidos.
 
 ---
