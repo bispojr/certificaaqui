@@ -68,11 +68,46 @@ describe('Rotas públicas de certificados', () => {
     expect(res.status).toBe(404)
   })
 
+  it('GET /api/certificados?email omite certificados pendentes', async () => {
+    await Certificado.create({
+      nome: 'Certificado Pendente',
+      status: 'pendente',
+      participante_id: participante.id,
+      evento_id: evento.id,
+      tipo_certificado_id: tipo.id,
+      codigo: 'PEND001',
+    })
+
+    const res = await request(app).get(
+      '/api/certificados?email=maria@teste.com',
+    )
+
+    expect(res.status).toBe(200)
+    expect(res.body.certificados).toHaveLength(1)
+    expect(res.body.certificados[0].status).toBe('emitido')
+    expect(res.body.certificados[0].nome).toBe('Certificado Teste')
+  })
+
   it('GET /api/validar/:codigo retorna certificado válido', async () => {
     const res = await request(app).get('/api/validar/ABC123')
     expect(res.status).toBe(200)
     expect(res.body.valido).toBe(true)
     expect(res.body.certificado.nome).toBe('Certificado Teste')
+  })
+
+  it('GET /api/validar/:codigo retorna 404 para certificado pendente', async () => {
+    await Certificado.create({
+      nome: 'Certificado Pendente',
+      status: 'pendente',
+      participante_id: participante.id,
+      evento_id: evento.id,
+      tipo_certificado_id: tipo.id,
+      codigo: 'PEND001',
+    })
+
+    const res = await request(app).get('/api/validar/PEND001')
+    expect(res.status).toBe(404)
+    expect(res.body.valido).toBe(false)
   })
 
   it('GET /api/validar/:codigo retorna 404 para código inválido', async () => {
@@ -93,4 +128,20 @@ describe('Rotas públicas de certificados', () => {
     expect(Buffer.isBuffer(res.body)).toBe(true)
     expect(res.body.slice(0, 4).toString()).toBe('%PDF')
   }, 10000)
+
+  it('GET /api/certificados/:id/pdf retorna 404 para certificado pendente', async () => {
+    const pendente = await Certificado.create({
+      nome: 'Certificado Pendente',
+      status: 'pendente',
+      participante_id: participante.id,
+      evento_id: evento.id,
+      tipo_certificado_id: tipo.id,
+      codigo: 'PEND001',
+    })
+
+    const res = await request(app).get(`/api/certificados/${pendente.id}/pdf`)
+
+    expect(res.status).toBe(404)
+    expect(res.body.error).toBe('Certificado não encontrado ou indisponível publicamente')
+  })
 })
