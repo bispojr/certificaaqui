@@ -5,12 +5,12 @@ on:
     branches:
       - main
       - dev
-      - bug-corrigir-visualizacao-pendente
+      - bug-visualizar-pendente-gestor
   pull_request:
     branches:
       - main
       - dev
-      - bug-corrigir-visualizacao-pendente
+      - bug-visualizar-pendente-gestor
   workflow_dispatch:
 
 jobs:
