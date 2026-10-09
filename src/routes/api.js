@@ -7,6 +7,7 @@ const {
   TiposCertificados,
 } = require('../models')
 const pdfService = require('../services/pdfService')
+const STATUS_PUBLICO_CERTIFICADO = 'emitido'
 
 /**
  * @swagger
@@ -45,7 +46,11 @@ const pdfService = require('../services/pdfService')
 router.get('/certificados/:id/pdf', async (req, res) => {
   const { id } = req.params
   try {
-    const certificado = await Certificado.findByPk(id, {
+    const certificado = await Certificado.findOne({
+      where: {
+        id,
+        status: STATUS_PUBLICO_CERTIFICADO,
+      },
       include: [
         { model: Participante },
         { model: Evento },
@@ -53,7 +58,9 @@ router.get('/certificados/:id/pdf', async (req, res) => {
       ],
     })
     if (!certificado) {
-      return res.status(404).json({ error: 'Certificado não encontrado' })
+      return res
+        .status(404)
+        .json({ error: 'Certificado não encontrado ou indisponível publicamente' })
     }
     const buffer = await pdfService.generateCertificadoPdf(certificado)
     res.setHeader('Content-Type', 'application/pdf')
@@ -112,7 +119,10 @@ router.get('/certificados', async (req, res) => {
       return res.status(404).json({ error: 'Participante não encontrado' })
     }
     const certificados = await Certificado.findAll({
-      where: { participante_id: participante.id },
+      where: {
+        participante_id: participante.id,
+        status: STATUS_PUBLICO_CERTIFICADO,
+      },
     })
     return res.json({ certificados })
   } catch {
@@ -162,7 +172,12 @@ router.get('/certificados', async (req, res) => {
 router.get('/validar/:codigo', async (req, res) => {
   const { codigo } = req.params
   try {
-    const certificado = await Certificado.findOne({ where: { codigo } })
+    const certificado = await Certificado.findOne({
+      where: {
+        codigo,
+        status: STATUS_PUBLICO_CERTIFICADO,
+      },
+    })
     if (!certificado) {
       return res
         .status(404)
