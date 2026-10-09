@@ -1,13 +1,79 @@
 const express = require('express')
 const router = express.Router()
+const jwt = require('jsonwebtoken')
 const {
   Certificado,
   Participante,
   Evento,
   TiposCertificados,
+  Usuario,
 } = require('../models')
 const pdfService = require('../services/pdfService')
+const {
+  resolveAuthorizationScope,
+} = require('../services/auth/resolveAuthorizationScope')
 const STATUS_PUBLICO_CERTIFICADO = 'emitido'
+
+function readAccessToken(req) {
+  const authHeader = req.headers?.authorization
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.slice(7)
+  }
+  return req.cookies?.token || null
+}
+
+async function resolveAuthenticatedUser(req) {
+  const token = readAccessToken(req)
+  if (!token || !process.env.JWT_SECRET) {
+    return null
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    if (!decoded?.id) {
+      return null
+    }
+
+    const usuario = await Usuario.findByPk(decoded.id)
+    if (!usuario) {
+      return null
+    }
+
+    const contextoAutorizacao = await resolveAuthorizationScope({
+      usuario,
+      principal: { role: usuario.perfil },
+      strict: false,
+    })
+
+    return {
+      perfil: usuario.perfil,
+      contextoAutorizacao,
+    }
+  } catch {
+    return null
+  }
+}
+
+function canDownloadPendingCertificado(authorizationContext, eventoId) {
+  if (!authorizationContext) {
+    return false
+  }
+
+  if (authorizationContext.perfil === 'admin') {
+    return true
+  }
+
+  if (authorizationContext.perfil !== 'gestor') {
+    return false
+  }
+
+  const eventoIds = authorizationContext.contextoAutorizacao?.eventoIds
+  if (!Array.isArray(eventoIds)) {
+    return false
+  }
+
+  return eventoIds.includes(Number(eventoId))
+}
 
 /**
  * @swagger
@@ -47,21 +113,34 @@ router.get('/certificados/:id/pdf', async (req, res) => {
   const { id } = req.params
   try {
     const certificado = await Certificado.findOne({
-      where: {
-        id,
-        status: STATUS_PUBLICO_CERTIFICADO,
-      },
+      where: { id },
       include: [
         { model: Participante },
         { model: Evento },
         { model: TiposCertificados, as: 'TiposCertificados' },
       ],
     })
+
     if (!certificado) {
-      return res
-        .status(404)
-        .json({ error: 'Certificado não encontrado ou indisponível publicamente' })
+      return res.status(404).json({
+        error: 'Certificado não encontrado ou indisponível publicamente',
+      })
     }
+
+    if (certificado.status !== STATUS_PUBLICO_CERTIFICADO) {
+      const authorizationContext = await resolveAuthenticatedUser(req)
+      const pendingDownloadAllowed = canDownloadPendingCertificado(
+        authorizationContext,
+        certificado.evento_id,
+      )
+
+      if (!pendingDownloadAllowed) {
+        return res.status(404).json({
+          error: 'Certificado não encontrado ou indisponível publicamente',
+        })
+      }
+    }
+
     const buffer = await pdfService.generateCertificadoPdf(certificado)
     res.setHeader('Content-Type', 'application/pdf')
     res.setHeader(

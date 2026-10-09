@@ -1,10 +1,12 @@
 const request = require('supertest')
+const jwt = require('jsonwebtoken')
 const app = require('../../app')
 const {
   Participante,
   Certificado,
   Evento,
   TiposCertificados,
+  Usuario,
 } = require('../../src/models')
 
 describe('Rotas públicas de certificados', () => {
@@ -13,7 +15,7 @@ describe('Rotas públicas de certificados', () => {
   beforeEach(async () => {
     // Limpeza robusta: truncate com cascade e reinício de IDs
     await Certificado.sequelize.query(
-      'TRUNCATE TABLE "certificados", "tipos_certificados", "participantes", "eventos" RESTART IDENTITY CASCADE',
+      'TRUNCATE TABLE "usuario_eventos", "usuarios", "certificados", "tipos_certificados", "participantes", "eventos" RESTART IDENTITY CASCADE',
     )
 
     evento = await Evento.create({
@@ -48,7 +50,7 @@ describe('Rotas públicas de certificados', () => {
 
   afterEach(async () => {
     await Certificado.sequelize.query(
-      'TRUNCATE TABLE "certificados", "tipos_certificados", "participantes", "eventos" RESTART IDENTITY CASCADE',
+      'TRUNCATE TABLE "usuario_eventos", "usuarios", "certificados", "tipos_certificados", "participantes", "eventos" RESTART IDENTITY CASCADE',
     )
   })
 
@@ -142,6 +144,114 @@ describe('Rotas públicas de certificados', () => {
     const res = await request(app).get(`/api/certificados/${pendente.id}/pdf`)
 
     expect(res.status).toBe(404)
-    expect(res.body.error).toBe('Certificado não encontrado ou indisponível publicamente')
+    expect(res.body.error).toBe(
+      'Certificado não encontrado ou indisponível publicamente',
+    )
+  })
+
+  it('GET /api/certificados/:id/pdf permite admin baixar certificado pendente autenticado por cookie', async () => {
+    const pendente = await Certificado.create({
+      nome: 'Certificado Pendente Admin',
+      status: 'pendente',
+      participante_id: participante.id,
+      evento_id: evento.id,
+      tipo_certificado_id: tipo.id,
+      codigo: 'PEND002',
+    })
+
+    const admin = await Usuario.create({
+      nome: 'Admin Teste',
+      email: 'admin-public-test@teste.com',
+      senha: 'senha123',
+      perfil: 'admin',
+    })
+
+    const tokenAdmin = jwt.sign(
+      { id: admin.id, perfil: admin.perfil },
+      process.env.JWT_SECRET,
+    )
+
+    const res = await request(app)
+      .get(`/api/certificados/${pendente.id}/pdf`)
+      .set('Cookie', [`token=${tokenAdmin}`])
+
+    expect(res.status).toBe(200)
+    expect(res.headers['content-type']).toBe('application/pdf')
+    expect(Buffer.isBuffer(res.body)).toBe(true)
+    expect(res.body.slice(0, 4).toString()).toBe('%PDF')
+  }, 10000)
+
+  it('GET /api/certificados/:id/pdf permite gestor do evento baixar certificado pendente', async () => {
+    const pendente = await Certificado.create({
+      nome: 'Certificado Pendente Gestor',
+      status: 'pendente',
+      participante_id: participante.id,
+      evento_id: evento.id,
+      tipo_certificado_id: tipo.id,
+      codigo: 'PEND003',
+    })
+
+    const gestor = await Usuario.create({
+      nome: 'Gestor Teste',
+      email: 'gestor-public-test@teste.com',
+      senha: 'senha123',
+      perfil: 'gestor',
+    })
+    await gestor.addEvento(evento)
+
+    const tokenGestor = jwt.sign(
+      { id: gestor.id, perfil: gestor.perfil },
+      process.env.JWT_SECRET,
+    )
+
+    const res = await request(app)
+      .get(`/api/certificados/${pendente.id}/pdf`)
+      .set('Cookie', [`token=${tokenGestor}`])
+
+    expect(res.status).toBe(200)
+    expect(res.headers['content-type']).toBe('application/pdf')
+    expect(Buffer.isBuffer(res.body)).toBe(true)
+    expect(res.body.slice(0, 4).toString()).toBe('%PDF')
+  }, 10000)
+
+  it('GET /api/certificados/:id/pdf nega gestor fora do escopo do evento para certificado pendente', async () => {
+    const pendente = await Certificado.create({
+      nome: 'Certificado Pendente Escopo',
+      status: 'pendente',
+      participante_id: participante.id,
+      evento_id: evento.id,
+      tipo_certificado_id: tipo.id,
+      codigo: 'PEND004',
+    })
+
+    const eventoForaEscopo = await Evento.create({
+      nome: 'Evento Fora Escopo',
+      codigo_base: 'EFS',
+      ano: 2026,
+      created_at: new Date(),
+      updated_at: new Date(),
+    })
+
+    const gestor = await Usuario.create({
+      nome: 'Gestor Fora Escopo',
+      email: 'gestor-fora-escopo@teste.com',
+      senha: 'senha123',
+      perfil: 'gestor',
+    })
+    await gestor.addEvento(eventoForaEscopo)
+
+    const tokenGestor = jwt.sign(
+      { id: gestor.id, perfil: gestor.perfil },
+      process.env.JWT_SECRET,
+    )
+
+    const res = await request(app)
+      .get(`/api/certificados/${pendente.id}/pdf`)
+      .set('Cookie', [`token=${tokenGestor}`])
+
+    expect(res.status).toBe(404)
+    expect(res.body.error).toBe(
+      'Certificado não encontrado ou indisponível publicamente',
+    )
   })
 })
