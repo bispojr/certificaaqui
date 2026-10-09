@@ -114,6 +114,7 @@ FR-54: Na criação de um certificado, o serviço deve validar que todos os camp
 
 FR-23: O sistema deve disponibilizar uma rota pública JSON para listar certificados por e-mail de participante (`GET /api/certificados?email=...`).  
 FR-23a: Em rotas públicas de consulta e validação, apenas certificados com status `"emitido"` devem ser retornados; certificados com status `"pendente"` ou `"cancelado"` não podem ser listados, validados nem disponibilizados para download sem autenticação.  
+FR-23b: Na rota de geração/download de PDF (`GET /api/certificados/:id/pdf`), certificados com status `"pendente"` ou `"cancelado"` só podem ser disponibilizados em contexto autenticado e autorizado: `admin` com acesso global e `gestor` apenas quando o certificado pertencer a evento dentro de seu escopo. Sem autenticação, permanece a exposição restrita a certificados com status `"emitido"`.  
 FR-24: O sistema deve disponibilizar uma rota pública JSON `GET /api/validar/:codigo` que retorna `{ valido: true, certificado }` ou HTTP 404 `{ valido: false, mensagem }`.  
 FR-25: As rotas de consulta pública não devem exigir autenticação.  
 FR-53: O sistema deve disponibilizar uma rota pública `GET /api/certificados?email=...` que, dado o e-mail de um participante, lista todos os seus certificados.
