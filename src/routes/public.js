@@ -9,6 +9,7 @@ const {
 
 // Aceita apenas letras (A-Z), números e hífens — protege contra SQL injection e entradas maliciosas
 const CODIGO_CERTIFICADO_REGEX = /^[A-Z0-9-]{1,60}$/i
+const STATUS_PUBLICO_CERTIFICADO = 'emitido'
 
 // ─── SSR: páginas públicas ────────────────────────────────────────────────────
 
@@ -38,7 +39,10 @@ router.post('/obter', async (req, res) => {
       })
     }
     const certificados = await Certificado.findAll({
-      where: { participante_id: participante.id },
+      where: {
+        participante_id: participante.id,
+        status: STATUS_PUBLICO_CERTIFICADO,
+      },
     })
     return res.render('certificados/obter-lista', { email, certificados })
   } catch {
@@ -58,7 +62,10 @@ router.post('/validar', async (req, res) => {
   }
   try {
     const certificado = await Certificado.findOne({
-      where: { codigo },
+      where: {
+        codigo,
+        status: STATUS_PUBLICO_CERTIFICADO,
+      },
       include: [
         { model: Participante },
         { model: Evento },
@@ -94,7 +101,10 @@ router.get('/validar/:codigo', async (req, res) => {
 
   try {
     const certificado = await Certificado.findOne({
-      where: { codigo },
+      where: {
+        codigo,
+        status: STATUS_PUBLICO_CERTIFICADO,
+      },
       include: [
         { model: Participante },
         { model: Evento },

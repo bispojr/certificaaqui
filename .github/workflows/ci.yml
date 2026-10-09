@@ -5,12 +5,12 @@ on:
     branches:
       - main
       - dev
-      - feat-autocomplete-participantes
+      - bug-corrigir-visualizacao-pendente
   pull_request:
     branches:
       - main
       - dev
-      - feat-autocomplete-participantes
+      - bug-corrigir-visualizacao-pendente
   workflow_dispatch:
 
 jobs:
