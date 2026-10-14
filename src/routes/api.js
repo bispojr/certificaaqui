@@ -141,14 +141,28 @@ router.get('/certificados/:id/pdf', async (req, res) => {
       }
     }
 
-    const buffer = await pdfService.generateCertificadoPdf(certificado)
+    res.on('close', () => {
+      if (!res.writableEnded) {
+        // Conexão encerrada prematuramente pelo cliente
+      }
+    })
+
     res.setHeader('Content-Type', 'application/pdf')
     res.setHeader(
       'Content-Disposition',
       `inline; filename=certificado-${id}.pdf`,
     )
-    return res.status(200).send(buffer)
+
+    await pdfService.streamCertificadoPdf(certificado, res)
   } catch (err) {
+    if (res.headersSent || res.writableEnded || res.destroyed) {
+      if (!res.destroyed && !res.writableEnded) {
+        res.destroy(err)
+      }
+      return
+    }
+    res.removeHeader('Content-Disposition')
+    res.setHeader('Content-Type', 'application/json; charset=utf-8')
     return res
       .status(500)
       .json({ error: 'Erro ao gerar PDF', detalhe: err.message })

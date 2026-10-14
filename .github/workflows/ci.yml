@@ -5,12 +5,12 @@ on:
     branches:
       - main
       - dev
-      - bug-visualizar-pendente-gestor
+      - feat-stream-pdf-http
   pull_request:
     branches:
       - main
       - dev
-      - bug-visualizar-pendente-gestor
+      - feat-stream-pdf-http
   workflow_dispatch:
 
 jobs:
