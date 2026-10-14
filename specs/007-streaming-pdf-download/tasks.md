@@ -8,9 +8,9 @@
 
 ## Phase 1: Serviço de PDF (`src/services/pdfService.js`)
 
-- [ ] T001 Implementar o método `streamCertificadoPdf(certificado, writableStream)` em `src/services/pdfService.js` canalizando a renderização diretamente com `doc.pipe(writableStream)` e invocando `doc.end()`.
-- [ ] T002 Remover o método antigo `generateCertificadoPdf` e a acumulação em `Buffer.concat(buffers)`, eliminando o código legado e retenção de buffers na memória.
-- [ ] T003 Implementar tratamento de erros e cleanup no pipeline do stream para garantir que o `PDFDocument` seja fechado/destruído em caso de exceção ou interrupção.
+- [x] T001 Implementar o método `streamCertificadoPdf(certificado, writableStream)` em `src/services/pdfService.js` canalizando a renderização diretamente com `doc.pipe(writableStream)` e invocando `doc.end()`.
+- [x] T002 Remover o método antigo `generateCertificadoPdf` e a acumulação em `Buffer.concat(buffers)`, eliminando o código legado e retenção de buffers na memória.
+- [x] T003 Implementar tratamento de erros e cleanup no pipeline do stream para garantir que o `PDFDocument` seja fechado/destruído em caso de exceção ou interrupção.
 
 ---
 
