@@ -24,6 +24,6 @@
 
 ## Phase 3: Atualização da Suíte de Testes
 
-- [ ] T007 Refatorar os testes unitários em `tests/services/pdfService.test.js` para chamar diretamente `streamCertificadoPdf`, utilizando streams em memória (`stream.PassThrough`), testando chunks, eventos de conclusão, tratamento de erro e asserções visuais.
-- [ ] T008 Atualizar os testes de integração em `tests/routes/api.test.js` para validar o download via streaming HTTP e os cabeçalhos da resposta.
-- [ ] T009 Executar toda a suíte de testes (`npm run test:ci`) para garantir 100% de cobertura e zero regressão.
+- [x] T007 Refatorar os testes unitários em `tests/services/pdfService.test.js` para chamar diretamente `streamCertificadoPdf`, utilizando streams em memória (`stream.PassThrough`), testando chunks, eventos de conclusão, tratamento de erro e asserções visuais.
+- [x] T008 Atualizar os testes de integração em `tests/routes/api.test.js` para validar o download via streaming HTTP e os cabeçalhos da resposta.
+- [x] T009 Executar toda a suíte de testes (`npm run test:ci`) para garantir 100% de cobertura e zero regressão.
