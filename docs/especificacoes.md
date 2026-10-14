@@ -121,7 +121,7 @@ FR-53: O sistema deve disponibilizar uma rota pública `GET /api/certificados?em
 
 ## Geração de PDF
 
-FR-42: O sistema deve gerar o PDF do certificado sob demanda via `GET /api/certificados/:id/pdf`, sem exigir autenticação.  
+FR-42: O sistema deve gerar o PDF do certificado sob demanda e transmiti-lo via streaming HTTP em `GET /api/certificados/:id/pdf`, sem reter buffers integrais na memória e sem exigir autenticação (salvo restrições de status de FR-23b).  
 FR-47: A imagem de fundo do PDF é obtida do Cloudflare R2 usando a key em `evento.url_template_base`. Se não definido, usa `"template/padrao.jpg"` como key padrão.  
 FR-47b: A fonte tipográfica (`Lato-Medium.ttf`) é obtida do R2 (key `"fontes/Lato-Medium.ttf"`). Se indisponível, usa `Helvetica` como fallback.  
 FR-47c: O PDF é gerado em formato A4 landscape. As coordenadas de posicionamento dos blocos de texto e do código de validação, o tamanho da fonte do texto-base, bem como o ângulo de rotação da caixa de validação, são configuráveis por evento via campos `texto_x/y`, `texto_tamanho_fonte`, `validacao_x/y` e `validacao_rotacao`.  
@@ -263,12 +263,12 @@ Regras normativas:
 ```
 GET /api/certificados/:id/pdf
   → Certificado.findByPk(id, { include: [Participante, Evento, TiposCertificados] })
-  → pdfService.generateCertificadoPdf(certificado)
+  → pdfService.streamCertificadoPdf(certificado, res)
       → r2Service.getFile(evento.url_template_base)    (imagem de fundo)
       → r2Service.getFile('fontes/Lato-Medium.ttf')    (fonte)
       → templateService.interpolate(texto_base, valores_dinamicos)
       → PDFKit: A4 landscape, texto em (texto_x, texto_y), validação em (validacao_x, validacao_y)
-      → Buffer → HTTP 200 Content-Type: application/pdf
+      → Stream HTTP (doc.pipe(res)) → HTTP 200 Content-Type: application/pdf
 ```
 
 ## Fluxo: Emissão de Certificado (API)

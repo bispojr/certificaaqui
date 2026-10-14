@@ -80,13 +80,13 @@ async function dashboard(req, res) {
 
     const [totalCertificados, totalParticipantes] = whereEvento
       ? await Promise.all([
-          Certificado.count({ where: whereEvento }),
-          Certificado.count({
-            where: whereEvento,
-            distinct: true,
-            col: 'participante_id',
-          }),
-        ])
+        Certificado.count({ where: whereEvento }),
+        Certificado.count({
+          where: whereEvento,
+          distinct: true,
+          col: 'participante_id',
+        }),
+      ])
       : [0, 0]
 
     return res.render('admin/dashboard', {

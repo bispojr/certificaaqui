@@ -1,3 +1,4 @@
+const { PassThrough } = require('stream')
 const PDFDocument = require('pdfkit')
 const pdfService = require('../../src/services/pdfService')
 const templateService = require('../../src/services/templateService')
@@ -8,7 +9,75 @@ jest.mock('../../src/services/r2Service', () => ({
 
 const r2Service = require('../../src/services/r2Service')
 
-describe('pdfService.generateCertificadoPdf', () => {
+// Helper para converter stream em Buffer para asserções
+async function streamToBuffer(certificado) {
+  const stream = new PassThrough()
+  const chunks = []
+  stream.on('data', (chunk) => chunks.push(chunk))
+  await pdfService.streamCertificadoPdf(certificado, stream)
+  return Buffer.concat(chunks)
+}
+
+describe('pdfService.streamCertificadoPdf', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    r2Service.getFile.mockResolvedValue(null)
+  })
+
+  it('deve transmitir chunks via PassThrough e gerar PDF válido começando com %PDF', async () => {
+    const certificado = {
+      codigo: 'ABC123',
+      dataValues: { codigo: 'ABC123' },
+      Evento: { nome: 'Evento Teste', dataValues: { nome: 'Evento Teste' } },
+      Participante: { nome: 'João', dataValues: { nome: 'João' } },
+      TiposCertificados: {
+        texto_base: 'Certificamos que {{nome}} participou do evento.',
+        dataValues: {
+          texto_base: 'Certificamos que {{nome}} participou do evento.',
+        },
+      },
+    }
+
+    jest
+      .spyOn(templateService, 'interpolate')
+      .mockImplementation((tpl, vars) => {
+        return `Certificamos que ${vars.nome} participou do evento.`
+      })
+
+    const stream = new PassThrough()
+    const chunks = []
+    stream.on('data', (chunk) => chunks.push(chunk))
+
+    await pdfService.streamCertificadoPdf(certificado, stream)
+
+    expect(chunks.length).toBeGreaterThan(0)
+    const buffer = Buffer.concat(chunks)
+    expect(Buffer.isBuffer(buffer)).toBe(true)
+    expect(buffer.slice(0, 4).toString()).toBe('%PDF')
+
+    templateService.interpolate.mockRestore()
+  }, 15000)
+
+  it('deve aceitar TiposCertificado (singular)', async () => {
+    const certificado = {
+      codigo: 'ABC123',
+      Evento: { nome: 'Evento Teste' },
+      Participante: { nomeCompleto: 'Maria' },
+      TiposCertificado: {
+        texto_base: 'Certificamos que {{nome}} participou.',
+      },
+    }
+
+    jest
+      .spyOn(templateService, 'interpolate')
+      .mockReturnValue('Certificamos que Maria participou.')
+
+    const buffer = await streamToBuffer(certificado)
+    expect(buffer.slice(0, 4).toString()).toBe('%PDF')
+
+    templateService.interpolate.mockRestore()
+  }, 15000)
+
   it('deve usar continued:true no texto de validação para manter link junto', async () => {
     const textSpy = jest.spyOn(PDFDocument.prototype, 'text')
     jest
@@ -25,7 +94,7 @@ describe('pdfService.generateCertificadoPdf', () => {
       },
     }
 
-    await pdfService.generateCertificadoPdf(certificado)
+    await streamToBuffer(certificado)
 
     const endereco_validacao =
       process.env.ENDERECO_VALIDACAO || 'https://certificaaqui.com/validar'
@@ -49,33 +118,39 @@ describe('pdfService.generateCertificadoPdf', () => {
     templateService.interpolate.mockRestore()
     textSpy.mockRestore()
   }, 15000)
-  it('deve gerar um Buffer PDF válido começando com %PDF', async () => {
-    // Mock de dados mínimos
+
+  it('deve lançar erro se writableStream não for fornecido ou for inválido', async () => {
     const certificado = {
-      codigo: 'ABC123',
-      dataValues: { codigo: 'ABC123' },
-      Evento: { nome: 'Evento Teste', dataValues: { nome: 'Evento Teste' } },
-      Participante: { nome: 'João', dataValues: { nome: 'João' } },
-      TiposCertificados: {
-        texto_base: 'Certificamos que {{nome}} participou do evento.',
-        dataValues: {
-          texto_base: 'Certificamos que {{nome}} participou do evento.',
-        },
-      },
+      codigo: 'VAL123',
+      Evento: { nome: 'Evento Teste' },
+      Participante: { nomeCompleto: 'João' },
+      TiposCertificados: { texto_base: 'Certificamos que...' },
     }
 
-    jest
-      .spyOn(templateService, 'interpolate')
-      .mockImplementation((tpl, vars) => {
-        return `Certificamos que ${vars.nome} participou do evento.`
-      })
+    await expect(
+      pdfService.streamCertificadoPdf(certificado, null),
+    ).rejects.toThrow('Writable stream inválido ou não fornecido')
 
-    const buffer = await pdfService.generateCertificadoPdf(certificado)
-    expect(Buffer.isBuffer(buffer)).toBe(true)
-    expect(buffer.slice(0, 4).toString()).toBe('%PDF')
+    await expect(
+      pdfService.streamCertificadoPdf(certificado, {}),
+    ).rejects.toThrow('Writable stream inválido ou não fornecido')
+  })
 
-    templateService.interpolate.mockRestore()
-  }, 15000)
+  it('deve lançar erro se o stream já estiver destruído ou encerrado antes da geração', async () => {
+    const certificado = {
+      codigo: 'VAL123',
+      Evento: { nome: 'Evento Teste' },
+      Participante: { nomeCompleto: 'João' },
+      TiposCertificados: { texto_base: 'Certificamos que...' },
+    }
+
+    const stream = new PassThrough()
+    stream.destroy()
+
+    await expect(
+      pdfService.streamCertificadoPdf(certificado, stream),
+    ).rejects.toThrow('Stream encerrado antes do início da geração do PDF')
+  })
 
   it('deve rejeitar se não houver código de validação', async () => {
     const certificado = {
@@ -87,13 +162,10 @@ describe('pdfService.generateCertificadoPdf', () => {
         dataValues: { texto_base: 'Certificamos que {{nome}} participou.' },
       },
     }
-    jest
-      .spyOn(templateService, 'interpolate')
-      .mockReturnValue('Certificamos que Maria participou.')
+    const stream = new PassThrough()
     await expect(
-      pdfService.generateCertificadoPdf(certificado),
+      pdfService.streamCertificadoPdf(certificado, stream),
     ).rejects.toThrow('Código de validação obrigatório')
-    templateService.interpolate.mockRestore()
   }, 15000)
 
   it('deve rejeitar se campos nulos ou undefined não incluírem código de validação', async () => {
@@ -107,12 +179,33 @@ describe('pdfService.generateCertificadoPdf', () => {
         dataValues: { texto_base: 'Texto base' },
       },
     }
-    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto base')
+    const stream = new PassThrough()
     await expect(
-      pdfService.generateCertificadoPdf(certificado),
+      pdfService.streamCertificadoPdf(certificado, stream),
     ).rejects.toThrow('Código de validação obrigatório')
-    templateService.interpolate.mockRestore()
   }, 15000)
+
+  it('deve rejeitar se tipo de certificado for nulo ou sem texto_base', async () => {
+    const certificadoSemTipo = {
+      codigo: 'VAL123',
+      Evento: { nome: 'Evento Teste' },
+      Participante: { nomeCompleto: 'João' },
+    }
+    const stream = new PassThrough()
+    await expect(
+      pdfService.streamCertificadoPdf(certificadoSemTipo, stream),
+    ).rejects.toThrow('Tipo de certificado inválido ou sem texto_base')
+
+    const certificadoTextoVazio = {
+      codigo: 'VAL123',
+      Evento: { nome: 'Evento Teste' },
+      Participante: { nomeCompleto: 'João' },
+      TiposCertificados: { texto_base: '' },
+    }
+    await expect(
+      pdfService.streamCertificadoPdf(certificadoTextoVazio, stream),
+    ).rejects.toThrow('Tipo de certificado inválido ou sem texto_base')
+  })
 
   it('deve rejeitar a Promise se a interpolação lançar erro', async () => {
     const certificado = {
@@ -128,11 +221,76 @@ describe('pdfService.generateCertificadoPdf', () => {
     jest.spyOn(templateService, 'interpolate').mockImplementation(() => {
       throw new Error('Erro de interpolação')
     })
+    const stream = new PassThrough()
     await expect(
-      pdfService.generateCertificadoPdf(certificado),
+      pdfService.streamCertificadoPdf(certificado, stream),
     ).rejects.toThrow('Erro de interpolação')
     templateService.interpolate.mockRestore()
   }, 15000)
+
+  it('deve rejeitar e destruir doc quando o stream for fechado prematuramente', async () => {
+    const certificado = {
+      codigo: 'VAL123',
+      Evento: { nome: 'Evento Teste' },
+      Participante: { nomeCompleto: 'João' },
+      TiposCertificados: { texto_base: 'Certificamos...' },
+    }
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto')
+
+    const stream = new PassThrough()
+    stream.once('data', () => {
+      stream.emit('close')
+    })
+
+    await expect(
+      pdfService.streamCertificadoPdf(certificado, stream),
+    ).rejects.toThrow('Stream fechado prematuramente')
+    templateService.interpolate.mockRestore()
+  })
+
+  it('deve rejeitar e destruir doc quando o stream emitir erro', async () => {
+    const certificado = {
+      codigo: 'VAL123',
+      Evento: { nome: 'Evento Teste' },
+      Participante: { nomeCompleto: 'João' },
+      TiposCertificados: { texto_base: 'Certificamos...' },
+    }
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto')
+
+    const stream = new PassThrough()
+    stream.once('data', () => {
+      stream.emit('error', new Error('Falha no writable stream'))
+    })
+
+    await expect(
+      pdfService.streamCertificadoPdf(certificado, stream),
+    ).rejects.toThrow('Falha no writable stream')
+    templateService.interpolate.mockRestore()
+  })
+
+  it('deve rejeitar se doc emitir erro durante a geração', async () => {
+    const certificado = {
+      codigo: 'VAL123',
+      Evento: { nome: 'Evento Teste' },
+      Participante: { nomeCompleto: 'João' },
+      TiposCertificados: { texto_base: 'Certificamos...' },
+    }
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto')
+
+    const docError = new Error('Erro interno do PDFKit')
+    jest.spyOn(PDFDocument.prototype, 'pipe').mockImplementation(function () {
+      process.nextTick(() => this.emit('error', docError))
+      return this
+    })
+
+    const stream = new PassThrough()
+    await expect(
+      pdfService.streamCertificadoPdf(certificado, stream),
+    ).rejects.toThrow('Erro interno do PDFKit')
+
+    PDFDocument.prototype.pipe.mockRestore()
+    templateService.interpolate.mockRestore()
+  })
 })
 
 describe('pdfService - seleção de template de fundo (R2)', () => {
@@ -152,7 +310,7 @@ describe('pdfService - seleção de template de fundo (R2)', () => {
 
   it('deve usar url_template_base do evento quando definida', async () => {
     jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
-    await pdfService.generateCertificadoPdf(
+    await streamToBuffer(
       baseCertificado('https://cdn.example.com/templates/custom.jpg'),
     )
     expect(r2Service.getFile).toHaveBeenCalledWith(
@@ -163,14 +321,14 @@ describe('pdfService - seleção de template de fundo (R2)', () => {
 
   it('deve usar "template/padrao.jpg" quando url_template_base é nula', async () => {
     jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
-    await pdfService.generateCertificadoPdf(baseCertificado(null))
+    await streamToBuffer(baseCertificado(null))
     expect(r2Service.getFile).toHaveBeenCalledWith('template/padrao.jpg')
     templateService.interpolate.mockRestore()
   }, 15000)
 
   it('deve usar "template/padrao.jpg" quando url_template_base é undefined', async () => {
     jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
-    await pdfService.generateCertificadoPdf(baseCertificado(undefined))
+    await streamToBuffer(baseCertificado(undefined))
     expect(r2Service.getFile).toHaveBeenCalledWith('template/padrao.jpg')
     templateService.interpolate.mockRestore()
   }, 15000)
@@ -181,10 +339,33 @@ describe('pdfService - seleção de template de fundo (R2)', () => {
       ...baseCertificado(null),
       Evento: null,
     }
-    await pdfService.generateCertificadoPdf(cert)
+    await streamToBuffer(cert)
     expect(r2Service.getFile).toHaveBeenCalledWith('template/padrao.jpg')
     templateService.interpolate.mockRestore()
   }, 15000)
+
+  it('deve desenhar imagem de fundo quando retornada pelo R2', async () => {
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
+    const imageSpy = jest
+      .spyOn(PDFDocument.prototype, 'image')
+      .mockImplementation(function () {
+        return this
+      })
+    r2Service.getFile.mockImplementation(async (key) => {
+      if (key === 'template/padrao.jpg') {
+        return { Body: Buffer.from('fake-image-bytes') }
+      }
+      return null
+    })
+
+    try {
+      await streamToBuffer(baseCertificado(null))
+      expect(imageSpy).toHaveBeenCalled()
+    } finally {
+      imageSpy.mockRestore()
+      templateService.interpolate.mockRestore()
+    }
+  })
 })
 
 describe('pdfService - fonte Lato-Medium do R2', () => {
@@ -204,7 +385,7 @@ describe('pdfService - fonte Lato-Medium do R2', () => {
 
   it('deve tentar buscar a fonte Lato-Medium.ttf do R2', async () => {
     jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
-    await pdfService.generateCertificadoPdf(baseCert())
+    await streamToBuffer(baseCert())
     expect(r2Service.getFile).toHaveBeenCalledWith('fontes/Lato-Medium.ttf')
     templateService.interpolate.mockRestore()
   }, 15000)
@@ -212,11 +393,39 @@ describe('pdfService - fonte Lato-Medium do R2', () => {
   it('deve gerar PDF mesmo quando a fonte não está disponível no R2', async () => {
     r2Service.getFile.mockResolvedValue(null)
     jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
-    const buffer = await pdfService.generateCertificadoPdf(baseCert())
+    const buffer = await streamToBuffer(baseCert())
     expect(Buffer.isBuffer(buffer)).toBe(true)
     expect(buffer.slice(0, 4).toString()).toBe('%PDF')
     templateService.interpolate.mockRestore()
   }, 15000)
+
+  it('deve aplicar fonte do R2 quando retornada com sucesso', async () => {
+    jest.spyOn(templateService, 'interpolate').mockReturnValue('Texto ok')
+    const fakeFont = Buffer.from('fake-font-bytes')
+    const originalFont = PDFDocument.prototype.font
+    const fontSpy = jest
+      .spyOn(PDFDocument.prototype, 'font')
+      .mockImplementation(function (src, size) {
+        if (src === fakeFont) {
+          return originalFont.call(this, 'Helvetica', size)
+        }
+        return originalFont.call(this, src, size)
+      })
+    r2Service.getFile.mockImplementation(async (key) => {
+      if (key === 'fontes/Lato-Medium.ttf') {
+        return { Body: fakeFont }
+      }
+      return null
+    })
+
+    try {
+      await streamToBuffer(baseCert())
+      expect(fontSpy).toHaveBeenCalledWith(fakeFont)
+    } finally {
+      fontSpy.mockRestore()
+      templateService.interpolate.mockRestore()
+    }
+  })
 })
 
 describe('pdfService - coordenadas configuráveis por evento', () => {
@@ -242,7 +451,7 @@ describe('pdfService - coordenadas configuráveis por evento', () => {
       Participante: { nomeCompleto: 'Participante' },
       TiposCertificados: { texto_base: 'Certificamos que ${nome}.' },
     }
-    const buffer = await pdfService.generateCertificadoPdf(cert)
+    const buffer = await streamToBuffer(cert)
     expect(Buffer.isBuffer(buffer)).toBe(true)
     expect(buffer.slice(0, 4).toString()).toBe('%PDF')
     templateService.interpolate.mockRestore()
@@ -258,7 +467,7 @@ describe('pdfService - coordenadas configuráveis por evento', () => {
       Participante: { nomeCompleto: 'Participante' },
       TiposCertificados: { texto_base: 'Certificamos que ${nome}.' },
     }
-    const buffer = await pdfService.generateCertificadoPdf(cert)
+    const buffer = await streamToBuffer(cert)
     expect(Buffer.isBuffer(buffer)).toBe(true)
     templateService.interpolate.mockRestore()
   }, 15000)
@@ -290,7 +499,7 @@ describe('pdfService - rotação da caixa de validação (validacao_rotacao)', (
       TiposCertificados: { texto_base: 'Certificamos que ${nome}.' },
     }
 
-    const buffer = await pdfService.generateCertificadoPdf(cert)
+    const buffer = await streamToBuffer(cert)
     expect(Buffer.isBuffer(buffer)).toBe(true)
     expect(saveSpy).toHaveBeenCalled()
     expect(rotateSpy).toHaveBeenCalledWith(90, { origin: [150, 550] })
@@ -317,7 +526,7 @@ describe('pdfService - rotação da caixa de validação (validacao_rotacao)', (
         Participante: { nomeCompleto: 'Participante' },
         TiposCertificados: { texto_base: 'Certificamos que ${nome}.' },
       }
-      const buffer = await pdfService.generateCertificadoPdf(cert)
+      const buffer = await streamToBuffer(cert)
       expect(Buffer.isBuffer(buffer)).toBe(true)
       expect(buffer.slice(0, 4).toString()).toBe('%PDF')
       templateService.interpolate.mockRestore()
@@ -341,7 +550,7 @@ describe('pdfService - rotação da caixa de validação (validacao_rotacao)', (
       TiposCertificados: { texto_base: 'Certificamos que ${nome}.' },
     }
 
-    const buffer = await pdfService.generateCertificadoPdf(cert)
+    const buffer = await streamToBuffer(cert)
     expect(Buffer.isBuffer(buffer)).toBe(true)
     expect(rotateSpy).toHaveBeenCalledWith(0, { origin: [145, 545] })
 
@@ -372,7 +581,7 @@ describe('pdfService - tamanho da fonte do texto-base (texto_tamanho_fonte)', ()
       TiposCertificados: { texto_base: 'Certificamos que ${nome}.' },
     }
 
-    const buffer = await pdfService.generateCertificadoPdf(cert)
+    const buffer = await streamToBuffer(cert)
     expect(Buffer.isBuffer(buffer)).toBe(true)
     expect(fontSizeSpy).toHaveBeenCalledWith(16)
 
@@ -396,7 +605,7 @@ describe('pdfService - tamanho da fonte do texto-base (texto_tamanho_fonte)', ()
       TiposCertificados: { texto_base: 'Certificamos que ${nome}.' },
     }
 
-    const buffer = await pdfService.generateCertificadoPdf(cert)
+    const buffer = await streamToBuffer(cert)
     expect(Buffer.isBuffer(buffer)).toBe(true)
     expect(fontSizeSpy).toHaveBeenCalledWith(14)
 
@@ -421,7 +630,7 @@ describe('pdfService - tamanho da fonte do texto-base (texto_tamanho_fonte)', ()
       TiposCertificados: { texto_base: 'Certificamos que ${nome}.' },
     }
 
-    const buffer = await pdfService.generateCertificadoPdf(cert)
+    const buffer = await streamToBuffer(cert)
     expect(Buffer.isBuffer(buffer)).toBe(true)
     expect(fontSizeSpy).toHaveBeenCalledWith(10)
 
