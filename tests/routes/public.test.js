@@ -254,4 +254,24 @@ describe('Rotas públicas de certificados', () => {
       'Certificado não encontrado ou indisponível publicamente',
     )
   })
+
+  it('GET /api/certificados/:id/pdf retorna 500 com JSON quando o serviço de streaming falha', async () => {
+    const pdfService = require('../../src/services/pdfService')
+    const spy = jest
+      .spyOn(pdfService, 'streamCertificadoPdf')
+      .mockRejectedValueOnce(new Error('Falha no motor de PDF'))
+
+    const res = await request(app).get(
+      `/api/certificados/${certificado.id}/pdf`,
+    )
+
+    expect(res.status).toBe(500)
+    expect(res.body).toEqual({
+      error: 'Erro ao gerar PDF',
+      detalhe: 'Falha no motor de PDF',
+    })
+    expect(res.headers['content-disposition']).toBeUndefined()
+
+    spy.mockRestore()
+  })
 })

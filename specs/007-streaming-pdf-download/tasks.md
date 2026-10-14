@@ -16,9 +16,9 @@
 
 ## Phase 2: Rota HTTP (`src/routes/api.js`)
 
-- [ ] T004 Atualizar a rota `GET /api/certificados/:id/pdf` para configurar os headers HTTP (`Content-Type: application/pdf`, `Content-Disposition`) e invocar `pdfService.streamCertificadoPdf(certificado, res)`.
-- [ ] T005 Monitorar o evento de encerramento da conexão pelo cliente (`res.on('close')`) para interromper o stream do PDFKit caso o download seja cancelado no meio do envio.
-- [ ] T006 Garantir o fluxo de erro: retornar HTTP 404 para status não autorizados antes do stream (conforme FR-23b) e tratar falhas antes do envio dos headers.
+- [x] T004 Atualizar a rota `GET /api/certificados/:id/pdf` para configurar os headers HTTP (`Content-Type: application/pdf`, `Content-Disposition`) e invocar `pdfService.streamCertificadoPdf(certificado, res)`.
+- [x] T005 Monitorar o evento de encerramento da conexão pelo cliente (`res.on('close')`) para interromper o stream do PDFKit caso o download seja cancelado no meio do envio.
+- [x] T006 Garantir o fluxo de erro: retornar HTTP 404 para status não autorizados antes do stream (conforme FR-23b) e tratar falhas antes do envio dos headers.
 
 ---
 
