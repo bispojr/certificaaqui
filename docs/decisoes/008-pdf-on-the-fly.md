@@ -10,7 +10,7 @@ Certificados precisam ser disponibilizados como PDF via `GET /public/certificado
 
 ## Decisão
 
-Geração on-the-fly sem persistência. O PDF é gerado em memória pelo `pdfService.generateCertificadoPdf(certificado)`, convertido para `Buffer` e enviado diretamente na resposta HTTP com `Content-Type: application/pdf`.
+Geração on-the-fly sem persistência. O PDF é gerado em tempo real pelo `pdfService.streamCertificadoPdf(certificado, res)` e enviado diretamente na resposta HTTP via streaming (`doc.pipe(res)`) com `Content-Type: application/pdf`, sem reter buffers integrais na memória heap.
 
 Razões:
 
