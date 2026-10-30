@@ -1,24 +1,29 @@
 const PDFDocument = require('pdfkit')
 const templateService = require('./templateService')
+const logger = require('../utils/logger')
 
 module.exports = {
   /**
    * Transmite o PDF de um certificado diretamente para um stream gravável.
    * @param {Object} certificado - Certificado com associações já carregadas (TiposCertificados/TiposCertificado, Participante, Evento)
    * @param {import('stream').Writable} writableStream - Stream de destino para o PDF (ex: res do Express ou PassThrough)
+   * @param {Object} [meta] - Metadados opcionais de observabilidade (ex: requestId)
    * @returns {Promise<void>} Resolve quando a geração e transmissão forem concluídas com sucesso
    */
-  async streamCertificadoPdf(certificado, writableStream) {
+  async streamCertificadoPdf(certificado, writableStream, meta = {}) {
     if (!writableStream || typeof writableStream.write !== 'function') {
       throw new Error('Writable stream inválido ou não fornecido')
     }
 
-    // Log para depuração
-    console.log('Gerando certificado:', {
-      id: certificado?.id,
-      codigo: certificado?.codigo,
-      nome: certificado?.nome,
+    const startedAt = process.hrtime.bigint()
+    const heapAtStart = process.memoryUsage().heapUsed
+
+    logger.info('pdf.stream.start', {
+      requestId: meta.requestId,
+      certificadoId: certificado?.id,
+      certificadoCodigo: certificado?.codigo,
     })
+
     if (!certificado || !certificado.codigo) {
       throw new Error('Código de validação obrigatório')
     }
@@ -61,7 +66,12 @@ module.exports = {
         bgBuffer = bgResult.Body
       }
     } catch (err) {
-      console.warn('Não foi possível carregar o background do R2:', err.message)
+      logger.warn('pdf.background.load_failed', {
+        requestId: meta.requestId,
+        certificadoId: certificado?.id,
+        backgroundKey,
+        error: err,
+      })
     }
 
     // --- Buscar fonte Lato-Medium do R2 ---
@@ -72,10 +82,12 @@ module.exports = {
         fontBuffer = fontResult.Body
       }
     } catch (err) {
-      console.warn(
-        'Não foi possível carregar a fonte do R2, usando fonte padrão:',
-        err.message,
-      )
+      logger.warn('pdf.font.load_failed', {
+        requestId: meta.requestId,
+        certificadoId: certificado?.id,
+        fontKey: 'fontes/Lato-Medium.ttf',
+        error: err,
+      })
     }
 
     if (writableStream.destroyed || writableStream.writableEnded) {
@@ -103,6 +115,20 @@ module.exports = {
         if (isSettled) return
         isSettled = true
         cleanup()
+
+        const elapsedNs = process.hrtime.bigint() - startedAt
+        const durationMs = Number(elapsedNs) / 1e6
+        const heapAtEnd = process.memoryUsage().heapUsed
+
+        logger.info('pdf.stream.completed', {
+          requestId: meta.requestId,
+          certificadoId: certificado?.id,
+          durationMs: Number(durationMs.toFixed(2)),
+          heapDeltaMb: Number(
+            ((heapAtEnd - heapAtStart) / 1024 / 1024).toFixed(2),
+          ),
+        })
+
         resolve()
       }
 
@@ -113,6 +139,13 @@ module.exports = {
         if (!doc.destroyed) {
           doc.destroy()
         }
+
+        logger.error('pdf.stream.failed', {
+          requestId: meta.requestId,
+          certificadoId: certificado?.id,
+          error: err,
+        })
+
         reject(err)
       }
 

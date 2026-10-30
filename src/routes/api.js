@@ -9,10 +9,22 @@ const {
   Usuario,
 } = require('../models')
 const pdfService = require('../services/pdfService')
+const logger = require('../utils/logger')
+const { createConcurrencyLimiter } = require('../utils/concurrencyLimiter')
 const {
   resolveAuthorizationScope,
 } = require('../services/auth/resolveAuthorizationScope')
 const STATUS_PUBLICO_CERTIFICADO = 'emitido'
+
+const rawPdfMaxConcurrency = Number.parseInt(
+  process.env.PDF_STREAM_MAX_CONCURRENCY,
+  10,
+)
+const pdfMaxConcurrency =
+  Number.isInteger(rawPdfMaxConcurrency) && rawPdfMaxConcurrency > 0
+    ? rawPdfMaxConcurrency
+    : 4
+const pdfDownloadLimiter = createConcurrencyLimiter(pdfMaxConcurrency)
 
 function readAccessToken(req) {
   const authHeader = req.headers?.authorization
@@ -147,14 +159,39 @@ router.get('/certificados/:id/pdf', async (req, res) => {
       }
     })
 
-    res.setHeader('Content-Type', 'application/pdf')
-    res.setHeader(
-      'Content-Disposition',
-      `inline; filename=certificado-${id}.pdf`,
-    )
+    const releasePdfSlot = pdfDownloadLimiter.tryAcquire()
+    if (!releasePdfSlot) {
+      logger.warn('pdf.stream.rejected_by_concurrency_limit', {
+        requestId: req.requestId,
+        certificadoId: id,
+        limiter: pdfDownloadLimiter.getState(),
+      })
+      return res.status(503).json({
+        error:
+          'Serviço temporariamente sobrecarregado. Tente novamente em instantes.',
+      })
+    }
 
-    await pdfService.streamCertificadoPdf(certificado, res)
+    try {
+      res.setHeader('Content-Type', 'application/pdf')
+      res.setHeader(
+        'Content-Disposition',
+        `inline; filename=certificado-${id}.pdf`,
+      )
+
+      await pdfService.streamCertificadoPdf(certificado, res, {
+        requestId: req.requestId,
+      })
+    } finally {
+      releasePdfSlot()
+    }
   } catch (err) {
+    logger.error('pdf.stream.request_failed', {
+      requestId: req.requestId,
+      certificadoId: id,
+      error: err,
+    })
+
     if (res.headersSent || res.writableEnded || res.destroyed) {
       if (!res.destroyed && !res.writableEnded) {
         res.destroy(err)
@@ -163,9 +200,7 @@ router.get('/certificados/:id/pdf', async (req, res) => {
     }
     res.removeHeader('Content-Disposition')
     res.setHeader('Content-Type', 'application/json; charset=utf-8')
-    return res
-      .status(500)
-      .json({ error: 'Erro ao gerar PDF', detalhe: err.message })
+    return res.status(500).json({ error: 'Erro ao gerar PDF' })
   }
 })
 

@@ -5,12 +5,12 @@ on:
     branches:
       - main
       - dev
-      - feat-stream-pdf-http
+      - feat-identificar-corrigir-estouros-memoria-render
   pull_request:
     branches:
       - main
       - dev
-      - feat-stream-pdf-http
+      - feat-identificar-corrigir-estouros-memoria-render
   workflow_dispatch:
 
 jobs:

@@ -5,9 +5,12 @@ var createError = require('http-errors')
 var express = require('express')
 var path = require('path')
 var cookieParser = require('cookie-parser')
-var logger = require('morgan')
 const session = require('express-session')
 const flash = require('connect-flash')
+const requestContext = require('./src/middlewares/requestContext')
+const httpLogger = require('./src/middlewares/httpLogger')
+const logger = require('./src/utils/logger')
+const { startRuntimeMonitor } = require('./src/services/runtimeMonitor')
 
 // Swagger/OpenAPI
 const swaggerJsdoc = require('swagger-jsdoc')
@@ -28,11 +31,18 @@ var apiRouter = require('./src/routes/api')
 
 var app = express()
 
+startRuntimeMonitor()
+
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1)
+}
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'hbs')
 
-app.use(logger('dev'))
+app.use(requestContext)
+app.use(httpLogger)
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
@@ -45,11 +55,34 @@ if (!sessionSecret) {
     'SESSION_SECRET não definido. Defina a variável de ambiente SESSION_SECRET para garantir a segurança da sessão.',
   )
 }
+
+const PgSession = require('connect-pg-simple')(session)
+const sessionStore = process.env.DATABASE_URL
+  ? new PgSession({
+      conString: process.env.DATABASE_URL,
+      tableName: 'user_sessions',
+      pruneSessionInterval: 900,
+    })
+  : undefined
+
+if (!sessionStore && process.env.NODE_ENV === 'production') {
+  logger.warn('session.store.memory_fallback', {
+    reason: 'DATABASE_URL ausente em produção',
+  })
+}
+
 app.use(
   session({
     secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
+    store: sessionStore,
+    cookie: {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 8 * 60 * 60 * 1000,
+    },
   }),
 )
 app.use(flash())
@@ -196,6 +229,14 @@ app.use(function (req, res, next) {
 
 // error handler
 app.use(function (err, req, res, next) {
+  logger.error('http.request.error', {
+    requestId: req.requestId,
+    method: req.method,
+    path: req.originalUrl,
+    statusCode: err.status || 500,
+    error: err,
+  })
+
   // Sempre passa status e mensagem para o template
   res.locals.message = err.message
   // Garante que error.status estará disponível no template
