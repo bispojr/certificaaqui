@@ -1,4 +1,5 @@
 const certificadoService = require('../../src/services/certificadoService')
+const { execSync } = require('child_process')
 const {
   Evento,
   Participante,
@@ -8,6 +9,10 @@ const {
 
 describe('service-scope-enforcement integration', () => {
   let evento, participante, tipoCertificado
+
+  beforeAll(() => {
+    execSync('npx sequelize-cli db:migrate --env test', { stdio: 'inherit' })
+  })
 
   beforeEach(async () => {
     await sequelize.query(

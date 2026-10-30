@@ -268,7 +268,6 @@ describe('Rotas públicas de certificados', () => {
     expect(res.status).toBe(500)
     expect(res.body).toEqual({
       error: 'Erro ao gerar PDF',
-      detalhe: 'Falha no motor de PDF',
     })
     expect(res.headers['content-disposition']).toBeUndefined()
 

@@ -262,7 +262,6 @@ describe('API Routes - /api/certificados/:id/pdf Streaming & Headers', () => {
     expect(res.headers['content-disposition']).toBeUndefined()
     expect(res.body).toEqual({
       error: 'Erro ao gerar PDF',
-      detalhe: 'Falha no pipeline de renderização',
     })
 
     spy.mockRestore()
